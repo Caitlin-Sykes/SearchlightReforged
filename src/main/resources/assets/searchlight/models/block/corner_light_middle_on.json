@@ -1,0 +1,104 @@
+{
+  "format_version": "1.9.0",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "searchlight:block/corner_light_rod",
+    "rod": "searchlight:block/corner_light_rod_on"
+  },
+  "elements": [
+    {
+      "name": "Rod_Bottom",
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        2,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#rod",
+          "tintindex": 0
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            6,
+            16
+          ],
+          "texture": "#rod",
+          "tintindex": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#rod",
+          "tintindex": 0
+        },
+        "west": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#rod",
+          "tintindex": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            2,
+            2,
+            4
+          ],
+          "texture": "#rod",
+          "tintindex": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            4,
+            2,
+            6
+          ],
+          "texture": "#rod",
+          "tintindex": 0
+        }
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        73,
+        -13,
+        4
+      ],
+      "translation": [
+        -6,
+        3.5,
+        0
+      ],
+      "scale": [
+        0.78,
+        0.49,
+        0.73
+      ]
+    }
+  }
+}

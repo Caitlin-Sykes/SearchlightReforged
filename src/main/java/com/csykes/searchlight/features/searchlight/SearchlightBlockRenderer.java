@@ -1,16 +1,16 @@
 package com.csykes.searchlight.features.searchlight;
 
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import net.minecraft.client.model.geom.ModelPart;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.model.geom.builders.CubeListBuilder;
-import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
@@ -20,8 +20,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -101,7 +101,7 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
         }
 
         if (SearchlightUtil.displayBeams() && blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT)) {
-            float distance = (float) Mth.sqrt((float) blockEntity.getLightSourcePos().distSqr(blockEntity.getBlockPos())) + 1.0f;
+            float distance = Mth.sqrt((float) blockEntity.getLightSourcePos().distSqr(blockEntity.getBlockPos())) + 1.0f;
             drawBeam(pivot, body.yRot, body.xRot, distance, poseStack, bufferSource, blockEntity.getLevel().getGameTime(), partialTick);
         }
     }
@@ -110,6 +110,7 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
      * Draws the beam of the searchlight
      * Looks like a beacon beam
      * only shows if a searchlight is being held
+     *
      * @param pivot
      * @param yRot
      * @param xRot
@@ -126,7 +127,7 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
         poseStack.mulPose(Axis.XP.rotation((float) (Math.PI + xRot)));
         poseStack.translate(-0.5, 0.35, -0.5);
 
-        BeaconRenderer.renderBeaconBeam(poseStack, bufferSource, SEARCHLIGHT_BEAM, partialTick, 1.0f, gameTime, 0, (int) distance, 0xC8A2C8, 1.75f, 0.08f);
+        BeaconRenderer.renderBeaconBeam(poseStack, bufferSource, SEARCHLIGHT_BEAM, partialTick, 0.6f, gameTime, 0, (int) distance, 0xC8A2C8, 0.5f, 0.20f);
         poseStack.popPose();
     }
 

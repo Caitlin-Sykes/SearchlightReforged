@@ -1,0 +1,300 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "up",
+        "corner": "bottom_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "corner": "bottom_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "corner": "top_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "up",
+        "corner": "top_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 0,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "corner": "bottom_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 180,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "corner": "bottom_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "corner": "top_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "down",
+        "corner": "top_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corner": "bottom_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corner": "bottom_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corner": "top_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "corner": "top_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corner": "bottom_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corner": "bottom_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corner": "top_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 270,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "corner": "top_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corner": "bottom_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corner": "bottom_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corner": "top_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "corner": "top_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corner": "bottom_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corner": "bottom_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corner": "top_right"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "corner": "top_left"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_base",
+        "x": 90,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "single"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_bottom"
+      }
+    },
+    {
+      "when": {
+        "connection": "middle"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_none"
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_bottom"
+      }
+    },
+    {
+      "when": {
+        "connection": "top"
+      },
+      "apply": {
+        "model": "searchlight:block/corner_light_top"
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 package com.csykes.searchlight;
 
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
 import com.csykes.searchlight.features.searchlight.SearchlightLightSourceBlock;
@@ -8,37 +9,29 @@ import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import net.minecraft.core.registries.BuiltInRegistries;
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 @Mod(Searchlight.MODID)
 public class Searchlight {
@@ -74,11 +67,17 @@ public class Searchlight {
 
     // Wall Lights
     public static final Map<String, DeferredBlock<Block>> WALL_LIGHTS = new LinkedHashMap<>();
+    public static final Map<String, DeferredBlock<Block>> CORNER_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> WALL_LIGHT_ITEMS = new LinkedHashMap<>();
+    public static final Map<String, DeferredItem<? extends Item>> CORNER_LIGHTS_ITEMS = new LinkedHashMap<>();
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightBlockEntity>> SEARCHLIGHT_BE = BLOCK_ENTITY_TYPES.register("searchlight_entity", () -> BlockEntityType.Builder.of(SearchlightBlockEntity::new, SEARCHLIGHT_BLOCK.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> WALL_LIGHT_BE = BLOCK_ENTITY_TYPES.register("wall_light_entity", () -> {
         Block[] blocks = WALL_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
+        return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
+    });
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> CORNER_LIGHT_BE = BLOCK_ENTITY_TYPES.register("corner_light_entity", () -> {
+        Block[] blocks = CORNER_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
         return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightLightSourceBlockEntity>> LIGHT_SOURCE_BE = BLOCK_ENTITY_TYPES.register("searchlight_lightsource_entity", () -> BlockEntityType.Builder.of(SearchlightLightSourceBlockEntity::new, LIGHT_SOURCE_BLOCK.get()).build(null));
@@ -93,13 +92,37 @@ public class Searchlight {
     }
 
     private static void registerWallLight(String postfix) {
-        String name = "wall_light_" + postfix;
-        DeferredBlock<Block> block = BLOCKS.register(name, () -> new WallLightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> state.getValue(BlockStateProperties.LIT) ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3 : 0)
+        String wl_name = "wall_light_" + postfix;
+        String cl_name = "corner_light_" + postfix;
+
+        final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+
+        DeferredBlock<Block> block = BLOCKS.register(wl_name, () -> new WallLightBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> {
+                    if (!state.getValue(BlockStateProperties.LIT)) return 0;
+                    return state.hasProperty(AbstractLightBlock.BRIGHTNESS)
+                            ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3
+                            : 15; // Safe default light value
+                })
                 .sound(SoundType.STONE)
                 .noOcclusion()));
+
+        DeferredBlock<Block> corner_light = BLOCKS.register(cl_name, () -> new CornerLightBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> {
+                    if (!state.getValue(BlockStateProperties.LIT)) return 0;
+                    return state.hasProperty(AbstractLightBlock.BRIGHTNESS)
+                            ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3
+                            : 15; // Safe default light value
+                })
+                .sound(SoundType.GLASS)
+                .noOcclusion(), blockColor));
+
         WALL_LIGHTS.put(postfix, block);
-        WALL_LIGHT_ITEMS.put(postfix, ITEMS.registerSimpleBlockItem(name, block));
+        CORNER_LIGHTS.put(postfix, corner_light);
+        WALL_LIGHT_ITEMS.put(postfix, ITEMS.registerSimpleBlockItem(wl_name, block));
+
+        // BONUS FIX: Your items registry map was assigning 'block' to corner items instead of 'corner_light'
+        CORNER_LIGHTS_ITEMS.put(postfix, ITEMS.registerSimpleBlockItem(cl_name, corner_light));
     }
 
     // Creative Tab
@@ -109,6 +132,7 @@ public class Searchlight {
             .displayItems((parameters, output) -> {
                 output.accept(SEARCHLIGHT_ITEM.get());
                 WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
+                CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 
     public Searchlight(IEventBus modEventBus, ModContainer modContainer) {

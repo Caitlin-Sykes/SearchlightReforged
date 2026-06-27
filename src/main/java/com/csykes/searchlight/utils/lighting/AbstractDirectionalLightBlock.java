@@ -1,6 +1,7 @@
 package com.csykes.searchlight.utils.lighting;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
+import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -21,17 +22,23 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirectionalBlock {
+public abstract class AbstractDirectionalLightBlock extends DirectionalBlock {
     public static final EnumProperty<BrightnessStage> BRIGHTNESS = EnumProperty.create("brightness", BrightnessStage.class);
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
-    public AbstractLightBlock(@NotNull Properties properties) {
+    public AbstractDirectionalLightBlock(@NotNull Properties properties) {
         super(properties);
+        // Set the default facing direction, e.g., North, unlit, with standard brightness
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(LIT, Boolean.TRUE)
+                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)); // Adjust default stage as needed
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FACE, LIT, BRIGHTNESS);
+        // Replaced FACE with standard 6-way FACING property
+        builder.add(FACING, LIT, BRIGHTNESS);
     }
 
     @Override
@@ -59,11 +66,10 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockState state = super.getStateForPlacement(context);
-        if (state != null) {
-            return state.setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
-        }
-        return null;
+        // Sets the FACING property to the side clicked by the user (pointing out from the wall/floor/ceiling)
+        return this.defaultBlockState()
+                .setValue(FACING, context.getClickedFace())
+                .setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
     @Override
