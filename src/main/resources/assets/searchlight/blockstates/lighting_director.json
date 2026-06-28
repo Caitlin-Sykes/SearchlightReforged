@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "searchlight:block/lighting_director" }
+  }
+}

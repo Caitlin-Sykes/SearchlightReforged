@@ -7,6 +7,9 @@ import com.csykes.searchlight.features.searchlight.SearchlightLightSourceBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightLightSourceBlockEntity;
 import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
+import com.csykes.searchlight.features.lighting_director.LightingDirectorBlock;
+import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
+import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.mojang.logging.LogUtils;
@@ -57,6 +60,15 @@ public class Searchlight {
 
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem("searchlight", SEARCHLIGHT_BLOCK);
 
+    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = BLOCKS.register("lighting_director", () -> new LightingDirectorBlock(BlockBehaviour.Properties.of()
+            .sound(SoundType.METAL)
+            .strength(3.0f)
+            .noOcclusion()));
+
+    public static final DeferredItem<BlockItem> LIGHTING_DIRECTOR_ITEM = ITEMS.registerSimpleBlockItem("lighting_director", LIGHTING_DIRECTOR_BLOCK);
+
+    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = ITEMS.register("lighting_linker_card", () -> new LightingLinkerCardItem(new Item.Properties().stacksTo(1)));
+
     public static final DeferredBlock<Block> LIGHT_SOURCE_BLOCK = BLOCKS.register("searchlight_lightsource", () -> new SearchlightLightSourceBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.NONE)
             .replaceable()
@@ -81,6 +93,7 @@ public class Searchlight {
         return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightLightSourceBlockEntity>> LIGHT_SOURCE_BE = BLOCK_ENTITY_TYPES.register("searchlight_lightsource_entity", () -> BlockEntityType.Builder.of(SearchlightLightSourceBlockEntity::new, LIGHT_SOURCE_BLOCK.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LightingDirectorBlockEntity>> LIGHTING_DIRECTOR_BE = BLOCK_ENTITY_TYPES.register("lighting_director_entity", () -> BlockEntityType.Builder.of(LightingDirectorBlockEntity::new, LIGHTING_DIRECTOR_BLOCK.get()).build(null));
 
     static {
         registerWallLight("iron");
@@ -140,17 +153,41 @@ public class Searchlight {
             .icon(() -> new ItemStack(SEARCHLIGHT_ITEM.get()))
             .displayItems((parameters, output) -> {
                 output.accept(SEARCHLIGHT_ITEM.get());
+                output.accept(LIGHTING_DIRECTOR_ITEM.get());
+                output.accept(LIGHTING_LINKER_CARD.get());
                 WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
                 CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 
     public Searchlight(IEventBus modEventBus) {
         modEventBus.addListener(this::registerCapabilities);
+        modEventBus.addListener(this::registerPayloads);
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
+    }
+
+    private void registerPayloads(final net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event) {
+        final net.neoforged.neoforge.network.registration.PayloadRegistrar registrar = event.registrar("searchlight");
+        registrar.playToServer(
+            com.csykes.searchlight.network.SetLightAddressPayload.TYPE,
+            com.csykes.searchlight.network.SetLightAddressPayload.STREAM_CODEC,
+            (payload, context) -> {
+                context.enqueueWork(() -> {
+                    net.minecraft.world.entity.player.Player player = context.player();
+                    net.minecraft.world.level.Level level = player.level();
+                    net.minecraft.core.BlockPos pos = payload.pos();
+                    net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+                    if (be instanceof com.csykes.searchlight.utils.lighting.AddressableLight addressable) {
+                        addressable.setAddress(payload.address());
+                        be.setChanged();
+                        level.sendBlockUpdated(pos, be.getBlockState(), be.getBlockState(), 3);
+                    }
+                });
+            }
+        );
     }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {

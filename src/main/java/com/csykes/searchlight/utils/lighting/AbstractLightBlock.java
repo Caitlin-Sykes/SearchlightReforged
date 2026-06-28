@@ -135,4 +135,16 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
         return super.useItemOn(stack, state, world, pos, player, hand, hit);
     }
+
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, net.minecraft.world.phys.BlockHitResult hit) {
+        if (player.isShiftKeyDown()) {
+            if (world.isClientSide) {
+                com.csykes.searchlight.SearchlightClient.openLightAddressScreen(pos);
+                return net.minecraft.world.InteractionResult.SUCCESS;
+            }
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+        return net.minecraft.world.InteractionResult.PASS;
+    }
 }

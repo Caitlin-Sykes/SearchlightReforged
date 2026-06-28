@@ -15,6 +15,10 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.world.phys.Vec3;
 
 @Mod(value = Searchlight.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -87,6 +91,72 @@ public class SearchlightClient {
                 }
                 return -1;
             }, entry.getValue().get());
+        }
+    }
+
+    public static void openLightAddressScreen(net.minecraft.core.BlockPos pos) {
+        net.minecraft.client.Minecraft.getInstance().setScreen(new com.csykes.searchlight.features.lighting_director.LightAddressScreen(pos));
+    }
+
+    @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+    public static class GameClientEvents {
+        @SubscribeEvent
+        public static void onRenderLevelStage(net.neoforged.neoforge.client.event.RenderLevelStageEvent event) {
+            if (event.getStage() == net.neoforged.neoforge.client.event.RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+                net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                net.minecraft.world.entity.player.Player player = mc.player;
+                if (player == null) return;
+
+                net.minecraft.world.item.ItemStack stack = player.getMainHandItem();
+                if (!(stack.getItem() instanceof com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem)) {
+                    stack = player.getOffhandItem();
+                }
+                if (!(stack.getItem() instanceof com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem)) {
+                    return;
+                }
+
+                net.minecraft.world.item.component.CustomData customData = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+                if (customData != null) {
+                    net.minecraft.nbt.CompoundTag tag = customData.copyTag();
+                    if (tag.contains("director_x") && tag.contains("director_y") && tag.contains("director_z")) {
+                        int dx = tag.getInt("director_x");
+                        int dy = tag.getInt("director_y");
+                        int dz = tag.getInt("director_z");
+                        BlockPos directorPos = new BlockPos(dx, dy, dz);
+
+                        String currentDim = player.level().dimension().location().toString();
+                        String storedDim = tag.getString("director_dim");
+                        if (currentDim.equals(storedDim)) {
+                            renderDirectorHighlight(event, directorPos);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void renderDirectorHighlight(net.neoforged.neoforge.client.event.RenderLevelStageEvent event, BlockPos pos) {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            Vec3 camPos = event.getCamera().getPosition();
+            double x = pos.getX() - camPos.x;
+            double y = pos.getY() - camPos.y;
+            double z = pos.getZ() - camPos.z;
+
+            com.mojang.blaze3d.vertex.PoseStack poseStack = event.getPoseStack();
+            poseStack.pushPose();
+            poseStack.translate(x, y, z);
+
+            VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.lines());
+
+            LevelRenderer.renderLineBox(
+                poseStack,
+                buffer,
+                0, 0, 0,
+                1, 1, 1,
+                1.0F, 1.0F, 0.0F, 1.0F
+            );
+
+            poseStack.popPose();
+            mc.renderBuffers().bufferSource().endBatch(RenderType.lines());
         }
     }
 }

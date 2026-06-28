@@ -17,11 +17,23 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.csykes.searchlight.MutableVector3d;
 
-public class SearchlightBlockEntity extends BlockEntity {
+public class SearchlightBlockEntity extends BlockEntity implements com.csykes.searchlight.utils.lighting.AddressableLight {
     private @Nullable BlockPos lightSourcePos;
+    private String address = "";
 
     public SearchlightBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(Searchlight.SEARCHLIGHT_BE.get(), blockPos, blockState);
+    }
+
+    @Override
+    public String getAddress() {
+        return address;
+    }
+
+    @Override
+    public void setAddress(String address) {
+        this.address = address;
+        setChanged();
     }
 
     @Override
@@ -39,6 +51,7 @@ public class SearchlightBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
+        tag.putString("address", address);
         if (lightSourcePos != null) {
             tag.putInt("light_source_x", lightSourcePos.getX());
             tag.putInt("light_source_y", lightSourcePos.getY());
@@ -49,6 +62,7 @@ public class SearchlightBlockEntity extends BlockEntity {
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
+        this.address = tag.getString("address");
         if (tag.contains("light_source_x") && tag.contains("light_source_y") && tag.contains("light_source_z")) {
             lightSourcePos = new BlockPos(tag.getInt("light_source_x"), tag.getInt("light_source_y"), tag.getInt("light_source_z"));
         } else {

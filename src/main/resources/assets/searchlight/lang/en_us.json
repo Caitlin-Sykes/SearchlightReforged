@@ -39,5 +39,7 @@
   "block.searchlight.wall_light_red": "Red Wall Light",
   "block.searchlight.wall_light_black": "Black Wall Light",
   "searchlight.message.lowest_brightness": "This light has reached the lowest brightness",
-  "searchlight.message.highest_brightness": "This light has reached the max brightness"
+  "searchlight.message.highest_brightness": "This light has reached the max brightness",
+  "block.searchlight.lighting_director": "Wireless Lighting Director",
+  "item.searchlight.lighting_linker_card": "Lighting Linker Card"
 }
