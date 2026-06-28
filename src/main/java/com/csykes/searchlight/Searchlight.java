@@ -50,7 +50,8 @@ public class Searchlight {
             .pushReaction(PushReaction.DESTROY)
             .sound(SoundType.METAL)
             .requiresCorrectToolForDrops()
-            .strength(4.0f)
+            .strength(2.0f, 4.0f)
+            .requiresCorrectToolForDrops()
             .noOcclusion()
             .lightLevel((state) -> state.getValue(AbstractLightBlock.LIT) ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3 : 0)));
 
@@ -100,6 +101,8 @@ public class Searchlight {
                             ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3
                             : 15; // Safe default light value
                 })
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
                 .sound(SoundType.STONE)
                 .noOcclusion()));
 
@@ -122,6 +125,8 @@ public class Searchlight {
                             : 15; // Safe default light value
                 })
                 .sound(SoundType.GLASS)
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
                 .noOcclusion(), blockColor));
         DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(cl_name, corner_light);
         CORNER_LIGHTS.put(postfix, corner_light);

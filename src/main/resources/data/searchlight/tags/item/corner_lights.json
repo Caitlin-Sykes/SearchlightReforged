@@ -1,0 +1,20 @@
+{
+  "values": [
+    "searchlight:corner_light_white",
+    "searchlight:corner_light_orange",
+    "searchlight:corner_light_magenta",
+    "searchlight:corner_light_light_blue",
+    "searchlight:corner_light_yellow",
+    "searchlight:corner_light_lime",
+    "searchlight:corner_light_pink",
+    "searchlight:corner_light_gray",
+    "searchlight:corner_light_light_gray",
+    "searchlight:corner_light_cyan",
+    "searchlight:corner_light_purple",
+    "searchlight:corner_light_blue",
+    "searchlight:corner_light_brown",
+    "searchlight:corner_light_green",
+    "searchlight:corner_light_red",
+    "searchlight:corner_light_black"
+  ]
+}

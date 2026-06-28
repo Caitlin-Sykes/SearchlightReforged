@@ -1,6 +1,22 @@
 {
   "itemGroup.searchlight": "Searchlight Mod",
   "itemGroup.searchlight.searchlight": "Searchlight Mod",
+  "block.searchlight.corner_light_white": "Белый угловой светильник",
+  "block.searchlight.corner_light_orange": "Оранжевый угловой светильник",
+  "block.searchlight.corner_light_magenta": "Пурпурный угловой светильник",
+  "block.searchlight.corner_light_light_blue": "Светло-голубой угловой светильник",
+  "block.searchlight.corner_light_yellow": "Желтый угловой светильник",
+  "block.searchlight.corner_light_lime": "Лаймовый угловой светильник",
+  "block.searchlight.corner_light_pink": "Розовый угловой светильник",
+  "block.searchlight.corner_light_gray": "Серый угловой светильник",
+  "block.searchlight.corner_light_light_gray": "Светло-серый угловой светильник",
+  "block.searchlight.corner_light_cyan": "Бирюзовый угловой светильник",
+  "block.searchlight.corner_light_purple": "Фиолетовый угловой светильник",
+  "block.searchlight.corner_light_blue": "Синий угловой светильник",
+  "block.searchlight.corner_light_brown": "Коричневый угловой светильник",
+  "block.searchlight.corner_light_green": "Зеленый угловой светильник",
+  "block.searchlight.corner_light_red": "Красный угловой светильник",
+  "block.searchlight.corner_light_black": "Черный угловой светильник",
   "block.searchlight.searchlight": "Прожектор",
   "block.searchlight.searchlight_lightsource": "Источник света прожектора",
   "block.searchlight.wall_light_iron": "Железный настенный светильник",
@@ -21,5 +37,7 @@
   "block.searchlight.wall_light_brown": "Коричневый настенный светильник",
   "block.searchlight.wall_light_green": "Зеленый настенный светильник",
   "block.searchlight.wall_light_red": "Красный настенный светильник",
-  "block.searchlight.wall_light_black": "Черный настенный светильник"
+  "block.searchlight.wall_light_black": "Черный настенный светильник",
+  "searchlight.message.lowest_brightness": "Эта лампа достигла минимальной яркости",
+  "searchlight.message.highest_brightness": "Эта лампа достигла максимальной яркости"
 }

@@ -80,7 +80,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                     }
                     world.playSound(null, pos, SoundEvents.GLOW_ITEM_FRAME_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
                     if (next == BrightnessStage.ULTRA) {
-                        player.displayClientMessage(Component.literal("This light has reached max brightness."), true);
+                        player.displayClientMessage(Component.translatable("searchlight.message.highest_brightness"), true);
                     }
                 }
                 return ItemInteractionResult.sidedSuccess(world.isClientSide);
@@ -96,7 +96,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                     }
                     world.playSound(null, pos, SoundEvents.SAND_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
                     if (next == BrightnessStage.OFF) {
-                        player.displayClientMessage(Component.literal("This light has reached the lowest brightness"), true);
+                        player.displayClientMessage(Component.translatable("searchlight.message.lowest_brightness"), true);
                     }
                 }
                 return ItemInteractionResult.sidedSuccess(world.isClientSide);

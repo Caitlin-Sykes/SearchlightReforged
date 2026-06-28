@@ -1,6 +1,22 @@
 {
   "itemGroup.searchlight": "Searchlight Mod",
   "itemGroup.searchlight.searchlight": "Searchlight Mod",
+  "block.searchlight.corner_light_white": "Luz de Canto Branca",
+  "block.searchlight.corner_light_orange": "Luz de Canto Laranja",
+  "block.searchlight.corner_light_magenta": "Luz de Canto Magenta",
+  "block.searchlight.corner_light_light_blue": "Luz de Canto Azul-Claro",
+  "block.searchlight.corner_light_yellow": "Luz de Canto Amarela",
+  "block.searchlight.corner_light_lime": "Luz de Canto Verde-Limão",
+  "block.searchlight.corner_light_pink": "Luz de Canto Rosa",
+  "block.searchlight.corner_light_gray": "Luz de Canto Cinza",
+  "block.searchlight.corner_light_light_gray": "Luz de Canto Cinza-Claro",
+  "block.searchlight.corner_light_cyan": "Luz de Canto Ciano",
+  "block.searchlight.corner_light_purple": "Luz de Canto Roxa",
+  "block.searchlight.corner_light_blue": "Luz de Canto Azul",
+  "block.searchlight.corner_light_brown": "Luz de Canto Marrom",
+  "block.searchlight.corner_light_green": "Luz de Canto Verde",
+  "block.searchlight.corner_light_red": "Luz de Canto Vermelha",
+  "block.searchlight.corner_light_black": "Luz de Canto Preta",
   "block.searchlight.searchlight": "Holofote",
   "block.searchlight.searchlight_lightsource": "Fonte de luz do holofote",
   "block.searchlight.wall_light_iron": "Luz de parede de ferro",
@@ -21,5 +37,7 @@
   "block.searchlight.wall_light_brown": "Luz de parede marrom",
   "block.searchlight.wall_light_green": "Luz de parede verde",
   "block.searchlight.wall_light_red": "Luz de parede vermelho",
-  "block.searchlight.wall_light_black": "Luz de parede preto"
+  "block.searchlight.wall_light_black": "Luz de parede preto",
+  "searchlight.message.lowest_brightness": "Esta luz atingiu o brilho mínimo",
+  "searchlight.message.highest_brightness": "Esta luz atingiu o brilho máximo"
 }

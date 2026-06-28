@@ -1,16 +1,16 @@
 {
   "type": "minecraft:crafting_shapeless",
-  "group": "wall_light",
+  "group": "corner_light",
   "ingredients": [
     {
       "item": "minecraft:light_blue_dye"
     },
     {
-      "tag": "searchlight:wall_lights"
+      "tag": "searchlight:corner_lights"
     }
   ],
   "result": {
-    "id": "searchlight:wall_light_light_blue",
+    "id": "searchlight:corner_light_light_blue",
     "count": 1
   }
 }
