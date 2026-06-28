@@ -99,8 +99,7 @@ public class LightPeripheral implements IPeripheral {
         }
         return state;
     }
-    
-    @LuaFunction(mainThread = true)
+
     private boolean getLitProperty(BlockState state) {
         if (state.hasProperty(AbstractLightBlock.LIT)) {
             return state.getValue(AbstractLightBlock.LIT);
