@@ -94,7 +94,7 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (player.isShiftKeyDown()) {
+        if (net.neoforged.fml.ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
             if (world.isClientSide) {
                 com.csykes.searchlight.SearchlightClient.openLightAddressScreen(pos);
                 return InteractionResult.SUCCESS;

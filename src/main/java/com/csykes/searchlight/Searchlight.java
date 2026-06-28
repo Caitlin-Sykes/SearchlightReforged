@@ -60,14 +60,20 @@ public class Searchlight {
 
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem("searchlight", SEARCHLIGHT_BLOCK);
 
-    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = BLOCKS.register("lighting_director", () -> new LightingDirectorBlock(BlockBehaviour.Properties.of()
-            .sound(SoundType.METAL)
-            .strength(3.0f)
-            .noOcclusion()));
+    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = net.neoforged.fml.ModList.get().isLoaded("computercraft")
+            ? BLOCKS.register("lighting_director", () -> new LightingDirectorBlock(BlockBehaviour.Properties.of()
+                    .sound(SoundType.METAL)
+                    .strength(3.0f)
+                    .noOcclusion()))
+            : null;
 
-    public static final DeferredItem<BlockItem> LIGHTING_DIRECTOR_ITEM = ITEMS.registerSimpleBlockItem("lighting_director", LIGHTING_DIRECTOR_BLOCK);
+    public static final DeferredItem<BlockItem> LIGHTING_DIRECTOR_ITEM = (LIGHTING_DIRECTOR_BLOCK != null)
+            ? ITEMS.registerSimpleBlockItem("lighting_director", LIGHTING_DIRECTOR_BLOCK)
+            : null;
 
-    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = ITEMS.register("lighting_linker_card", () -> new LightingLinkerCardItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = net.neoforged.fml.ModList.get().isLoaded("computercraft")
+            ? ITEMS.register("lighting_linker_card", () -> new LightingLinkerCardItem(new Item.Properties().stacksTo(1)))
+            : null;
 
     public static final DeferredBlock<Block> LIGHT_SOURCE_BLOCK = BLOCKS.register("searchlight_lightsource", () -> new SearchlightLightSourceBlock(BlockBehaviour.Properties.of()
             .mapColor(MapColor.NONE)
@@ -93,7 +99,9 @@ public class Searchlight {
         return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightLightSourceBlockEntity>> LIGHT_SOURCE_BE = BLOCK_ENTITY_TYPES.register("searchlight_lightsource_entity", () -> BlockEntityType.Builder.of(SearchlightLightSourceBlockEntity::new, LIGHT_SOURCE_BLOCK.get()).build(null));
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LightingDirectorBlockEntity>> LIGHTING_DIRECTOR_BE = BLOCK_ENTITY_TYPES.register("lighting_director_entity", () -> BlockEntityType.Builder.of(LightingDirectorBlockEntity::new, LIGHTING_DIRECTOR_BLOCK.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LightingDirectorBlockEntity>> LIGHTING_DIRECTOR_BE = (LIGHTING_DIRECTOR_BLOCK != null)
+            ? BLOCK_ENTITY_TYPES.register("lighting_director_entity", () -> BlockEntityType.Builder.of(LightingDirectorBlockEntity::new, LIGHTING_DIRECTOR_BLOCK.get()).build(null))
+            : null;
 
     static {
         registerWallLight("iron");
@@ -153,15 +161,21 @@ public class Searchlight {
             .icon(() -> new ItemStack(SEARCHLIGHT_ITEM.get()))
             .displayItems((parameters, output) -> {
                 output.accept(SEARCHLIGHT_ITEM.get());
-                output.accept(LIGHTING_DIRECTOR_ITEM.get());
-                output.accept(LIGHTING_LINKER_CARD.get());
+                if (LIGHTING_DIRECTOR_ITEM != null) {
+                    output.accept(LIGHTING_DIRECTOR_ITEM.get());
+                }
+                if (LIGHTING_LINKER_CARD != null) {
+                    output.accept(LIGHTING_LINKER_CARD.get());
+                }
                 WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
                 CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 
     public Searchlight(IEventBus modEventBus) {
         modEventBus.addListener(this::registerCapabilities);
-        modEventBus.addListener(this::registerPayloads);
+        if (net.neoforged.fml.ModList.get().isLoaded("computercraft")) {
+            modEventBus.addListener(this::registerPayloads);
+        }
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
