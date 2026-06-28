@@ -1,4 +1,5 @@
 # Searchlight (& Wall Lights) (Unofficial NeoForge Port)
+Latest Release: v1.0.0A
 
 ## DISCLAIMER
 This is a ported version of the Searchlight mod, originally created by Lizard-Of-Oz. The port is unofficial and not affiliated with the original mod or its creators.

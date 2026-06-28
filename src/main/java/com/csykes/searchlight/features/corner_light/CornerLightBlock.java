@@ -1,5 +1,6 @@
 package com.csykes.searchlight.features.corner_light;
 
+import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractDirectionalLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.CornerLightStage;
@@ -12,15 +13,23 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class CornerLightBlock extends AbstractDirectionalLightBlock {
+public class CornerLightBlock extends AbstractDirectionalLightBlock implements EntityBlock {
     private final DyeColor blockColor;
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
+        return new WallLightBlockEntity(pos, state);
+    }
 
     public CornerLightBlock(Properties properties, DyeColor blockColor) {
         super(properties);
