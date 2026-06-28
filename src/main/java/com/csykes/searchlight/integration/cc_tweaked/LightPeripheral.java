@@ -1,8 +1,12 @@
-package com.csykes.searchlight.utils.lighting;
+package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.wall_light.WallLightBlock;
+import com.csykes.searchlight.utils.lighting.AbstractDirectionalLightBlock;
+import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
+import com.csykes.searchlight.utils.lighting.CornerLightStage;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
@@ -95,7 +99,8 @@ public class LightPeripheral implements IPeripheral {
         }
         return state;
     }
-
+    
+    @LuaFunction(mainThread = true)
     private boolean getLitProperty(BlockState state) {
         if (state.hasProperty(AbstractLightBlock.LIT)) {
             return state.getValue(AbstractLightBlock.LIT);
@@ -188,12 +193,16 @@ public class LightPeripheral implements IPeripheral {
             if (newBlockHolder != null) {
                 Block newBlock = newBlockHolder.get();
                 BlockState newState = newBlock.defaultBlockState();
-                
+
                 // Copy over all matching block properties
-                if (state.hasProperty(WallLightBlock.FACING)) newState = newState.setValue(WallLightBlock.FACING, state.getValue(WallLightBlock.FACING));
-                if (state.hasProperty(WallLightBlock.FACE)) newState = newState.setValue(WallLightBlock.FACE, state.getValue(WallLightBlock.FACE));
-                if (state.hasProperty(WallLightBlock.LIT)) newState = newState.setValue(WallLightBlock.LIT, state.getValue(WallLightBlock.LIT));
-                if (state.hasProperty(WallLightBlock.BRIGHTNESS)) newState = newState.setValue(WallLightBlock.BRIGHTNESS, state.getValue(WallLightBlock.BRIGHTNESS));
+                if (state.hasProperty(WallLightBlock.FACING))
+                    newState = newState.setValue(WallLightBlock.FACING, state.getValue(WallLightBlock.FACING));
+                if (state.hasProperty(WallLightBlock.FACE))
+                    newState = newState.setValue(WallLightBlock.FACE, state.getValue(WallLightBlock.FACE));
+                if (state.hasProperty(WallLightBlock.LIT))
+                    newState = newState.setValue(WallLightBlock.LIT, state.getValue(WallLightBlock.LIT));
+                if (state.hasProperty(WallLightBlock.BRIGHTNESS))
+                    newState = newState.setValue(WallLightBlock.BRIGHTNESS, state.getValue(WallLightBlock.BRIGHTNESS));
 
                 world.setBlock(pos, newState, 3);
                 world.updateNeighborsAt(pos, newBlock);
@@ -210,12 +219,16 @@ public class LightPeripheral implements IPeripheral {
                 for (BlockPos connectedPos : connected) {
                     BlockState s = world.getBlockState(connectedPos);
                     BlockState newState = newBlock.defaultBlockState();
-                    
+
                     // Copy over all matching block properties
-                    if (s.hasProperty(CornerLightBlock.CORNER)) newState = newState.setValue(CornerLightBlock.CORNER, s.getValue(CornerLightBlock.CORNER));
-                    if (s.hasProperty(CornerLightBlock.CONNECTION)) newState = newState.setValue(CornerLightBlock.CONNECTION, s.getValue(CornerLightBlock.CONNECTION));
-                    if (s.hasProperty(CornerLightBlock.LIT)) newState = newState.setValue(CornerLightBlock.LIT, s.getValue(CornerLightBlock.LIT));
-                    if (s.hasProperty(CornerLightBlock.BRIGHTNESS)) newState = newState.setValue(CornerLightBlock.BRIGHTNESS, s.getValue(CornerLightBlock.BRIGHTNESS));
+                    if (s.hasProperty(CornerLightBlock.CORNER))
+                        newState = newState.setValue(CornerLightBlock.CORNER, s.getValue(CornerLightBlock.CORNER));
+                    if (s.hasProperty(CornerLightBlock.CONNECTION))
+                        newState = newState.setValue(CornerLightBlock.CONNECTION, s.getValue(CornerLightBlock.CONNECTION));
+                    if (s.hasProperty(CornerLightBlock.LIT))
+                        newState = newState.setValue(CornerLightBlock.LIT, s.getValue(CornerLightBlock.LIT));
+                    if (s.hasProperty(CornerLightBlock.BRIGHTNESS))
+                        newState = newState.setValue(CornerLightBlock.BRIGHTNESS, s.getValue(CornerLightBlock.BRIGHTNESS));
 
                     world.setBlock(connectedPos, newState, 3);
                     world.updateNeighborsAt(connectedPos, newBlock);

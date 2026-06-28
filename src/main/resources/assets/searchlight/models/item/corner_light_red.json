@@ -1,3 +1,3 @@
 {
-  "parent": "searchlight:block/corner_light_none"
+  "parent": "searchlight:item/corner_light_item"
 }

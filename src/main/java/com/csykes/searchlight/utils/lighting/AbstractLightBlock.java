@@ -85,7 +85,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 }
                 return ItemInteractionResult.sidedSuccess(world.isClientSide);
             }
-        } else if (stack.is(Items.CHARCOAL) || stack.is(Items.COAL) || stack.is(Items.REDSTONE)) {
+        } else if (stack.is(Items.REDSTONE)) {
             if (brightness != BrightnessStage.OFF) {
                 if (!world.isClientSide) {
                     BrightnessStage next = brightness.previous();

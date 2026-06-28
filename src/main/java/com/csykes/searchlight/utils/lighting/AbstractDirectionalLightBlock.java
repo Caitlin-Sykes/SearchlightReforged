@@ -13,7 +13,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -113,7 +112,7 @@ public abstract class AbstractDirectionalLightBlock extends Block {
                 }
                 return ItemInteractionResult.sidedSuccess(world.isClientSide);
             }
-        } else if (stack.is(Items.CHARCOAL) || stack.is(Items.COAL) || stack.is(Items.REDSTONE)) {
+        } else if (stack.is(Items.REDSTONE)) {
             if (brightness != BrightnessStage.OFF) {
                 if (!world.isClientSide) {
                     BrightnessStage next = brightness.previous();
