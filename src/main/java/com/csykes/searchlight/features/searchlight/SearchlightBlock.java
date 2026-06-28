@@ -94,6 +94,14 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.isShiftKeyDown()) {
+            if (world.isClientSide) {
+                com.csykes.searchlight.SearchlightClient.openLightAddressScreen(pos);
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         if (!world.isClientSide) {
             updateSearchLight(world, pos, state, player);
             world.playSound(null, pos, SoundEvents.NETHERITE_BLOCK_PLACE, SoundSource.BLOCKS, 1, 0.4f);

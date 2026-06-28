@@ -39,5 +39,7 @@
   "block.searchlight.wall_light_red": "Красный настенный светильник",
   "block.searchlight.wall_light_black": "Черный настенный светильник",
   "searchlight.message.lowest_brightness": "Эта лампа достигла минимальной яркости",
-  "searchlight.message.highest_brightness": "Эта лампа достигла максимальной яркости"
+  "searchlight.message.highest_brightness": "Эта лампа достигла максимальной яркости",
+  "block.searchlight.lighting_director": "Беспроводной контроллер прожектора",
+  "item.searchlight.lighting_linker_card": "Карта привязки прожектора"
 }

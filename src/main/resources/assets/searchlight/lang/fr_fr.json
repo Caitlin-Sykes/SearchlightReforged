@@ -39,5 +39,7 @@
   "block.searchlight.wall_light_red": "Applique murale rouge",
   "block.searchlight.wall_light_black": "Applique murale noire",
   "searchlight.message.lowest_brightness": "Cette lumière a atteint le niveau de luminosité le plus bas.",
-  "searchlight.message.highest_brightness": "Cette lumière a atteint sa luminosité maximale."
+  "searchlight.message.highest_brightness": "Cette lumière a atteint sa luminosité maximale.",
+  "block.searchlight.lighting_director": "Lien Projecteur Sans-fil",
+  "item.searchlight.lighting_linker_card": "Cart de Connexion Projecteur Sans-fil"
 }

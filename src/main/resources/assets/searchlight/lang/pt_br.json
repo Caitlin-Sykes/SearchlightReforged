@@ -39,5 +39,7 @@
   "block.searchlight.wall_light_red": "Luz de parede vermelho",
   "block.searchlight.wall_light_black": "Luz de parede preto",
   "searchlight.message.lowest_brightness": "Esta luz atingiu o brilho mínimo",
-  "searchlight.message.highest_brightness": "Esta luz atingiu o brilho máximo"
+  "searchlight.message.highest_brightness": "Esta luz atingiu o brilho máximo",
+  "block.searchlight.lighting_director": "Controlador de Iluminação sem Fio",
+  "item.searchlight.lighting_linker_card": "Cartão de Vinculação de Iluminação"
 }
