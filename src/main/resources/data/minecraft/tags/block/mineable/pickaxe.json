@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "searchlight:searchlight",
     "searchlight:wall_light_white",
     "searchlight:wall_light_orange",
     "searchlight:wall_light_magenta",

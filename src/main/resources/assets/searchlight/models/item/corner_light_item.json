@@ -1,7 +1,7 @@
 {
   "ambientocclusion": false,
   "textures": {
-    "rod": "searchlight:block/corner_light_rod",
+    "rod": "searchlight:block/corner_light_rod_on",
     "particle": "searchlight:block/corner_light_base",
     "base": "searchlight:block/corner_light_base"
   },
