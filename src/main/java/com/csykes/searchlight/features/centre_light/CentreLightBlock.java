@@ -18,7 +18,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public class CentreLightBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
+    public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -41,13 +43,15 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
-                .setValue(CONNECTION, LightRodConnection.SINGLE));
+                .setValue(CONNECTION, LightRodConnection.SINGLE)
+                .setValue(AXIS, Direction.Axis.Y));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(CONNECTION);
+        builder.add(AXIS);
     }
 
     @Override
@@ -57,13 +61,17 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockState baseState = super.getStateForPlacement(context);
-        if (baseState == null) return null;
+        // Calculate the axis based on the face the player clicked
+        Direction.Axis axis = context.getClickedFace().getAxis();
 
-        Vec3 hit = context.getClickLocation();
-        BlockPos pos = context.getClickedPos();
+        // Start with the default state and apply the axis
+        BlockState state = this.defaultBlockState().setValue(AXIS, axis);
 
-        return baseState.setValue(CONNECTION, this.getConnectionState(context.getLevel(), pos));
+        // Apply your existing connection logic
+        state = state.setValue(CONNECTION, this.getConnectionState(context.getLevel(), context.getClickedPos()));
+
+        // Ensure other necessary defaults are set (like LIT)
+        return state.setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
 
