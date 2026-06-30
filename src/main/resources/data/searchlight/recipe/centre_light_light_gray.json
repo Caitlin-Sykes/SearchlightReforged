@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "centre_light",
+  "ingredients": [
+    {
+      "item": "minecraft:light_gray_dye"
+    },
+    {
+      "tag": "searchlight:centre_lights"
+    }
+  ],
+  "result": {
+    "id": "searchlight:centre_light_light_gray",
+    "count": 1
+  }
+}

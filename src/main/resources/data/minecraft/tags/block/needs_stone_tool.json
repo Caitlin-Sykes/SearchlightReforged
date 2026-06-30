@@ -33,6 +33,24 @@
     "searchlight:corner_light_brown",
     "searchlight:corner_light_green",
     "searchlight:corner_light_red",
-    "searchlight:corner_light_black"
+    "searchlight:corner_light_black",
+    "searchlight:centre_light_white",
+    "searchlight:centre_light_orange",
+    "searchlight:centre_light_magenta",
+    "searchlight:centre_light_light_blue",
+    "searchlight:centre_light_yellow",
+    "searchlight:centre_light_lime",
+    "searchlight:centre_light_pink",
+    "searchlight:centre_light_gray",
+    "searchlight:centre_light_light_gray",
+    "searchlight:centre_light_cyan",
+    "searchlight:centre_light_purple",
+    "searchlight:centre_light_blue",
+    "searchlight:centre_light_brown",
+    "searchlight:centre_light_green",
+    "searchlight:centre_light_red",
+    "searchlight:centre_light_black",
+    "searchlight:lighting_linker_card",
+    "searchlight:lighting_director"
   ]
 }

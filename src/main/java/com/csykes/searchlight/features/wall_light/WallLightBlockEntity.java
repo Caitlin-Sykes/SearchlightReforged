@@ -16,7 +16,12 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     private String address = "";
 
     public WallLightBlockEntity(BlockPos pos, BlockState state) {
-        super(state.getBlock() instanceof com.csykes.searchlight.features.corner_light.CornerLightBlock ? Searchlight.CORNER_LIGHT_BE.get() : Searchlight.WALL_LIGHT_BE.get(), pos, state);
+        super(
+                state.getBlock() instanceof com.csykes.searchlight.features.corner_light.CornerLightBlock ? Searchlight.CORNER_LIGHT_BE.get() :
+                        (state.getBlock() instanceof com.csykes.searchlight.features.centre_light.CentreLightBlock ? Searchlight.CENTRE_LIGHT_BE.get() :
+                                Searchlight.WALL_LIGHT_BE.get()),
+                pos, state
+        );
     }
 
     @Override

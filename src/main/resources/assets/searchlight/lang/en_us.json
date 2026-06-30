@@ -41,5 +41,21 @@
   "searchlight.message.lowest_brightness": "This light has reached the lowest brightness",
   "searchlight.message.highest_brightness": "This light has reached the max brightness",
   "block.searchlight.lighting_director": "Wireless Lighting Director",
-  "item.searchlight.lighting_linker_card": "Lighting Linker Card"
+  "item.searchlight.lighting_linker_card": "Lighting Linker Card",
+  "block.searchlight.centre_light_white": "White Centre Light",
+  "block.searchlight.centre_light_orange": "Orange Centre Light",
+  "block.searchlight.centre_light_magenta": "Magenta Centre Light",
+  "block.searchlight.centre_light_light_blue": "Light Blue Centre Light",
+  "block.searchlight.centre_light_yellow": "Yellow Centre Light",
+  "block.searchlight.centre_light_lime": "Lime Centre Light",
+  "block.searchlight.centre_light_pink": "Pink Centre Light",
+  "block.searchlight.centre_light_gray": "Gray Centre Light",
+  "block.searchlight.centre_light_light_gray": "Light Gray Centre Light",
+  "block.searchlight.centre_light_cyan": "Cyan Centre Light",
+  "block.searchlight.centre_light_purple": "Purple Centre Light",
+  "block.searchlight.centre_light_blue": "Blue Centre Light",
+  "block.searchlight.centre_light_brown": "Brown Centre Light",
+  "block.searchlight.centre_light_green": "Green Centre Light",
+  "block.searchlight.centre_light_red": "Red Centre Light",
+  "block.searchlight.centre_light_black": "Black Centre Light"
 }

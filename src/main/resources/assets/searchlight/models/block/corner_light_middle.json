@@ -1,5 +1,4 @@
 {
-  "format_version": "1.9.0",
   "ambientocclusion": false,
   "textures": {
     "particle": "searchlight:block/corner_light_rod",

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "centre_light",
+  "category": "building",
+  "pattern": [
+    "CRC",
+    "GAG",
+    "CRC"
+  ],
+  "key": {
+    "G": {
+      "tag": "c:stones"
+    },
+    "C": {
+      "tag": "c:glass_blocks"
+    },
+    "A": {
+      "item": "minecraft:white_dye"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "searchlight:centre_light_white",
+    "count": 6
+  }
+}
