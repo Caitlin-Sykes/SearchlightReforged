@@ -2,160 +2,176 @@
   "multipart": [
     {
       "when": {
-        "connection": "bottom"
+        "connection": "bottom",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 0
       }
     },
     {
       "when": {
-        "connection": "bottom"
+        "connection": "bottom",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 90
       }
     },
     {
       "when": {
-        "connection": "bottom"
+        "connection": "bottom",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 180
       }
     },
     {
       "when": {
-        "connection": "bottom"
+        "connection": "bottom",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 270
       }
     },
     {
       "when": {
-        "connection": "top"
+        "connection": "top",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 270,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "top"
+        "connection": "top",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 0,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "top"
+        "connection": "top",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 90,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "top"
+        "connection": "top",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 180,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 0
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 90
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 180
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "x": 0,
         "y": 270
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 270,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 0,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 90,
         "x": 180
       }
     },
     {
       "when": {
-        "connection": "single"
+        "connection": "single",
+        "axis": "y"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_base",
+        "model": "searchlight:block/centre_light_base_vertical",
         "y": 180,
         "x": 180
       }
@@ -163,86 +179,95 @@
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom",
+        "model": "searchlight:block/centre_light_bottom_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom",
+        "model": "searchlight:block/centre_light_bottom_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom",
+        "model": "searchlight:block/centre_light_bottom_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom",
+        "model": "searchlight:block/centre_light_bottom_vertical",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle",
+        "model": "searchlight:block/centre_light_middle_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle",
+        "model": "searchlight:block/centre_light_middle_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle",
+        "model": "searchlight:block/centre_light_middle_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle",
+        "model": "searchlight:block/centre_light_middle_vertical",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
@@ -253,6 +278,7 @@
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
@@ -263,6 +289,7 @@
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
@@ -273,6 +300,7 @@
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
@@ -283,200 +311,660 @@
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom_on",
+        "model": "searchlight:block/centre_light_bottom_on_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom_on",
+        "model": "searchlight:block/centre_light_bottom_on_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom_on",
+        "model": "searchlight:block/centre_light_bottom_on_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "bottom",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_bottom_on",
+        "model": "searchlight:block/centre_light_bottom_on_vertical",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle_on",
+        "model": "searchlight:block/centre_light_middle_on_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle_on",
+        "model": "searchlight:block/centre_light_middle_on_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle_on",
+        "model": "searchlight:block/centre_light_middle_on_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "middle",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_middle_on",
+        "model": "searchlight:block/centre_light_middle_on_vertical",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top_on",
+        "model": "searchlight:block/centre_light_top_on_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top_on",
+        "model": "searchlight:block/centre_light_top_on_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top_on",
+        "model": "searchlight:block/centre_light_top_on_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "top",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top_on",
+        "model": "searchlight:block/centre_light_top_on_vertical",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none",
+        "model": "searchlight:block/centre_light_none_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none",
+        "model": "searchlight:block/centre_light_none_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none",
+        "model": "searchlight:block/centre_light_none_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none",
+        "model": "searchlight:block/centre_light_none_vertical",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none_on",
+        "model": "searchlight:block/centre_light_none_on_vertical",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none_on",
+        "model": "searchlight:block/centre_light_none_on_vertical",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none_on",
+        "model": "searchlight:block/centre_light_none_on_vertical",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "single",
+        "axis": "y",
         "lit": "true"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_none_on",
+        "model": "searchlight:block/centre_light_none_on_vertical",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "y": 90,
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "y": 0,
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_on_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_on_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_on_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "bottom",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_bottom_on_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_on_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_on_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_on_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "middle",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_middle_on_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_on_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_on_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_on_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "top",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_top_on_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_horizontal",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_on_horizontal",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_on_horizontal",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_on_horizontal",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_none_on_horizontal",
         "y": 270
       }
     }

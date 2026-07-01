@@ -531,7 +531,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z"
+        "axis": "z"
       },
       "apply": {
         "model": "searchlight:block/centre_light_base_horizontal",
@@ -542,7 +542,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z"
+        "axis": "x"
       },
       "apply": {
         "model": "searchlight:block/centre_light_base_horizontal",
@@ -552,52 +552,8 @@
     },
     {
       "when": {
-        "connection": "bottom",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "x": 0,
-        "y": 180
-      }
-    },
-    {
-      "when": {
-        "connection": "bottom",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "x": 0,
-        "y": 270
-      }
-    },
-    {
-      "when": {
         "connection": "top",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "y": 270,
-        "x": 180
-      }
-    },
-    {
-      "when": {
-        "connection": "top",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "y": 0,
-        "x": 180
-      }
-    },
-    {
-      "when": {
-        "connection": "top",
-        "axis": "x|z"
+        "axis": "x"
       },
       "apply": {
         "model": "searchlight:block/centre_light_base_horizontal",
@@ -608,73 +564,7 @@
     {
       "when": {
         "connection": "top",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "y": 180,
-        "x": 180
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "x": 0,
-        "y": 0
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "x": 0,
-        "y": 90
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "x": 0,
-        "y": 180
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "x": 0,
-        "y": 270
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "x|z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base_horizontal",
-        "y": 270,
-        "x": 180
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "x|z"
+        "axis": "z"
       },
       "apply": {
         "model": "searchlight:block/centre_light_base_horizontal",
@@ -685,29 +575,51 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z"
+        "axis": "z"
       },
       "apply": {
         "model": "searchlight:block/centre_light_base_horizontal",
-        "y": 90,
-        "x": 180
+        "x": 0,
+        "y": 0
       }
     },
     {
       "when": {
         "connection": "single",
-        "axis": "x|z"
+        "axis": "x"
       },
       "apply": {
         "model": "searchlight:block/centre_light_base_horizontal",
-        "y": 180,
-        "x": 180
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "x"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base_horizontal",
+        "x": 0,
+        "y": 270
       }
     },
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
@@ -718,7 +630,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
@@ -729,7 +641,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
@@ -740,7 +652,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
@@ -751,7 +663,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
@@ -762,7 +674,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
@@ -773,7 +685,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
@@ -784,7 +696,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
@@ -795,51 +707,51 @@
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top",
+        "model": "searchlight:block/centre_light_top_horizontal",
         "y": 0
       }
     },
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top",
+        "model": "searchlight:block/centre_light_top_horizontal",
         "y": 90
       }
     },
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top",
+        "model": "searchlight:block/centre_light_top_horizontal",
         "y": 180
       }
     },
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
-        "model": "searchlight:block/centre_light_top",
+        "model": "searchlight:block/centre_light_top_horizontal",
         "y": 270
       }
     },
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -850,7 +762,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -861,7 +773,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -872,7 +784,7 @@
     {
       "when": {
         "connection": "bottom",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -883,7 +795,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -894,7 +806,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -905,7 +817,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -916,7 +828,7 @@
     {
       "when": {
         "connection": "middle",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -927,7 +839,7 @@
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -938,7 +850,7 @@
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -949,7 +861,7 @@
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -960,7 +872,7 @@
     {
       "when": {
         "connection": "top",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -971,7 +883,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
@@ -982,7 +894,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
@@ -993,7 +905,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "false"
       },
       "apply": {
@@ -1004,7 +916,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "false"
       },
       "apply": {
@@ -1015,7 +927,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -1026,7 +938,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {
@@ -1037,7 +949,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "z",
         "lit": "true"
       },
       "apply": {
@@ -1048,7 +960,7 @@
     {
       "when": {
         "connection": "single",
-        "axis": "x|z",
+        "axis": "x",
         "lit": "true"
       },
       "apply": {

@@ -68,7 +68,7 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
         BlockState state = this.defaultBlockState().setValue(AXIS, axis);
 
         // Apply your existing connection logic
-        state = state.setValue(CONNECTION, this.getConnectionState(context.getLevel(), context.getClickedPos()));
+        state = state.setValue(CONNECTION, this.getConnectionState(context.getLevel(), context.getClickedPos(), axis));
 
         // Ensure other necessary defaults are set (like LIT)
         return state.setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
@@ -77,16 +77,37 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     public @NotNull BlockState updateShape(BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos) {
-        return state.setValue(CONNECTION, getConnectionState(level, pos));
+        return state.setValue(CONNECTION, getConnectionState(level, pos, state.getValue(AXIS)));
     }
 
-    private LightRodConnection getConnectionState(LevelAccessor level, BlockPos pos) {
-        boolean hasAbove = isMatchingConnection(level, pos.relative(Direction.UP));
-        boolean hasBelow = isMatchingConnection(level, pos.relative(Direction.DOWN));
+    private LightRodConnection getConnectionState(LevelAccessor level, BlockPos pos, Direction.Axis axis) {
 
-        if (hasAbove && hasBelow) return LightRodConnection.MIDDLE;
-        if (hasAbove) return LightRodConnection.BOTTOM;
-        if (hasBelow) return LightRodConnection.TOP;
+        if (axis == Direction.Axis.Y) {
+            boolean hasAbove = isMatchingConnection(level, pos.relative(Direction.UP));
+            boolean hasBelow = isMatchingConnection(level, pos.relative(Direction.DOWN));
+
+            if (hasAbove && hasBelow) return LightRodConnection.MIDDLE;
+            if (hasAbove) return LightRodConnection.BOTTOM;
+            if (hasBelow) return LightRodConnection.TOP;
+        } else if (axis == Direction.Axis.X) {
+            // X-axis rods connect to East and West
+            boolean hasEast = isMatchingConnection(level, pos.relative(Direction.EAST));
+            boolean hasWest = isMatchingConnection(level, pos.relative(Direction.WEST));
+
+            if (hasEast && hasWest) return LightRodConnection.MIDDLE;
+            if (hasEast) return LightRodConnection.TOP;
+            if (hasWest) return LightRodConnection.BOTTOM;
+        } else if (axis == Direction.Axis.Z) {
+            // Z-axis rods connect to North and South
+            boolean hasNorth = isMatchingConnection(level, pos.relative(Direction.NORTH));
+            boolean hasSouth = isMatchingConnection(level, pos.relative(Direction.SOUTH));
+
+            if (hasNorth && hasSouth) return LightRodConnection.MIDDLE;
+            if (hasNorth) return LightRodConnection.TOP;
+            if (hasSouth) return LightRodConnection.BOTTOM;
+        }
+
+
         return LightRodConnection.SINGLE;
     }
 

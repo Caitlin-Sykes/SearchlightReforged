@@ -1,23 +1,87 @@
 {
-	"format_version": "1.9.0",
-	"ambientocclusion": false,
-	"textures": {
-		"particle": "searchlight:block/corner_light_rod"
-	},
-	"elements": [
-		{
-			"from": [7, 7, 0],
-			"to": [9, 9, 16],
-			"rotation": {"angle": 0, "axis": "y", "origin": [7, 7, 0]},
-			"color": 9,
-			"faces": {
-				"north": {"uv": [0, 0, 2, 2], "texture": "#missing"},
-				"east": {"uv": [0, 0, 16, 2], "texture": "#missing"},
-				"south": {"uv": [0, 0, 2, 2], "texture": "#missing"},
-				"west": {"uv": [0, 0, 16, 2], "texture": "#missing"},
-				"up": {"uv": [0, 0, 2, 16], "texture": "#missing"},
-				"down": {"uv": [0, 0, 2, 16], "texture": "#missing"}
-			}
-		}
-	]
+  "format_version": "1.9.0",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "searchlight:block/corner_light_rod"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        7,
+        0
+      ],
+      "to": [
+        9,
+        9,
+        16
+      ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          7,
+          8,
+          0
+        ]
+      },
+      "color": 9,
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#missing"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#missing"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#missing"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            2
+          ],
+          "texture": "#missing"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#missing"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#missing"
+        }
+      }
+    }
+  ]
 }
