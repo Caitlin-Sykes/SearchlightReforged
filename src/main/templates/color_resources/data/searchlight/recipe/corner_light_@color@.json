@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "corner_light",
+  "ingredients": [
+    {
+      "item": "minecraft:@color@_dye"
+    },
+    {
+      "tag": "searchlight:corner_lights"
+    }
+  ],
+  "result": {
+    "id": "searchlight:corner_light_@color@",
+    "count": 1
+  }
+}

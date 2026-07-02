@@ -175,6 +175,67 @@ sourceSets.main.resources.srcDir generateModMetadata
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
 
+var generateColorResources = tasks.register("generateColorResources") {
+    var outputDir = file("build/generated/sources/colorResources")
+    outputs.dir(outputDir)
+    
+    var templatesDir = file("src/main/templates/color_resources")
+    inputs.dir(templatesDir)
+    
+    doLast {
+        var colors = [
+            "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+            "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"
+        ]
+        var wallVariants = colors + ["iron", "copper", "prismarine"]
+        
+        var getParticle = { variant ->
+            if (variant == "iron") return "minecraft:block/iron_block"
+            if (variant == "copper") return "searchlight:block/wall_light_copper"
+            if (variant == "prismarine") return "minecraft:block/prismarine_bricks"
+            return "minecraft:block/${variant}_terracotta"
+        }
+        
+        if (templatesDir.exists()) {
+            templatesDir.eachFileRecurse(groovy.io.FileType.FILES) { templateFile ->
+                var relativePath = templatesDir.toPath().relativize(templateFile.toPath()).toString().replace('\\', '/')
+                
+                if (relativePath.contains("@color@")) {
+                    for (color in colors) {
+                        var outPath = relativePath.replace("@color@", color)
+                        var outFile = new File(outputDir, outPath)
+                        outFile.parentFile.mkdirs()
+                        outFile.text = templateFile.text.replace("@color@", color)
+                    }
+                } else if (relativePath.contains("@wall_variant@")) {
+                    for (variant in wallVariants) {
+                        var outPath = relativePath.replace("@wall_variant@", variant)
+                        var outFile = new File(outputDir, outPath)
+                        outFile.parentFile.mkdirs()
+                        
+                        var particle = getParticle(variant)
+                        outFile.text = templateFile.text
+                            .replace("@wall_variant@", variant)
+                            .replace("@particle@", particle)
+                    }
+                } else {
+                    var outFile = new File(outputDir, relativePath)
+                    outFile.parentFile.mkdirs()
+                    
+                    var content = templateFile.text.replaceAll(/@list:([^:]+):([^@]+)@/) { match, prefix, placeholderType ->
+                        var valuesList = (placeholderType == "color") ? colors : wallVariants
+                        valuesList.collect { "\"searchlight:${prefix}_${it}\"" }.join(",\n    ")
+                    }
+                    outFile.text = content
+                }
+            }
+        }
+    }
+}
+sourceSets.main.resources.srcDir generateColorResources
+neoForge.ideSyncTask generateColorResources
+
+
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {

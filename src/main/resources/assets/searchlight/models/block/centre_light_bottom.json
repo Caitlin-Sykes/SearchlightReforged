@@ -2,27 +2,36 @@
   "ambientocclusion": false,
   "textures": {
     "particle": "searchlight:block/corner_light_rod",
-    "rod": "searchlight:block/corner_light_rod_on"
+    "rod": "searchlight:block/corner_light_rod"
   },
   "elements": [
     {
       "name": "Rod_Bottom",
       "from": [
-        0,
+        7,
         1,
-        14
+        7
       ],
       "to": [
-        2,
+        9,
         16,
-        16
+        9
       ],
+      "rotation": {
+        "angle": 0,
+        "axis": "y",
+        "origin": [
+          8,
+          9,
+          8
+        ]
+      },
       "faces": {
         "north": {
           "uv": [
-            8,
+            12,
             0,
-            11,
+            8,
             16
           ],
           "texture": "#rod",
@@ -30,9 +39,9 @@
         },
         "east": {
           "uv": [
-            8,
+            12,
             0,
-            11,
+            8,
             16
           ],
           "texture": "#rod",
@@ -40,9 +49,9 @@
         },
         "south": {
           "uv": [
-            8,
+            12,
             0,
-            11,
+            8,
             16
           ],
           "texture": "#rod",
@@ -50,9 +59,9 @@
         },
         "west": {
           "uv": [
-            8,
+            12,
             0,
-            11,
+            8,
             16
           ],
           "texture": "#rod",
@@ -60,9 +69,9 @@
         },
         "up": {
           "uv": [
-            7,
+            12,
             0,
-            2,
+            8,
             2
           ],
           "texture": "#rod",
@@ -70,10 +79,10 @@
         },
         "down": {
           "uv": [
-            7,
-            0,
-            2,
-            2
+            12,
+            14,
+            8,
+            16
           ],
           "texture": "#rod",
           "tintindex": 0

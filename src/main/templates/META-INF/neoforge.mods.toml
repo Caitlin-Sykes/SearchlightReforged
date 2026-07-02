@@ -36,7 +36,7 @@ displayName="${mod_name}" #mandatory
 credits="LizardOfOz" 
 
 # The authors of the mod, displayed in the mod UI (optional)
-authors="Cait Sykes (Porter), LizardOfOz (Original)"
+authors="Cait Sykes (Porter), LizardOfOz (Original), Adam Mathieson (Breaker)"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''

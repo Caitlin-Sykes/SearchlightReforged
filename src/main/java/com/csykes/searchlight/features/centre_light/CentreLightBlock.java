@@ -123,11 +123,17 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
         return CODEC;
     }
 
-    private static final VoxelShape SHAPE_CTR = Block.box(6, 0, 6, 10, 16, 10);
+    private static final VoxelShape SHAPE_CTR_X = Block.box(0, 6, 6, 16, 10, 10);
+    private static final VoxelShape SHAPE_CTR_Y = Block.box(6, 0, 6, 10, 16, 10);
+    private static final VoxelShape SHAPE_CTR_Z = Block.box(6, 6, 0, 10, 10, 16);
 
     @Override
     public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-        return SHAPE_CTR;
+        return switch (state.getValue(AXIS)) {
+            case X -> SHAPE_CTR_X;
+            case Y -> SHAPE_CTR_Y;
+            case Z -> SHAPE_CTR_Z;
+        };
     }
 
 
