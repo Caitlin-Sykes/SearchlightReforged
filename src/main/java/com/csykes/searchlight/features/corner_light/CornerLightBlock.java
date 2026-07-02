@@ -66,7 +66,8 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
         BlockPos pos = context.getClickedPos();
 
         CornerLightStage corner = getCorner(hit, pos);
-        return baseState.setValue(CORNER, corner).setValue(CONNECTION, this.getConnectionState(context.getLevel(), pos, corner));
+        BlockState withCorner = baseState.setValue(CORNER, corner);
+        return withCorner.setValue(CONNECTION, this.getConnectionState(context.getLevel(), pos, withCorner, Direction.Axis.Y));
     }
 
     private static @NotNull CornerLightStage getCorner(Vec3 hit, BlockPos pos) {
@@ -93,22 +94,12 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     public @NotNull BlockState updateShape(BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos) {
-        return state.setValue(CONNECTION, getConnectionState(level, pos, state.getValue(CORNER)));
+        return state.setValue(CONNECTION, getConnectionState(level, pos, state, Direction.Axis.Y));
     }
 
-    private LightRodConnection getConnectionState(LevelAccessor level, BlockPos pos, CornerLightStage corner) {
-        boolean hasAbove = isMatchingConnection(level, pos.relative(Direction.UP), corner);
-        boolean hasBelow = isMatchingConnection(level, pos.relative(Direction.DOWN), corner);
-
-        if (hasAbove && hasBelow) return LightRodConnection.MIDDLE;
-        if (hasAbove) return LightRodConnection.BOTTOM;
-        if (hasBelow) return LightRodConnection.TOP;
-        return LightRodConnection.SINGLE;
-    }
-
-    private boolean isMatchingConnection(LevelAccessor level, BlockPos target, CornerLightStage corner) {
-        BlockState state = level.getBlockState(target);
-        return state.getBlock() instanceof CornerLightBlock && state.getValue(CORNER) == corner;
+    @Override
+    protected boolean isMatchingConnection(LevelAccessor level, BlockPos pos, BlockState state, BlockState neighborState) {
+        return neighborState.getBlock() instanceof CornerLightBlock && neighborState.getValue(CORNER) == state.getValue(CORNER);
     }
 
     public static final com.mojang.serialization.MapCodec<CornerLightBlock> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec(instance -> instance.group(propertiesCodec(), net.minecraft.world.item.DyeColor.CODEC.fieldOf("color").forGetter(CornerLightBlock::getBlockColor)).apply(instance, CornerLightBlock::new));

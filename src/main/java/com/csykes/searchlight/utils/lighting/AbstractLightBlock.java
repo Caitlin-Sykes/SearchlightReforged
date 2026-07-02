@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,6 +51,45 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
         }
     }
 
+    private boolean isCompatibleAxis(BlockState state, Direction.Axis traversalAxis) {
+        if (state.hasProperty(BlockStateProperties.AXIS)) {
+            return state.getValue(BlockStateProperties.AXIS) == traversalAxis;
+        }
+        return traversalAxis == Direction.Axis.Y;
+    }
+
+    protected boolean isMatchingConnection(LevelAccessor level, BlockPos pos, BlockState state, BlockState neighborState) {
+        return false;
+    }
+
+    protected LightRodConnection getConnectionState(LevelAccessor level, BlockPos pos, BlockState state, Direction.Axis axis) {
+        Direction positiveDir;
+        Direction negativeDir;
+        if (axis == Direction.Axis.X) {
+            positiveDir = Direction.EAST;
+            negativeDir = Direction.WEST;
+        } else if (axis == Direction.Axis.Z) {
+            positiveDir = Direction.NORTH;
+            negativeDir = Direction.SOUTH;
+        } else {
+            positiveDir = Direction.UP;
+            negativeDir = Direction.DOWN;
+        }
+
+        boolean hasPositive = isMatchingConnection(level, pos, state, level.getBlockState(pos.relative(positiveDir)));
+        boolean hasNegative = isMatchingConnection(level, pos, state, level.getBlockState(pos.relative(negativeDir)));
+
+        if (hasPositive && hasNegative) return LightRodConnection.MIDDLE;
+        if (hasPositive) {
+            return axis == Direction.Axis.X ? LightRodConnection.TOP : LightRodConnection.BOTTOM;
+        }
+        if (hasNegative) {
+            return axis == Direction.Axis.X ? LightRodConnection.BOTTOM : LightRodConnection.TOP;
+        }
+        return LightRodConnection.SINGLE;
+    }
+
+
     public void updateLitState(Level world, BlockPos pos, BlockState state) {
         if (world.isClientSide) return;
         boolean isPoweredNow = world.hasNeighborSignal(pos);
@@ -57,27 +97,41 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
         LightRequest requested = state.getValue(LIGHT_REQUEST);
 
         if (state.hasProperty(CONNECTION)) {
+            Direction.Axis axis = state.hasProperty(BlockStateProperties.AXIS) ? state.getValue(BlockStateProperties.AXIS) : Direction.Axis.Y;
+            Direction upDir;
+            Direction downDir;
+            if (axis == Direction.Axis.X) {
+                upDir = Direction.WEST;
+                downDir = Direction.EAST;
+            } else if (axis == Direction.Axis.Z) {
+                upDir = Direction.SOUTH;
+                downDir = Direction.NORTH;
+            } else {
+                upDir = Direction.UP;
+                downDir = Direction.DOWN;
+            }
+
             if (state.getValue(CONNECTION) == LightRodConnection.BOTTOM || state.getValue(CONNECTION) == LightRodConnection.MIDDLE) {
                 int distance = 1;
-                BlockState target = world.getBlockState(pos.relative(Direction.UP, distance));
-                while (target.getBlock() instanceof AbstractLightBlock) {
-                    isPoweredNow |= world.hasNeighborSignal(pos.relative(Direction.UP, distance));
+                BlockState target = world.getBlockState(pos.relative(upDir, distance));
+                while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
+                    isPoweredNow |= world.hasNeighborSignal(pos.relative(upDir, distance));
                     if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE)
                     {
                         requested = target.getValue(LIGHT_REQUEST);
                     }
-                    target = world.getBlockState(pos.relative(Direction.UP, distance));
+                    target = world.getBlockState(pos.relative(upDir, distance));
                     distance++;
                 }
             }
 
             if (state.getValue(CONNECTION) == LightRodConnection.TOP || state.getValue(CONNECTION) == LightRodConnection.MIDDLE) {
                 int distance = 1;
-                BlockState target = world.getBlockState(pos.relative(Direction.DOWN, distance));
-                while (target.getBlock() instanceof AbstractLightBlock) {
-                    isPoweredNow |= world.hasNeighborSignal(pos.relative(Direction.DOWN, distance));
+                BlockState target = world.getBlockState(pos.relative(downDir, distance));
+                while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
+                    isPoweredNow |= world.hasNeighborSignal(pos.relative(downDir, distance));
                     distance++;
-                    target = world.getBlockState(pos.relative(Direction.DOWN, distance));
+                    target = world.getBlockState(pos.relative(downDir, distance));
                 }
             }
         }
