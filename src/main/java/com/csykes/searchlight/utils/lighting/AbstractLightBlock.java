@@ -116,8 +116,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 BlockState target = world.getBlockState(pos.relative(upDir, distance));
                 while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
                     isPoweredNow |= world.hasNeighborSignal(pos.relative(upDir, distance));
-                    if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE)
-                    {
+                    if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE) {
                         requested = target.getValue(LIGHT_REQUEST);
                     }
                     target = world.getBlockState(pos.relative(upDir, distance));

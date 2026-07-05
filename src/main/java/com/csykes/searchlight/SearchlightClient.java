@@ -88,6 +88,33 @@ public class SearchlightClient {
                 return -1;
             }, centreBlockHolder.get());
         }
+
+        for (net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> centreBlockHolder : Searchlight.COLOUR_LAMPS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+
+                if (tintIndex == 0) {
+                    // Read directly from the block instance cast
+                    if (state.getBlock() instanceof CentreLightBlock centreLightBlock) {
+                        return centreLightBlock.getBlockColor().getTextureDiffuseColor();
+                    }
+                    return -1;
+                }
+
+                if (tintIndex == 1 && world != null && pos != null) {
+                    net.minecraft.core.Direction facing = state.getValue(BlockStateProperties.FACING);
+                    BlockPos targetPos = pos.relative(facing.getOpposite());
+                    BlockState targetState = world.getBlockState(targetPos);
+
+                    int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
+                    if (color == -1) {
+                        return targetState.getMapColor(world, targetPos).col;
+                    }
+                    return color;
+                }
+
+                return -1;
+            }, centreBlockHolder.get());
+        }
     }
 
 
@@ -122,6 +149,20 @@ public class SearchlightClient {
         }
         // 2. Handle Centre Light Item Colors
         for (java.util.Map.Entry<String, net.neoforged.neoforge.registries.DeferredItem<? extends net.minecraft.world.item.Item>> entry : Searchlight.CENTRE_LIGHTS_ITEMS.entrySet()) {
+            net.minecraft.world.item.DyeColor color = net.minecraft.world.item.DyeColor.byName(entry.getKey(), DyeColor.PURPLE);
+            int hexColor = (color != null) ? color.getTextureDiffuseColor() : -1;
+
+            // FIX: Unpacking the corner light item out of the lazy DeferredItem map holder
+            event.register((stack, tintIndex) -> {
+                if (tintIndex == 0) {
+                    return hexColor;
+                }
+                return -1;
+            }, entry.getValue().get());
+        }
+
+        // 2. Handle Colour Lamp Light Item Colors
+        for (java.util.Map.Entry<String, net.neoforged.neoforge.registries.DeferredItem<? extends net.minecraft.world.item.Item>> entry : Searchlight.COLOUR_LAMP_ITEMS.entrySet()) {
             net.minecraft.world.item.DyeColor color = net.minecraft.world.item.DyeColor.byName(entry.getKey(), DyeColor.PURPLE);
             int hexColor = (color != null) ? color.getTextureDiffuseColor() : -1;
 
