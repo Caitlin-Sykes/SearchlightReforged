@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "edge_light",
+  "ingredients": [
+    {
+      "item": "minecraft:@color@_dye"
+    },
+    {
+      "tag": "searchlight:edge_lights"
+    }
+  ],
+  "result": {
+    "id": "searchlight:edge_light_@color@",
+    "count": 1
+  }
+}

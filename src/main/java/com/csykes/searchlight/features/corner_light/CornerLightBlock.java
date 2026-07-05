@@ -38,8 +38,6 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
         super(properties);
         this.blockColor = blockColor;
         this.registerDefaultState(this.stateDefinition.any()
-                .setValue(FACING, Direction.NORTH)
-                .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(CONNECTION, LightRodConnection.SINGLE)

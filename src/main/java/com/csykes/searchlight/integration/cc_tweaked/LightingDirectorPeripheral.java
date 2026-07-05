@@ -2,6 +2,8 @@ package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
@@ -9,7 +11,6 @@ import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.CornerLightStage;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.LightRequest;
-import com.csykes.searchlight.utils.lighting.LightRodConnection;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
@@ -85,6 +86,12 @@ public class LightingDirectorPeripheral implements IPeripheral {
         if (block instanceof CornerLightBlock cornerBlock) {
             return cornerBlock.getBlockColor().getName();
         }
+        if (block instanceof EdgeLightBlock edgeBlock) {
+            return edgeBlock.getBlockColor().getName();
+        }
+        if (block instanceof CentreLightBlock centreBlock) {
+            return centreBlock.getBlockColor().getName();
+        }
         for (Map.Entry<String, net.neoforged.neoforge.registries.DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {
             if (entry.getValue().get() == block) {
                 return entry.getKey();
@@ -134,80 +141,67 @@ public class LightingDirectorPeripheral implements IPeripheral {
         Block block = state.getBlock();
         String normalizedColor = colorName.toLowerCase();
 
+        Block newBlock = null;
         if (block instanceof WallLightBlock) {
             net.neoforged.neoforge.registries.DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
             if (newBlockHolder != null && newBlockHolder.get() != block) {
-                Block newBlock = newBlockHolder.get();
-                BlockState newState = newBlock.defaultBlockState();
-
-                String oldAddress = "";
-                BlockEntity oldBe = world.getBlockEntity(pos);
-                if (oldBe instanceof AddressableLight addressable) {
-                    oldAddress = addressable.getAddress();
-                }
-
-                if (state.hasProperty(WallLightBlock.FACING))
-                    newState = newState.setValue(WallLightBlock.FACING, state.getValue(WallLightBlock.FACING));
-                if (state.hasProperty(WallLightBlock.FACE))
-                    newState = newState.setValue(WallLightBlock.FACE, state.getValue(WallLightBlock.FACE));
-                if (state.hasProperty(WallLightBlock.LIT))
-                    newState = newState.setValue(WallLightBlock.LIT, state.getValue(WallLightBlock.LIT));
-                if (state.hasProperty(WallLightBlock.BRIGHTNESS))
-                    newState = newState.setValue(WallLightBlock.BRIGHTNESS, state.getValue(WallLightBlock.BRIGHTNESS));
-                if (state.hasProperty(WallLightBlock.LIGHT_REQUEST))
-                    newState = newState.setValue(WallLightBlock.LIGHT_REQUEST, state.getValue(WallLightBlock.LIGHT_REQUEST));
-
-                world.setBlockAndUpdate(pos, newState);
-                world.updateNeighborsAt(pos, newBlock);
-
-                BlockEntity newBe = world.getBlockEntity(pos);
-                if (newBe instanceof AddressableLight addressable) {
-                    addressable.setAddress(oldAddress);
-                    newBe.setChanged();
-                    world.sendBlockUpdated(pos, newState, newState, 3);
-                }
-
-                return newState;
+                newBlock = newBlockHolder.get();
             }
-        }
-
-        if (block instanceof CornerLightBlock) {
+        } else if (block instanceof CornerLightBlock) {
             net.neoforged.neoforge.registries.DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
             if (newBlockHolder != null && newBlockHolder.get() != block) {
-                Block newBlock = newBlockHolder.get();
-                BlockState newState = newBlock.defaultBlockState();
-
-                String oldAddress = "";
-                BlockEntity oldBe = world.getBlockEntity(pos);
-                if (oldBe instanceof AddressableLight addressable) {
-                    oldAddress = addressable.getAddress();
-                }
-
-                if (state.hasProperty(CornerLightBlock.CORNER))
-                    newState = newState.setValue(CornerLightBlock.CORNER, state.getValue(CornerLightBlock.CORNER));
-                if (state.hasProperty(CornerLightBlock.CONNECTION))
-                    newState = newState.setValue(CornerLightBlock.CONNECTION, state.getValue(CornerLightBlock.CONNECTION));
-                if (state.hasProperty(CornerLightBlock.LIT))
-                    newState = newState.setValue(CornerLightBlock.LIT, state.getValue(CornerLightBlock.LIT));
-                if (state.hasProperty(CornerLightBlock.BRIGHTNESS))
-                    newState = newState.setValue(CornerLightBlock.BRIGHTNESS, state.getValue(CornerLightBlock.BRIGHTNESS));
-                if (state.hasProperty(CornerLightBlock.LIGHT_REQUEST))
-                    newState = newState.setValue(CornerLightBlock.LIGHT_REQUEST, state.getValue(CornerLightBlock.LIGHT_REQUEST));
-
-                world.setBlockAndUpdate(pos, newState);
-                world.updateNeighborsAt(pos, newBlock);
-
-                BlockEntity newBe = world.getBlockEntity(pos);
-                if (newBe instanceof AddressableLight addressable) {
-                    addressable.setAddress(oldAddress);
-                    newBe.setChanged();
-                    world.sendBlockUpdated(pos, newState, newState, 3);
-                }
-
-                return newState;
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof EdgeLightBlock) {
+            net.neoforged.neoforge.registries.DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
+            if (newBlockHolder != null && newBlockHolder.get() != block) {
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof CentreLightBlock) {
+            net.neoforged.neoforge.registries.DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
+            if (newBlockHolder != null && newBlockHolder.get() != block) {
+                newBlock = newBlockHolder.get();
             }
         }
+
+        if (newBlock != null) {
+            BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
+
+            String oldAddress = "";
+            BlockEntity oldBe = world.getBlockEntity(pos);
+            if (oldBe instanceof AddressableLight addressable) {
+                oldAddress = addressable.getAddress();
+            }
+
+            world.setBlockAndUpdate(pos, newState);
+            world.updateNeighborsAt(pos, newBlock);
+
+            BlockEntity newBe = world.getBlockEntity(pos);
+            if (newBe instanceof AddressableLight addressable) {
+                addressable.setAddress(oldAddress);
+                newBe.setChanged();
+                world.sendBlockUpdated(pos, newState, newState, 3);
+            }
+
+            return newState;
+        }
+
         return state;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static BlockState copyMatchingProperties(BlockState from, BlockState to) {
+        BlockState result = to;
+        for (net.minecraft.world.level.block.state.properties.Property<?> property : from.getProperties()) {
+            if (result.hasProperty(property)) {
+                result = copyProperty(from, result, (net.minecraft.world.level.block.state.properties.Property) property);
+            }
+        }
+        return result;
+    }
+
+    private static <T extends Comparable<T>> BlockState copyProperty(BlockState from, BlockState to, net.minecraft.world.level.block.state.properties.Property<T> property) {
+        return to.setValue(property, from.getValue(property));
     }
 
     private void applyLightUpdates(Level world, BlockPos pos, Map<?, ?> options) {

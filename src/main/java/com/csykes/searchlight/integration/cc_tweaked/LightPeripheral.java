@@ -2,6 +2,8 @@ package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
@@ -182,54 +184,45 @@ public class LightPeripheral implements IPeripheral {
         Block block = state.getBlock();
         String normalizedColor = colorName.toLowerCase();
 
-        // 1. Handle Wall Lights
+        Block newBlock = null;
+
         if (block instanceof WallLightBlock) {
             DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
             if (newBlockHolder != null) {
-                Block newBlock = newBlockHolder.get();
-                BlockState newState = newBlock.defaultBlockState();
-
-                // Copy over all matching block properties
-                if (state.hasProperty(WallLightBlock.FACING))
-                    newState = newState.setValue(WallLightBlock.FACING, state.getValue(WallLightBlock.FACING));
-                if (state.hasProperty(WallLightBlock.FACE))
-                    newState = newState.setValue(WallLightBlock.FACE, state.getValue(WallLightBlock.FACE));
-                if (state.hasProperty(WallLightBlock.LIT))
-                    newState = newState.setValue(WallLightBlock.LIT, state.getValue(WallLightBlock.LIT));
-                if (state.hasProperty(WallLightBlock.BRIGHTNESS))
-                    newState = newState.setValue(WallLightBlock.BRIGHTNESS, state.getValue(WallLightBlock.BRIGHTNESS));
-
-                world.setBlockAndUpdate(pos, newState);
-                world.updateNeighborsAt(pos, newBlock);
-                return true;
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof CornerLightBlock) {
+            DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
+            if (newBlockHolder != null) {
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof EdgeLightBlock) {
+            DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
+            if (newBlockHolder != null) {
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof CentreLightBlock) {
+            DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
+            if (newBlockHolder != null) {
+                newBlock = newBlockHolder.get();
             }
         }
 
-        // 2. Handle Corner Lights
-        if (block instanceof CornerLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                Block newBlock = newBlockHolder.get();
+        if (newBlock != null) {
+            if (block instanceof CornerLightBlock) {
                 java.util.List<BlockPos> connected = getConnectedCornerLights(world, pos, state);
                 for (BlockPos connectedPos : connected) {
                     BlockState s = world.getBlockState(connectedPos);
-                    BlockState newState = newBlock.defaultBlockState();
-
-                    // Copy over all matching block properties
-                    if (s.hasProperty(CornerLightBlock.CORNER))
-                        newState = newState.setValue(CornerLightBlock.CORNER, s.getValue(CornerLightBlock.CORNER));
-                    if (s.hasProperty(CornerLightBlock.CONNECTION))
-                        newState = newState.setValue(CornerLightBlock.CONNECTION, s.getValue(CornerLightBlock.CONNECTION));
-                    if (s.hasProperty(CornerLightBlock.LIT))
-                        newState = newState.setValue(CornerLightBlock.LIT, s.getValue(CornerLightBlock.LIT));
-                    if (s.hasProperty(CornerLightBlock.BRIGHTNESS))
-                        newState = newState.setValue(CornerLightBlock.BRIGHTNESS, s.getValue(CornerLightBlock.BRIGHTNESS));
-
-                    world.setBlockAndUpdate(connectedPos, newState);
+                    BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
+                    world.setBlockAndUpdate(connectedPos, ns);
                     world.updateNeighborsAt(connectedPos, newBlock);
                 }
-                return true;
+            } else {
+                BlockState ns = copyMatchingProperties(state, newBlock.defaultBlockState());
+                world.setBlockAndUpdate(pos, ns);
+                world.updateNeighborsAt(pos, newBlock);
             }
+            return true;
         }
 
         return false;
@@ -243,6 +236,12 @@ public class LightPeripheral implements IPeripheral {
         if (block instanceof CornerLightBlock cornerBlock) {
             return cornerBlock.getBlockColor().getName();
         }
+        if (block instanceof EdgeLightBlock edgeBlock) {
+            return edgeBlock.getBlockColor().getName();
+        }
+        if (block instanceof CentreLightBlock centreBlock) {
+            return centreBlock.getBlockColor().getName();
+        }
 
         for (java.util.Map.Entry<String, DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {
             if (entry.getValue().get() == block) {
@@ -251,5 +250,20 @@ public class LightPeripheral implements IPeripheral {
         }
 
         return "unknown";
+    }
+
+    @SuppressWarnings("unchecked")
+    private static BlockState copyMatchingProperties(BlockState from, BlockState to) {
+        BlockState result = to;
+        for (net.minecraft.world.level.block.state.properties.Property<?> property : from.getProperties()) {
+            if (result.hasProperty(property)) {
+                result = copyProperty(from, result, (net.minecraft.world.level.block.state.properties.Property) property);
+            }
+        }
+        return result;
+    }
+
+    private static <T extends Comparable<T>> BlockState copyProperty(BlockState from, BlockState to, net.minecraft.world.level.block.state.properties.Property<T> property) {
+        return to.setValue(property, from.getValue(property));
     }
 }

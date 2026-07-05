@@ -53,6 +53,13 @@ public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
     }
 
     @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(FACE);
+        builder.add(FACING);
+    }
+
+    @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new WallLightBlockEntity(pos, state);
     }
