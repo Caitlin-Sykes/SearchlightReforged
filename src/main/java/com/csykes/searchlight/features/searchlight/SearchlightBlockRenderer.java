@@ -1,6 +1,6 @@
 package com.csykes.searchlight.features.searchlight;
 
-import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -68,7 +68,7 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
 
     @Override
     public int getViewDistance() {
-        return SearchlightUtil.displayBeams() ? 256 : BlockEntityRenderer.super.getViewDistance();
+        return SearchlightClient.displayBeams() ? 256 : BlockEntityRenderer.super.getViewDistance();
     }
 
     @Override
@@ -100,7 +100,7 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
             lightFace.render(poseStack, vertexConsumer, 15728880, OverlayTexture.NO_OVERLAY);
         }
 
-        if (SearchlightUtil.displayBeams() && blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT)) {
+        if (SearchlightClient.displayBeams() && blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT)) {
             float distance = Mth.sqrt((float) blockEntity.getLightSourcePos().distSqr(blockEntity.getBlockPos())) + 1.0f;
             drawBeam(pivot, body.yRot, body.xRot, distance, poseStack, bufferSource, blockEntity.getLevel().getGameTime(), partialTick);
         }

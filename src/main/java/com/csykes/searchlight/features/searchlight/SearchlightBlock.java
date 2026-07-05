@@ -1,7 +1,10 @@
 package com.csykes.searchlight.features.searchlight;
 
+import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.mojang.serialization.MapCodec;
+import net.neoforged.fml.ModList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -103,9 +106,9 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
+        if (ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
             if (world.isClientSide) {
-                com.csykes.searchlight.SearchlightClient.openLightAddressScreen(pos);
+                SearchlightClient.openLightAddressScreen(pos);
                 return InteractionResult.SUCCESS;
             }
             return InteractionResult.SUCCESS;
@@ -130,10 +133,10 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
         });
     }
 
-    public static final com.mojang.serialization.MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
+    public static final MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
 
     @Override
-    protected com.mojang.serialization.MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 }

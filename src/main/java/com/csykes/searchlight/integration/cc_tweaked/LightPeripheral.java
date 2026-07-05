@@ -1,21 +1,25 @@
 package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
-import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.wall_light.WallLightBlock;
+import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
-import com.csykes.searchlight.utils.lighting.CornerLightStage;
 import com.csykes.searchlight.utils.lighting.LightRequest;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,43 +42,6 @@ public class LightPeripheral implements IPeripheral {
     @Override
     public boolean equals(@Nullable IPeripheral other) {
         return this == other || (other instanceof LightPeripheral o && o.tile == tile);
-    }
-
-    private java.util.List<BlockPos> getConnectedCornerLights(Level world, BlockPos startPos, BlockState startState) {
-        java.util.List<BlockPos> positions = new java.util.ArrayList<>();
-        if (!(startState.getBlock() instanceof CornerLightBlock)) {
-            positions.add(startPos);
-            return positions;
-        }
-
-        CornerLightStage targetCorner = startState.getValue(CornerLightBlock.CORNER);
-        positions.add(startPos);
-
-        // Traverse UP
-        BlockPos current = startPos.above();
-        while (true) {
-            BlockState state = world.getBlockState(current);
-            if (state.getBlock() instanceof CornerLightBlock && state.getValue(CornerLightBlock.CORNER) == targetCorner) {
-                positions.add(current);
-                current = current.above();
-            } else {
-                break;
-            }
-        }
-
-        // Traverse DOWN
-        current = startPos.below();
-        while (true) {
-            BlockState state = world.getBlockState(current);
-            if (state.getBlock() instanceof CornerLightBlock && state.getValue(CornerLightBlock.CORNER) == targetCorner) {
-                positions.add(current);
-                current = current.below();
-            } else {
-                break;
-            }
-        }
-
-        return positions;
     }
 
     private BlockState setBrightnessProperty(BlockState state, BrightnessStage stage) {
@@ -116,7 +83,7 @@ public class LightPeripheral implements IPeripheral {
         BrightnessStage stage = BrightnessStage.fromId(Math.clamp(level, 0, 4));
 
         if (block instanceof CornerLightBlock) {
-            for (BlockPos connectedPos : getConnectedCornerLights(world, pos, state)) {
+            for (BlockPos connectedPos : SearchlightUtil.getConnectedCornerLights(world, pos, state)) {
                 BlockState s = world.getBlockState(connectedPos);
                 BlockState updatedState = setBrightnessProperty(s, stage);
                 world.setBlockAndUpdate(connectedPos, updatedState);
@@ -149,7 +116,7 @@ public class LightPeripheral implements IPeripheral {
         Block block = state.getBlock();
 
         if (block instanceof CornerLightBlock cornerBlock) {
-            for (BlockPos connectedPos : getConnectedCornerLights(world, pos, state)) {
+            for (BlockPos connectedPos : SearchlightUtil.getConnectedCornerLights(world, pos, state)) {
                 BlockState s = world.getBlockState(connectedPos);
                 BlockState updatedState = setLitProperty(s, lit);
                 world.setBlockAndUpdate(connectedPos, updatedState);
@@ -206,11 +173,16 @@ public class LightPeripheral implements IPeripheral {
             if (newBlockHolder != null) {
                 newBlock = newBlockHolder.get();
             }
+        } else if (block instanceof ColourLampBlock) {
+            DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
+            if (newBlockHolder != null) {
+                newBlock = newBlockHolder.get();
+            }
         }
 
         if (newBlock != null) {
             if (block instanceof CornerLightBlock) {
-                java.util.List<BlockPos> connected = getConnectedCornerLights(world, pos, state);
+                List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
                 for (BlockPos connectedPos : connected) {
                     BlockState s = world.getBlockState(connectedPos);
                     BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
@@ -242,8 +214,11 @@ public class LightPeripheral implements IPeripheral {
         if (block instanceof CentreLightBlock centreBlock) {
             return centreBlock.getBlockColor().getName();
         }
+        if (block instanceof ColourLampBlock colourLampBlock) {
+            return colourLampBlock.getBlockColor().getName();
+        }
 
-        for (java.util.Map.Entry<String, DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {
+        for (Map.Entry<String, DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {
             if (entry.getValue().get() == block) {
                 return entry.getKey();
             }
@@ -255,15 +230,15 @@ public class LightPeripheral implements IPeripheral {
     @SuppressWarnings("unchecked")
     private static BlockState copyMatchingProperties(BlockState from, BlockState to) {
         BlockState result = to;
-        for (net.minecraft.world.level.block.state.properties.Property<?> property : from.getProperties()) {
+        for (Property<?> property : from.getProperties()) {
             if (result.hasProperty(property)) {
-                result = copyProperty(from, result, (net.minecraft.world.level.block.state.properties.Property) property);
+                result = copyProperty(from, result, (Property) property);
             }
         }
         return result;
     }
 
-    private static <T extends Comparable<T>> BlockState copyProperty(BlockState from, BlockState to, net.minecraft.world.level.block.state.properties.Property<T> property) {
+    private static <T extends Comparable<T>> BlockState copyProperty(BlockState from, BlockState to, Property<T> property) {
         return to.setValue(property, from.getValue(property));
     }
 }

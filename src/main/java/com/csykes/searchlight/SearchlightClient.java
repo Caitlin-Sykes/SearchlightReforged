@@ -1,6 +1,7 @@
 package com.csykes.searchlight;
 
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
@@ -18,6 +19,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -108,31 +111,15 @@ public class SearchlightClient {
             }, centreBlockHolder.get());
         }
 
-        for (net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> centreBlockHolder : Searchlight.COLOUR_LAMPS.values()) {
+        for (DeferredBlock<Block> colourLampHolder : Searchlight.COLOUR_LAMPS.values()) {
             event.register((state, world, pos, tintIndex) -> {
-
                 if (tintIndex == 0) {
-                    // Read directly from the block instance cast
-                    if (state.getBlock() instanceof CentreLightBlock centreLightBlock) {
-                        return centreLightBlock.getBlockColor().getTextureDiffuseColor();
+                    if (state.getBlock() instanceof ColourLampBlock colourLampBlock) {
+                        return colourLampBlock.getBlockColor().getTextureDiffuseColor();
                     }
-                    return -1;
                 }
-
-                if (tintIndex == 1 && world != null && pos != null) {
-                    net.minecraft.core.Direction facing = state.getValue(BlockStateProperties.FACING);
-                    BlockPos targetPos = pos.relative(facing.getOpposite());
-                    BlockState targetState = world.getBlockState(targetPos);
-
-                    int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
-                    if (color == -1) {
-                        return targetState.getMapColor(world, targetPos).col;
-                    }
-                    return color;
-                }
-
                 return -1;
-            }, centreBlockHolder.get());
+            }, colourLampHolder.get());
         }
         for (DeferredBlock<Block> edgeBlockHolder : Searchlight.EDGE_LIGHTS.values()) {
             event.register((state, world, pos, tintIndex) -> {
@@ -192,19 +179,7 @@ public class SearchlightClient {
                 return -1;
             }, entry.getValue().get());
         }
-        // 2. Handle Centre Light Item Colors
-        for (java.util.Map.Entry<String, net.neoforged.neoforge.registries.DeferredItem<? extends net.minecraft.world.item.Item>> entry : Searchlight.CENTRE_LIGHTS_ITEMS.entrySet()) {
-            net.minecraft.world.item.DyeColor color = net.minecraft.world.item.DyeColor.byName(entry.getKey(), DyeColor.PURPLE);
-            int hexColor = (color != null) ? color.getTextureDiffuseColor() : -1;
 
-            // FIX: Unpacking the corner light item out of the lazy DeferredItem map holder
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0) {
-                    return hexColor;
-                }
-                return -1;
-            }, entry.getValue().get());
-        }
 
         // 2. Handle Colour Lamp Light Item Colors
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.COLOUR_LAMP_ITEMS.entrySet()) {
@@ -249,8 +224,13 @@ public class SearchlightClient {
         }
     }
 
-    public static void openLightAddressScreen(net.minecraft.core.BlockPos pos) {
+    public static void openLightAddressScreen(BlockPos pos) {
         Minecraft.getInstance().setScreen(new LightAddressScreen(pos));
+    }
+
+    public static boolean displayBeams() {
+        Player player = Minecraft.getInstance().player;
+        return player != null && player.isHolding(Searchlight.SEARCHLIGHT_ITEM.get());
     }
 
     @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
@@ -259,10 +239,10 @@ public class SearchlightClient {
         public static void onRenderLevelStage(RenderLevelStageEvent event) {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
                 Minecraft mc = Minecraft.getInstance();
-                net.minecraft.world.entity.player.Player player = mc.player;
+                Player player = mc.player;
                 if (player == null) return;
 
-                net.minecraft.world.item.ItemStack stack = player.getMainHandItem();
+                ItemStack stack = player.getMainHandItem();
                 if (!(stack.getItem() instanceof LightingLinkerCardItem)) {
                     stack = player.getOffhandItem();
                 }

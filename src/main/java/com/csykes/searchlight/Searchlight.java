@@ -27,12 +27,21 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import com.csykes.searchlight.network.SetLightAddressPayload;
+import com.csykes.searchlight.utils.lighting.AddressableLight;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
@@ -62,7 +71,7 @@ public class Searchlight {
 
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem("searchlight", SEARCHLIGHT_BLOCK);
 
-    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = net.neoforged.fml.ModList.get().isLoaded("computercraft")
+    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = ModList.get().isLoaded("computercraft")
             ? BLOCKS.register("lighting_director", () -> new LightingDirectorBlock(BlockBehaviour.Properties.of()
             .sound(SoundType.METAL)
             .strength(3.0f)
@@ -73,7 +82,7 @@ public class Searchlight {
             ? ITEMS.registerSimpleBlockItem("lighting_director", LIGHTING_DIRECTOR_BLOCK)
             : null;
 
-    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = net.neoforged.fml.ModList.get().isLoaded("computercraft")
+    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = ModList.get().isLoaded("computercraft")
             ? ITEMS.register("lighting_linker_card", () -> new LightingLinkerCardItem(new Item.Properties().stacksTo(1)))
             : null;
 
@@ -224,7 +233,7 @@ public class Searchlight {
 
         String cl_name = "colour_lamp_" + postfix;
 
-        final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
 
         DeferredBlock<Block> centre_light = BLOCKS.register(cl_name, () -> new ColourLampBlock(BlockBehaviour.Properties.of()
                 .lightLevel((state) -> {
@@ -264,7 +273,7 @@ public class Searchlight {
 
     public Searchlight(IEventBus modEventBus) {
         modEventBus.addListener(this::registerCapabilities);
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft")) {
+        if (ModList.get().isLoaded("computercraft")) {
             modEventBus.addListener(this::registerPayloads);
         }
 
@@ -274,18 +283,18 @@ public class Searchlight {
         BLOCK_ENTITY_TYPES.register(modEventBus);
     }
 
-    private void registerPayloads(final net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event) {
-        final net.neoforged.neoforge.network.registration.PayloadRegistrar registrar = event.registrar("searchlight");
+    private void registerPayloads(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("searchlight");
         registrar.playToServer(
-                com.csykes.searchlight.network.SetLightAddressPayload.TYPE,
-                com.csykes.searchlight.network.SetLightAddressPayload.STREAM_CODEC,
+                SetLightAddressPayload.TYPE,
+                SetLightAddressPayload.STREAM_CODEC,
                 (payload, context) -> {
                     context.enqueueWork(() -> {
-                        net.minecraft.world.entity.player.Player player = context.player();
-                        net.minecraft.world.level.Level level = player.level();
-                        net.minecraft.core.BlockPos pos = payload.pos();
-                        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
-                        if (be instanceof com.csykes.searchlight.utils.lighting.AddressableLight addressable) {
+                        Player player = context.player();
+                        Level level = player.level();
+                        BlockPos pos = payload.pos();
+                        BlockEntity be = level.getBlockEntity(pos);
+                        if (be instanceof AddressableLight addressable) {
                             addressable.setAddress(payload.address());
                             be.setChanged();
                             level.sendBlockUpdated(pos, be.getBlockState(), be.getBlockState(), 3);
@@ -296,7 +305,7 @@ public class Searchlight {
     }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft")) {
+        if (ModList.get().isLoaded("computercraft")) {
             try {
                 CCIntegration.register(event);
             } catch (Throwable e) {

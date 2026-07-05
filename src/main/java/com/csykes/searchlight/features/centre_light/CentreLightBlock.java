@@ -4,6 +4,8 @@ import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRodConnection;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +16,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -87,10 +90,10 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
         return neighborState.getBlock() instanceof CentreLightBlock && neighborState.getValue(AXIS) == state.getValue(AXIS);
     }
 
-    public static final com.mojang.serialization.MapCodec<CentreLightBlock> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec(instance -> instance.group(propertiesCodec(), net.minecraft.world.item.DyeColor.CODEC.fieldOf("color").forGetter(CentreLightBlock::getBlockColor)).apply(instance, CentreLightBlock::new));
+    public static final MapCodec<CentreLightBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(propertiesCodec(), DyeColor.CODEC.fieldOf("color").forGetter(CentreLightBlock::getBlockColor)).apply(instance, CentreLightBlock::new));
 
     @Override
-    protected com.mojang.serialization.@NotNull MapCodec<? extends net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock> codec() {
+    protected @NotNull MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 

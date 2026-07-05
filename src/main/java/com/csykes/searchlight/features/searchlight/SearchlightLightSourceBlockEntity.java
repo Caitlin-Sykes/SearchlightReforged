@@ -64,12 +64,16 @@ public class SearchlightLightSourceBlockEntity extends BlockEntity {
     }
 
     public @Nullable BlockPos calculateLightSourcePosition(@NotNull Vec3 direction) {
+        if (direction.equals(Vec3.ZERO) || direction.lengthSqr() < 1E-6) {
+            return null;
+        }
         direction = direction.normalize();
         MutableVector3d currentBlockPosD = new MutableVector3d(getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5);
         BlockPos.MutableBlockPos currentBlockPos = new BlockPos.MutableBlockPos(currentBlockPosD.x, currentBlockPosD.y, currentBlockPosD.z);
         BlockPos.MutableBlockPos prevBlockPos = new BlockPos.MutableBlockPos(0, 0, 0);
 
-        while (true) {
+        int safetyCount = 0;
+        while (safetyCount++ < 512) {
             prevBlockPos.set(currentBlockPos);
             currentBlockPosD.add(direction);
             currentBlockPos.set(currentBlockPosD.x, currentBlockPosD.y, currentBlockPosD.z);
@@ -89,5 +93,6 @@ public class SearchlightLightSourceBlockEntity extends BlockEntity {
             if (level.getBlockState(currentBlockPos).isAir())
                 return SearchlightUtil.moveAwayFromSurfaces(level, currentBlockPos);
         }
+        return null;
     }
 }

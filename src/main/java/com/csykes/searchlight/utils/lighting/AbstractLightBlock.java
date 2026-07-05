@@ -123,8 +123,8 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                     if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE) {
                         requested = target.getValue(LIGHT_REQUEST);
                     }
-                    target = world.getBlockState(pos.relative(upDir, distance));
                     distance++;
+                    target = world.getBlockState(pos.relative(upDir, distance));
                 }
             }
 

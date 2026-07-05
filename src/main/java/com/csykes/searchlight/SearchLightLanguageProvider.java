@@ -39,9 +39,29 @@ public class SearchLightLanguageProvider extends LanguageProvider {
             add("block.searchlight." + blockId,
                     formatName(key) + " Centre Light");
         }
+
+        for (String key : Searchlight.COLOUR_LAMPS.keySet()) {
+            String blockId = "colour_lamp_" + key;
+
+            add("block.searchlight." + blockId,
+                    formatName(key) + " Colour Lamp");
+        }
     }
 
     private String formatName(String key) {
-        return Character.toUpperCase(key.charAt(0)) + key.substring(1);
+        if (key == null || key.isEmpty()) {
+            return "";
+        }
+        String[] parts = key.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                if (sb.length() > 0) {
+                    sb.append(" ");
+                }
+                sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+            }
+        }
+        return sb.toString();
     }
 }

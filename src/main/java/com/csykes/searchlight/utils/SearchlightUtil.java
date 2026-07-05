@@ -1,10 +1,8 @@
 package com.csykes.searchlight.utils;
 
 import com.csykes.searchlight.Searchlight;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
@@ -15,6 +13,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.utils.lighting.CornerLightStage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public final class SearchlightUtil {
@@ -84,12 +86,40 @@ public final class SearchlightUtil {
         return resultPos;
     }
 
-    /**
-     * Doesn't show beams if the player isn't holding a searchlight
-     * @return
-     */
-    public static boolean displayBeams() {
-        Player player = Minecraft.getInstance().player;
-        return player != null && player.isHolding(Searchlight.SEARCHLIGHT_ITEM.get());
+    public static List<BlockPos> getConnectedCornerLights(Level level, BlockPos startPos, BlockState startState) {
+        List<BlockPos> positions = new ArrayList<>();
+        if (!(startState.getBlock() instanceof CornerLightBlock)) {
+            positions.add(startPos);
+            return positions;
+        }
+
+        CornerLightStage targetCorner = startState.getValue(CornerLightBlock.CORNER);
+        positions.add(startPos);
+
+        // Traverse UP
+        BlockPos current = startPos.above();
+        while (true) {
+            BlockState state = level.getBlockState(current);
+            if (state.getBlock() instanceof CornerLightBlock && state.getValue(CornerLightBlock.CORNER) == targetCorner) {
+                positions.add(current);
+                current = current.above();
+            } else {
+                break;
+            }
+        }
+
+        // Traverse DOWN
+        current = startPos.below();
+        while (true) {
+            BlockState state = level.getBlockState(current);
+            if (state.getBlock() instanceof CornerLightBlock && state.getValue(CornerLightBlock.CORNER) == targetCorner) {
+                positions.add(current);
+                current = current.below();
+            } else {
+                break;
+            }
+        }
+
+        return positions;
     }
 }

@@ -16,8 +16,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.csykes.searchlight.MutableVector3d;
+import com.csykes.searchlight.utils.lighting.AddressableLight;
 
-public class SearchlightBlockEntity extends BlockEntity implements com.csykes.searchlight.utils.lighting.AddressableLight {
+public class SearchlightBlockEntity extends BlockEntity implements AddressableLight {
     private @Nullable BlockPos lightSourcePos;
     private String address = "";
 
@@ -176,20 +177,17 @@ public class SearchlightBlockEntity extends BlockEntity implements com.csykes.se
         BlockPos.MutableBlockPos prevBlockPos = new BlockPos.MutableBlockPos(0, 0, 0);
         BlockPos lastValidBlockPos = null;
         int distance = 0;
+        int safetySteps = 0;
 
         while (distance < Searchlight.MAX_DISTANCE) {
             prevBlockPos.set(currentBlockPos);
             currentBlockPosD.add(beamDirection);
             currentBlockPos.set(currentBlockPosD.x, currentBlockPosD.y, currentBlockPosD.z);
             if (prevBlockPos.equals(currentBlockPos)) {
-                // If we didn't move to a new block, we increment distance slightly to avoid infinite loops
-                // but we don't want to increment it too fast. 
-                // Since beamDirection is normalized, adding it should move us at least 0.5 blocks.
-                // If it doesn't move us to a new block, it might be due to floating point precision
-                // or very small components. 
-                // However, a normalized vector ALWAYS has at least one component >= 1/sqrt(3) ~= 0.57.
-                // So it should move us to a new block in at most 2 iterations.
-                distance++; // Safety increment
+                safetySteps++;
+                if (safetySteps > 2000) {
+                    break;
+                }
                 continue;
             }
             distance++;
