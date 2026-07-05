@@ -61,5 +61,5 @@
   "searchlight.jade.color": "Цвет: %s",
   "searchlight.jade.brightness": "Яркость: %s",
   "searchlight.jade.mode": "Режим: %s",
-  "config.jade.plugin_searchlight.light_data_component": "Search Light Data"
+  "config.jade.plugin_searchlight.light_data_component": "Данные прожектора"
 }
