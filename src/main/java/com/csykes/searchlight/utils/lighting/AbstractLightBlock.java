@@ -1,6 +1,15 @@
 package com.csykes.searchlight.utils.lighting;
 
+import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.SearchlightClient;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.searchlight.SearchlightBlock;
+import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
+import com.csykes.searchlight.features.wall_light.WallLightBlock;
+import com.csykes.searchlight.utils.SearchlightUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -10,6 +19,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -17,15 +28,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirectionalBlock {
     public static final EnumProperty<BrightnessStage> BRIGHTNESS = EnumProperty.create("brightness", BrightnessStage.class);
@@ -170,11 +186,86 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (stack.getItem() instanceof DyeItem dyeItem) {
+            if (world.isClientSide) {
+                return ItemInteractionResult.sidedSuccess(world.isClientSide);
+            }
+            DyeColor dyeColor = dyeItem.getDyeColor();
+            String normalizedColor = dyeColor.getName().toLowerCase();
+            Block block = state.getBlock();
+
+            if (state.hasProperty(SearchlightBlock.COLOR)) {
+                BlockEntity be = world.getBlockEntity(pos);
+                if (be instanceof SearchlightBlockEntity searchlightBe) {
+                    searchlightBe.setColor(dyeColor);
+                } else {
+                    world.setBlockAndUpdate(pos, state.setValue(SearchlightBlock.COLOR, dyeColor));
+                }
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+                world.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                return ItemInteractionResult.sidedSuccess(world.isClientSide);
+            }
+
+            Block newBlock = null;
+            if (block instanceof WallLightBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            } else if (block instanceof CornerLightBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            } else if (block instanceof EdgeLightBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            } else if (block instanceof CentreLightBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            } else if (block instanceof ColourLampBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            }
+
+            if (newBlock != null && newBlock != block) {
+                BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
+                String address = "";
+                BlockEntity oldBe = world.getBlockEntity(pos);
+                if (oldBe instanceof AddressableLight addressable) {
+                    address = addressable.getAddress();
+                }
+
+                if (block instanceof CornerLightBlock) {
+                    List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
+                    for (BlockPos connectedPos : connected) {
+                        BlockState s = world.getBlockState(connectedPos);
+                        BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
+                        world.setBlockAndUpdate(connectedPos, ns);
+                        world.updateNeighborsAt(connectedPos, newBlock);
+                    }
+                } else {
+                    world.setBlockAndUpdate(pos, newState);
+                    world.updateNeighborsAt(pos, newBlock);
+                }
+
+                BlockEntity newBe = world.getBlockEntity(pos);
+                if (newBe instanceof AddressableLight addressable) {
+                    addressable.setAddress(address);
+                    newBe.setChanged();
+                    world.sendBlockUpdated(pos, newState, newState, 3);
+                }
+
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+                world.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                return ItemInteractionResult.sidedSuccess(world.isClientSide);
+            }
+        }
+
         BrightnessStage brightness = state.getValue(BRIGHTNESS);
         BrightnessStage next = brightness;
         boolean success = false;
-        if (world.isClientSide)
-            return super.useItemOn(stack, state, world, pos, player, hand, hit);
+        if (world.isClientSide) return super.useItemOn(stack, state, world, pos, player, hand, hit);
         if (stack.is(Items.GLOWSTONE_DUST) && brightness != BrightnessStage.ULTRA) {
             next = brightness.next();
             world.playSound(null, pos, SoundEvents.GLOW_ITEM_FRAME_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -213,5 +304,20 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
+    }
+
+    @SuppressWarnings("unchecked")
+    private BlockState copyMatchingProperties(BlockState from, BlockState to) {
+        BlockState result = to;
+        for (net.minecraft.world.level.block.state.properties.Property<?> property : from.getProperties()) {
+            if (result.hasProperty(property)) {
+                result = copyProperty(from, result, (Property) property);
+            }
+        }
+        return result;
+    }
+
+    private <T extends Comparable<T>> BlockState copyProperty(BlockState from, BlockState to, Property<T> property) {
+        return to.setValue(property, from.getValue(property));
     }
 }
