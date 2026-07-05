@@ -7,12 +7,10 @@
       "model": "searchlight:block/colour_lamp_single"
     },
     "lit=true,connect_points=1": {
-      "model": "searchlight:block/colour_lamp_rightc_on",
-      "y": 270
+      "model": "searchlight:block/colour_lamp_rightc_on"
     },
     "lit=false,connect_points=1": {
-      "model": "searchlight:block/colour_lamp_rightc",
-      "y": 270
+      "model": "searchlight:block/colour_lamp_rightc"
     },
     "lit=true,connect_points=2": {
       "model": "searchlight:block/colour_lamp_rightc_on"
@@ -143,12 +141,10 @@
       "model": "searchlight:block/colour_lamp_mid"
     },
     "lit=true,connect_points=20": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "y": 90
+      "model": "searchlight:block/colour_lamp_mid_on"
     },
     "lit=false,connect_points=20": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "y": 90
+      "model": "searchlight:block/colour_lamp_mid"
     },
     "lit=true,connect_points=21": {
       "model": "searchlight:block/colour_lamp_mid_on"
@@ -218,13 +214,11 @@
     },
     "lit=true,connect_points=32": {
       "model": "searchlight:block/colour_lamp_topc_on",
-      "x": 180,
-      "y": 180
+      "x": 180
     },
     "lit=false,connect_points=32": {
       "model": "searchlight:block/colour_lamp_topc",
-      "x": 180,
-      "y": 180
+      "x": 180
     },
     "lit=true,connect_points=33": {
       "model": "searchlight:block/colour_lamp_mid_on"
@@ -269,14 +263,10 @@
       "model": "searchlight:block/colour_lamp_mid"
     },
     "lit=true,connect_points=40": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "y": 180,
-      "x": 180
+      "model": "searchlight:block/colour_lamp_mid_on"
     },
     "lit=false,connect_points=40": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "y": 180,
-      "x": 180
+      "model": "searchlight:block/colour_lamp_mid"
     },
     "lit=true,connect_points=41": {
       "model": "searchlight:block/colour_lamp_mid_on"
