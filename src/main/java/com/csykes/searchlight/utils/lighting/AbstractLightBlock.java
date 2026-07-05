@@ -49,6 +49,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
     public static final EnumProperty<LightRequest> LIGHT_REQUEST = EnumProperty.create("light_request", LightRequest.class);
     public static final EnumProperty<LightRodConnection> CONNECTION = EnumProperty.create("connection", LightRodConnection.class);
     public static final EnumProperty<CornerLightStage> CORNER = EnumProperty.create("corner", CornerLightStage.class);
+    public static final EnumProperty<DyeColor> COLOR = EnumProperty.create("color", DyeColor.class);
 
     protected AbstractLightBlock(@NotNull Properties properties) {
         super(properties);

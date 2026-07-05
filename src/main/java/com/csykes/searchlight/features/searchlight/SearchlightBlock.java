@@ -36,8 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 
 public class SearchlightBlock extends AbstractLightBlock implements EntityBlock {
-    public static final EnumProperty<DyeColor> COLOR = EnumProperty.create("color", DyeColor.class);
-
     public SearchlightBlock(@NotNull Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()

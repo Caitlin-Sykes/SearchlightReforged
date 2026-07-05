@@ -18,6 +18,7 @@ import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -52,6 +53,7 @@ public class Searchlight {
     public static final String MODID = "searchlight";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final int MAX_DISTANCE = 256;
+    public static final ResourceLocation LIGHT_DATA_COMPONENT = ResourceLocation.fromNamespaceAndPath(MODID, "light_data_component");
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
