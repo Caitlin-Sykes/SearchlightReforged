@@ -1,11 +1,13 @@
 package com.csykes.searchlight.utils.lighting;
 
+import com.csykes.searchlight.SearchlightClient;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -17,10 +19,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirectionalBlock {
@@ -36,7 +40,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, FACE, LIT, BRIGHTNESS, LIGHT_REQUEST);
+        builder.add(LIT, BRIGHTNESS, LIGHT_REQUEST);
     }
 
     @Override
@@ -116,8 +120,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 BlockState target = world.getBlockState(pos.relative(upDir, distance));
                 while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
                     isPoweredNow |= world.hasNeighborSignal(pos.relative(upDir, distance));
-                    if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE)
-                    {
+                    if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE) {
                         requested = target.getValue(LIGHT_REQUEST);
                     }
                     target = world.getBlockState(pos.relative(upDir, distance));
@@ -148,11 +151,21 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockState state = super.getStateForPlacement(context);
-        if (state != null) {
-            return state.setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
+        BlockState state = this.defaultBlockState();
+        for (Direction direction : context.getNearestLookingDirections()) {
+            if (direction.getAxis() == Direction.Axis.Y) {
+                state = state.trySetValue(FACE, direction == Direction.UP ? AttachFace.CEILING : AttachFace.FLOOR);
+                state = state.trySetValue(FACING, context.getHorizontalDirection());
+            } else {
+                state = state.trySetValue(FACE, AttachFace.WALL);
+                state = state.trySetValue(FACING, direction.getOpposite());
+            }
+
+            if (state.canSurvive(context.getLevel(), context.getClickedPos())) {
+                break;
+            }
         }
-        return null;
+        return state.setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
     @Override
@@ -191,14 +204,14 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
     }
 
     @Override
-    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, net.minecraft.world.phys.BlockHitResult hit) {
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
             if (world.isClientSide) {
-                com.csykes.searchlight.SearchlightClient.openLightAddressScreen(pos);
-                return net.minecraft.world.InteractionResult.SUCCESS;
+                SearchlightClient.openLightAddressScreen(pos);
+                return InteractionResult.SUCCESS;
             }
-            return net.minecraft.world.InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return net.minecraft.world.InteractionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

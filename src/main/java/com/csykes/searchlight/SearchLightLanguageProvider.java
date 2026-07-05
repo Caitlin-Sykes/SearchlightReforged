@@ -25,6 +25,20 @@ public class SearchLightLanguageProvider extends LanguageProvider {
             add("block.searchlight." + blockId,
                     formatName(key) + " Wall Light");
         }
+
+        for (String key : Searchlight.EDGE_LIGHTS.keySet()) {
+            String blockId = "edge_light_" + key;
+
+            add("block.searchlight." + blockId,
+                    formatName(key) + " Edge Light");
+        }
+
+        for (String key : Searchlight.CENTRE_LIGHTS.keySet()) {
+            String blockId = "centre_light_" + key;
+
+            add("block.searchlight." + blockId,
+                    formatName(key) + " Centre Light");
+        }
     }
 
     private String formatName(String key) {

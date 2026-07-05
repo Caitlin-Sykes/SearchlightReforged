@@ -1,6 +1,9 @@
 package com.csykes.searchlight.features.wall_light;
 
 import com.csykes.searchlight.Searchlight;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -17,9 +20,10 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
 
     public WallLightBlockEntity(BlockPos pos, BlockState state) {
         super(
-                state.getBlock() instanceof com.csykes.searchlight.features.corner_light.CornerLightBlock ? Searchlight.CORNER_LIGHT_BE.get() :
-                        (state.getBlock() instanceof com.csykes.searchlight.features.centre_light.CentreLightBlock ? Searchlight.CENTRE_LIGHT_BE.get() :
-                                Searchlight.WALL_LIGHT_BE.get()),
+                state.getBlock() instanceof CornerLightBlock ? Searchlight.CORNER_LIGHT_BE.get() :
+                        (state.getBlock() instanceof CentreLightBlock ? Searchlight.CENTRE_LIGHT_BE.get() :
+                                ( state.getBlock() instanceof EdgeLightBlock ? Searchlight.EDGE_LIGHT_BE.get() :
+                                Searchlight.WALL_LIGHT_BE.get())),
                 pos, state
         );
     }

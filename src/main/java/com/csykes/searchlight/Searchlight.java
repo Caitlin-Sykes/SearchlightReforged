@@ -2,6 +2,7 @@ package com.csykes.searchlight;
 
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
@@ -87,9 +88,11 @@ public class Searchlight {
     public static final Map<String, DeferredBlock<Block>> WALL_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> CORNER_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> CENTRE_LIGHTS = new LinkedHashMap<>();
+    public static final Map<String, DeferredBlock<Block>> EDGE_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> WALL_LIGHT_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> CORNER_LIGHTS_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> CENTRE_LIGHTS_ITEMS = new LinkedHashMap<>();
+    public static final Map<String, DeferredItem<? extends Item>> EDGE_LIGHTS_ITEMS = new LinkedHashMap<>();
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightBlockEntity>> SEARCHLIGHT_BE = BLOCK_ENTITY_TYPES.register("searchlight_entity", () -> BlockEntityType.Builder.of(SearchlightBlockEntity::new, SEARCHLIGHT_BLOCK.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> WALL_LIGHT_BE = BLOCK_ENTITY_TYPES.register("wall_light_entity", () -> {
@@ -102,6 +105,10 @@ public class Searchlight {
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> CENTRE_LIGHT_BE = BLOCK_ENTITY_TYPES.register("centre_light_entity", () -> {
         Block[] blocks = CENTRE_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
+        return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
+    });
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> EDGE_LIGHT_BE = BLOCK_ENTITY_TYPES.register("edge_light_entity", () -> {
+        Block[] blocks = EDGE_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
         return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightLightSourceBlockEntity>> LIGHT_SOURCE_BE = BLOCK_ENTITY_TYPES.register("searchlight_lightsource_entity", () -> BlockEntityType.Builder.of(SearchlightLightSourceBlockEntity::new, LIGHT_SOURCE_BLOCK.get()).build(null));
@@ -117,6 +124,7 @@ public class Searchlight {
             registerWallLight(color.getName());
             registerCornerLight(color.getName());
             registerCentreLight(color.getName());
+            registerEdgeLight(color.getName());
         }
     }
 
@@ -143,7 +151,7 @@ public class Searchlight {
 
         String cl_name = "corner_light_" + postfix;
 
-        final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
 
         DeferredBlock<Block> corner_light = BLOCKS.register(cl_name, () -> new CornerLightBlock(BlockBehaviour.Properties.of()
                 .lightLevel((state) -> {
@@ -160,12 +168,33 @@ public class Searchlight {
         CORNER_LIGHTS.put(postfix, corner_light);
         CORNER_LIGHTS_ITEMS.put(postfix, item);
     }
+    private static void registerEdgeLight(String postfix) {
+
+        String cl_name = "edge_light_" + postfix;
+
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
+
+        DeferredBlock<Block> edge_light = BLOCKS.register(cl_name, () -> new EdgeLightBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> {
+                    if (!state.getValue(BlockStateProperties.LIT)) return 0;
+                    return state.hasProperty(AbstractLightBlock.BRIGHTNESS)
+                            ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3
+                            : 15; // Safe default light value
+                })
+                .sound(SoundType.GLASS)
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
+                .noOcclusion(), blockColor));
+        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(cl_name, edge_light);
+        EDGE_LIGHTS.put(postfix, edge_light);
+        EDGE_LIGHTS_ITEMS.put(postfix, item);
+    }
 
     private static void registerCentreLight(String postfix) {
 
         String cl_name = "centre_light_" + postfix;
 
-        final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
 
         DeferredBlock<Block> centre_light = BLOCKS.register(cl_name, () -> new CentreLightBlock(BlockBehaviour.Properties.of()
                 .lightLevel((state) -> {
@@ -199,6 +228,7 @@ public class Searchlight {
                 WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
                 CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
                 CENTRE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
+                EDGE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 
     public Searchlight(IEventBus modEventBus) {

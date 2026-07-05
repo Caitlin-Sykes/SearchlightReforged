@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "edge_light",
+  "category": "building",
+  "pattern": [
+    "GCG",
+    "RAR",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "tag": "c:stones"
+    },
+    "C": {
+      "tag": "c:glass_blocks"
+    },
+    "A": {
+      "item": "minecraft:white_dye"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "searchlight:edge_light_white",
+    "count": 6
+  }
+}

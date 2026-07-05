@@ -50,6 +50,8 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
+        builder.add(FACE);
+        builder.add(FACING);
         builder.add(CONNECTION);
         builder.add(AXIS);
     }
