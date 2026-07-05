@@ -57,5 +57,9 @@
   "block.searchlight.centre_light_brown": "Lumière Centrale Marron",
   "block.searchlight.centre_light_green": "Lumière Centrale Verte",
   "block.searchlight.centre_light_red": "Lumière Centrale Rouge",
-  "block.searchlight.centre_light_black": "Lumière Centrale Noire"
+  "block.searchlight.centre_light_black": "Lumière Centrale Noire",
+  "searchlight.jade.color": "Couleur: %s",
+  "searchlight.jade.brightness": "Luminosité: %s",
+  "searchlight.jade.mode": "Mode: %s",
+  "config.jade.plugin_searchlight.light_data_component": "Search Light Data"
 }

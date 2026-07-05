@@ -73,5 +73,9 @@
   "block.searchlight.edge_light_brown": "Brown Edge Light",
   "block.searchlight.edge_light_green": "Green Edge Light",
   "block.searchlight.edge_light_red": "Red Edge Light",
-  "block.searchlight.edge_light_black": "Black Edge Light"
+  "block.searchlight.edge_light_black": "Black Edge Light",
+  "searchlight.jade.color": "Color: %s",
+  "searchlight.jade.brightness": "Brightness: %s",
+  "searchlight.jade.mode": "Mode: %s",
+  "config.jade.plugin_searchlight.light_data_component": "Search Light Data"
 }

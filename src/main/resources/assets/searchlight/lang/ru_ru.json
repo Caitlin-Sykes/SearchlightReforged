@@ -57,5 +57,9 @@
   "block.searchlight.centre_light_brown": "Центральный Коричневый Свет",
   "block.searchlight.centre_light_green": "Центральный Зеленый Свет",
   "block.searchlight.centre_light_red": "Центральный Красный Свет",
-  "block.searchlight.centre_light_black": "Центральный Черный Свет"
+  "block.searchlight.centre_light_black": "Центральный Черный Свет",
+  "searchlight.jade.color": "Цвет: %s",
+  "searchlight.jade.brightness": "Яркость: %s",
+  "searchlight.jade.mode": "Режим: %s",
+  "config.jade.plugin_searchlight.light_data_component": "Search Light Data"
 }
