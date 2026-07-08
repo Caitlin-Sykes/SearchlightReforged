@@ -1,440 +1,133 @@
 {
-  "variants": {
-    "lit=true,connect_points=0": {
-      "model": "searchlight:block/colour_lamp_single_on"
-    },
-    "lit=false,connect_points=0": {
-      "model": "searchlight:block/colour_lamp_single"
-    },
-    "lit=true,connect_points=1": {
-      "model": "searchlight:block/colour_lamp_rightc_on",
-      "y": 270,
-      "x": 90
-    },
-    "lit=false,connect_points=1": {
-      "model": "searchlight:block/colour_lamp_rightc",
-      "y": 270,
-      "x": 90
-    },
-    "lit=true,connect_points=2": {
-      "model": "searchlight:block/colour_lamp_rightc_on"
-    },
-    "lit=false,connect_points=2": {
-      "model": "searchlight:block/colour_lamp_rightc"
-    },
-    "lit=true,connect_points=3": {
-      "model": "searchlight:block/colour_lamp_cornerc_on"
-    },
-    "lit=false,connect_points=3": {
-      "model": "searchlight:block/colour_lamp_cornerc"
-    },
-    "lit=true,connect_points=4": {
-      "model": "searchlight:block/colour_lamp_topc_on",
-      "x": 270
-    },
-    "lit=false,connect_points=4": {
-      "model": "searchlight:block/colour_lamp_topc",
-      "x": 270
-    },
-    "lit=true,connect_points=5": {
-      "model": "searchlight:block/colour_lamp_tbc_on",
-      "x": 90
-    },
-    "lit=false,connect_points=5": {
-      "model": "searchlight:block/colour_lamp_tbc",
-      "x": 90
-    },
-    "lit=true,connect_points=6": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "z": 270
-    },
-    "lit=false,connect_points=6": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "z": 270
-    },
-    "lit=true,connect_points=7": {
-      "model": "searchlight:block/colour_lamp_tc_on",
-      "z": 270
-    },
-    "lit=false,connect_points=7": {
-      "model": "searchlight:block/colour_lamp_tc",
-      "z": 270
-    },
-    "lit=true,connect_points=8": {
-      "model": "searchlight:block/colour_lamp_rightc_on",
-      "y": 180
-    },
-    "lit=false,connect_points=8": {
-      "model": "searchlight:block/colour_lamp_rightc",
-      "y": 180
-    },
-    "lit=true,connect_points=9": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "z": 270
-    },
-    "lit=false,connect_points=9": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "z": 270
-    },
-    "lit=true,connect_points=10": {
-      "model": "searchlight:block/colour_lamp_tbc_on",
-      "z": 90
-    },
-    "lit=false,connect_points=10": {
-      "model": "searchlight:block/colour_lamp_tbc",
-      "z": 90
-    },
-    "lit=true,connect_points=11": {
-      "model": "searchlight:block/colour_lamp_tc_on",
-      "x": 90
-    },
-    "lit=false,connect_points=11": {
-      "model": "searchlight:block/colour_lamp_tc",
-      "x": 90
-    },
-    "lit=true,connect_points=12": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "z": 180
-    },
-    "lit=false,connect_points=12": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "z": 180
-    },
-    "lit=true,connect_points=13": {
-      "model": "searchlight:block/colour_lamp_tc_on",
-      "x": 270
-    },
-    "lit=false,connect_points=13": {
-      "model": "searchlight:block/colour_lamp_tc",
-      "x": 270
-    },
-    "lit=true,connect_points=14": {
-      "model": "searchlight:block/colour_lamp_tc_on",
-      "x": 270
-    },
-    "lit=false,connect_points=14": {
-      "model": "searchlight:block/colour_lamp_tc",
-      "x": 270
-    },
-    "lit=true,connect_points=15": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=15": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=16": {
-      "model": "searchlight:block/colour_lamp_topc_on"
-    },
-    "lit=false,connect_points=16": {
-      "model": "searchlight:block/colour_lamp_topc"
-    },
-    "lit=true,connect_points=17": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "y": 270
-    },
-    "lit=false,connect_points=17": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "y": 270
-    },
-    "lit=true,connect_points=18": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=18": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=19": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=19": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=20": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "y": 90
-    },
-    "lit=false,connect_points=20": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "y": 90
-    },
-    "lit=true,connect_points=21": {
-      "model": "searchlight:block/colour_lamp_tboc_on",
-      "y": 90,
-      "x": 180
-    },
-    "lit=false,connect_points=21": {
-      "model": "searchlight:block/colour_lamp_tboc",
-      "y": 90,
-      "x": 180
-    },
-    "lit=true,connect_points=22": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=22": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=23": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=23": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=24": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=24": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=25": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=25": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=26": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=26": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=27": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=27": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=28": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=28": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=29": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=29": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=30": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=30": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=31": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=31": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=32": {
-      "model": "searchlight:block/colour_lamp_topc_on",
-      "x": 180,
-      "y": 180
-    },
-    "lit=false,connect_points=32": {
-      "model": "searchlight:block/colour_lamp_topc",
-      "x": 180,
-      "y": 180
-    },
-    "lit=true,connect_points=33": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "x": 180,
-      "y": -90
-    },
-    "lit=false,connect_points=33": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "x": 180,
-      "y": -90
-    },
-    "lit=true,connect_points=34": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=34": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=35": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=35": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=36": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "y": 90,
-      "x": 180
-    },
-    "lit=false,connect_points=36": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "y": 90,
-      "x": 180
-    },
-    "lit=true,connect_points=37": {
-      "model": "searchlight:block/colour_lamp_tboc_on",
-      "y": 90
-    },
-    "lit=false,connect_points=37": {
-      "model": "searchlight:block/colour_lamp_tboc",
-      "y": 90
-    },
-    "lit=true,connect_points=38": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=38": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=39": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=39": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=40": {
-      "model": "searchlight:block/colour_lamp_cornerc_on",
-      "y": 180,
-      "x": 180
-    },
-    "lit=false,connect_points=40": {
-      "model": "searchlight:block/colour_lamp_cornerc",
-      "y": 180,
-      "x": 180
-    },
-    "lit=true,connect_points=41": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=41": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=42": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=42": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=43": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=43": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=44": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=44": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=45": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=45": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=46": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=46": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=47": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=47": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=48": {
-      "model": "searchlight:block/colour_lamp_tbc_on"
-    },
-    "lit=false,connect_points=48": {
-      "model": "searchlight:block/colour_lamp_tbc"
-    },
-    "lit=true,connect_points=49": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=49": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=50": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=50": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=51": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=51": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=52": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=52": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=53": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=53": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=54": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=54": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=55": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=55": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=56": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=56": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=57": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=57": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=58": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=58": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=59": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=59": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=60": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=60": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=61": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=61": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=62": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=62": {
-      "model": "searchlight:block/colour_lamp_mid"
-    },
-    "lit=true,connect_points=63": {
-      "model": "searchlight:block/colour_lamp_mid_on"
-    },
-    "lit=false,connect_points=63": {
-      "model": "searchlight:block/colour_lamp_mid"
+  "multipart": [
+    {
+      "when": {
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_light_on"
+      }
+    },
+    {
+      "when": {
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_light"
+      }
+    },
+    {
+      "when": {
+        "up": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "up": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 270,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "up": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "up": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece"
+      }
+    },
+    {
+      "when": {
+        "south": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "north": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "down": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "down": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "down": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "down": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece",
+        "x": 90,
+        "y": 270
+      }
     }
-  }
+  ]
 }

@@ -4,7 +4,6 @@ import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,16 +18,23 @@ import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 
 @Getter
 public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
-    public static final IntegerProperty CONNECT_POINTS = IntegerProperty.create("connect_points", 0, 63);
-    public static final BooleanProperty WIDE_CLUSTER = BooleanProperty.create("wide_cluster");
+    public static final BooleanProperty NORTH = BooleanProperty.create("north");
+    public static final BooleanProperty SOUTH = BooleanProperty.create("south");
+    public static final BooleanProperty EAST = BooleanProperty.create("east");
+    public static final BooleanProperty WEST = BooleanProperty.create("west");
+    public static final BooleanProperty UP = BooleanProperty.create("up");
+    public static final BooleanProperty DOWN = BooleanProperty.create("down");
+
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -39,33 +45,29 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
         super(properties);
         this.blockColor = blockColor;
         this.registerDefaultState(this.stateDefinition.any()
+                .setValue(FACE, AttachFace.CEILING)
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
-                .setValue(CONNECT_POINTS, 0)
-                .setValue(WIDE_CLUSTER, false)); // Default to false, needed as a way to differentiate between wide and narrow clusters
+                .setValue(NORTH, false)
+                .setValue(SOUTH, false)
+                .setValue(EAST, false)
+                .setValue(WEST, false)
+                .setValue(UP, false)
+                .setValue(DOWN, false)
+        );
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(CONNECT_POINTS, WIDE_CLUSTER);
+        builder.add(NORTH);
+        builder.add(SOUTH);
+        builder.add(EAST);
+        builder.add(WEST);
+        builder.add(UP);
+        builder.add(DOWN);
+        builder.add(FACE);
     }
-
-    private int calculateConnectionMask(LevelAccessor level, BlockPos pos, BlockState state) {
-        int mask = 0;
-        // Standard NESW (1, 2, 4, 8)
-        if (isMatchingConnection(level, pos.north(), state, level.getBlockState(pos.north()))) mask |= 1;
-        if (isMatchingConnection(level, pos.east(), state, level.getBlockState(pos.east()))) mask |= 2;
-        if (isMatchingConnection(level, pos.south(), state, level.getBlockState(pos.south()))) mask |= 4;
-        if (isMatchingConnection(level, pos.west(), state, level.getBlockState(pos.west()))) mask |= 8;
-
-        // Expanded UD (16, 32)
-        if (isMatchingConnection(level, pos.above(), state, level.getBlockState(pos.above()))) mask |= 16;
-        if (isMatchingConnection(level, pos.below(), state, level.getBlockState(pos.below()))) mask |= 32;
-
-        return mask;
-    }
-
 
     @Override
     protected boolean canSurvive(@NotNull BlockState state, @NotNull LevelReader level, @NotNull BlockPos pos) {
@@ -74,64 +76,52 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockState baseState = super.getStateForPlacement(context);
-        if (baseState == null) return null;
+        BlockState state = super.getStateForPlacement(context);
+        if (state == null) return null;
 
-        BlockPos pos = context.getClickedPos();
         Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
 
-        // Calculate initial mask based on current surroundings
-        int mask = calculateConnectionMask(level, pos, baseState);
+        // Loop through directions and update the state variable
+        for (Direction dir : Direction.values()) {
+            state = getDirection(dir, level, pos, state);
+        }
 
-        return baseState.setValue(CONNECT_POINTS, mask);
+        return state.setValue(LIT, !level.hasNeighborSignal(pos));
     }
 
-    private boolean checkStructureContext(LevelAccessor level, BlockPos pos, int mask) {
-        System.out.println("MASKKKKK " + mask);
-        // Top-Left Corner (Mask = 1 | 2, i.e., 36)
-        if (mask == 36) {
-            System.out.println("Top-Left Corner");
-            System.out.println(level.getBlockState(pos.south().east()).getBlock());
-            return level.getBlockState(pos.south().east()).getBlock() instanceof ColourLampBlock;
-        }
+    private BlockState getDirection(Direction dir, Level level, BlockPos pos, BlockState state) {
+        boolean isConnected = level.getBlockState(pos.relative(dir)).getBlock() instanceof ColourLampBlock;
 
-        // Top-Right Corner (Mask = 1 | 8, i.e., 9)
-        if (mask == 33) {
-            return level.getBlockState(pos.south().west()).getBlock() instanceof ColourLampBlock;
-        }
-
-        // Bottom-Left Corner (Mask = 4 | 2, i.e., 6)
-        if (mask == 20) {
-            return level.getBlockState(pos.above().east()).getBlock() instanceof ColourLampBlock;
-        }
-
-        // Bottom-Right Corner (Mask = 4 | 8, i.e., 12)
-        if (mask == 17) {
-            return level.getBlockState(pos.above().west()).getBlock() instanceof ColourLampBlock;
-        }
-        return false;
-    }
-
-
-    @Override
-    public @NotNull BlockState updateShape(BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState,
-                                           @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos) {
-
-        int mask = calculateConnectionMask(level, pos, state);
-        if (state.getValue(CONNECT_POINTS) == mask) return state;
-
-        boolean wideCluster = checkStructureContext(level, pos, mask);
-
-        return state.setValue(CONNECT_POINTS, mask)
-                .setValue(WIDE_CLUSTER, wideCluster);
+        return switch (dir) {
+            case UP -> state.setValue(UP, isConnected);
+            case DOWN -> state.setValue(DOWN, isConnected);
+            case NORTH -> state.setValue(NORTH, isConnected);
+            case EAST -> state.setValue(EAST, isConnected);
+            case WEST -> state.setValue(WEST, isConnected);
+            case SOUTH -> state.setValue(SOUTH, isConnected);
+        };
     }
 
     @Override
-    protected boolean isMatchingConnection(LevelAccessor level, BlockPos pos, BlockState state, BlockState neighborState) {
-        return neighborState.getBlock() instanceof ColourLampBlock;
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        boolean isConnected = neighborState.getBlock() instanceof ColourLampBlock;
+        
+        return state.setValue(getPropertyForDirection(direction), isConnected);
     }
 
-    public static final MapCodec<ColourLampBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(propertiesCodec(), DyeColor.CODEC.fieldOf("color").forGetter(ColourLampBlock::getBlockColor)).apply(instance, ColourLampBlock::new));
+    private BooleanProperty getPropertyForDirection(Direction dir) {
+        return switch (dir) {
+            case UP -> UP;
+            case DOWN -> DOWN;
+            case NORTH -> NORTH;
+            case EAST -> EAST;
+            case WEST -> WEST;
+            case SOUTH -> SOUTH;
+        };
+    }
+
+    public static final MapCodec<ColourLampBlock> CODEC = mapCodec(instance -> instance.group(propertiesCodec(), DyeColor.CODEC.fieldOf("color").forGetter(ColourLampBlock::getBlockColor)).apply(instance, ColourLampBlock::new));
 
     @Override
     protected @NotNull MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
