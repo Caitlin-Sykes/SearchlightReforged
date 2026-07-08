@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.csykes.searchlight.MutableVector3d;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
+import net.minecraft.world.item.DyeColor;
 
 public class SearchlightBlockEntity extends BlockEntity implements AddressableLight {
     private @Nullable BlockPos lightSourcePos;
@@ -68,6 +69,29 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
             lightSourcePos = new BlockPos(tag.getInt("light_source_x"), tag.getInt("light_source_y"), tag.getInt("light_source_z"));
         } else {
             lightSourcePos = null;
+        }
+    }
+
+    public DyeColor getColor() {
+        BlockState state = getBlockState();
+        if (state.hasProperty(SearchlightBlock.COLOR)) {
+            return state.getValue(SearchlightBlock.COLOR);
+        }
+        return DyeColor.WHITE;
+    }
+
+    public void setColor(DyeColor color) {
+        if (level != null) {
+            BlockState state = getBlockState();
+            if (state.hasProperty(SearchlightBlock.COLOR)) {
+                level.setBlockAndUpdate(getBlockPos(), state.setValue(SearchlightBlock.COLOR, color));
+                if (lightSourcePos != null) {
+                    BlockState lightState = level.getBlockState(lightSourcePos);
+                    if (lightState.is(Searchlight.LIGHT_SOURCE_BLOCK.get()) && lightState.hasProperty(SearchlightLightSourceBlock.COLOR)) {
+                        level.setBlockAndUpdate(lightSourcePos, lightState.setValue(SearchlightLightSourceBlock.COLOR, color));
+                    }
+                }
+            }
         }
     }
 
@@ -152,7 +176,9 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
         }
 
         BlockState oldBlockState = level.getBlockState(newLightPos);
-        if (!level.setBlockAndUpdate(newLightPos, Searchlight.LIGHT_SOURCE_BLOCK.get().defaultBlockState()))
+        DyeColor currentColor = getColor();
+        BlockState lightSourceState = Searchlight.LIGHT_SOURCE_BLOCK.get().defaultBlockState().setValue(SearchlightLightSourceBlock.COLOR, currentColor);
+        if (!level.setBlockAndUpdate(newLightPos, lightSourceState))
             return false;
 
         if (!SearchlightUtil.castBlockEntity(level.getBlockEntity(newLightPos), newLightPos, (SearchlightLightSourceBlockEntity lightBlockEntity) -> {

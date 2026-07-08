@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -40,7 +42,8 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM));
+                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
+                .setValue(COLOR, DyeColor.WHITE));
     }
 
     @Override
@@ -48,6 +51,7 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
         super.createBlockStateDefinition(builder);
         builder.add(FACE);
         builder.add(FACING);
+        builder.add(COLOR);
     }
 
     @Override
