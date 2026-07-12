@@ -61,5 +61,21 @@
   "searchlight.jade.color": "Цвет: %s",
   "searchlight.jade.brightness": "Яркость: %s",
   "searchlight.jade.mode": "Режим: %s",
-  "config.jade.plugin_searchlight.light_data_component": "Данные прожектора"
+  "config.jade.plugin_searchlight.light_data_component": "Данные прожектора",
+  "block.searchlight.colour_lamp_white": "Белая цветная лампа",
+  "block.searchlight.colour_lamp_orange": "Оранжевая цветная лампа",
+  "block.searchlight.colour_lamp_magenta": "Пурпурная цветная лампа",
+  "block.searchlight.colour_lamp_light_blue": "Светло-голубая цветная лампа",
+  "block.searchlight.colour_lamp_yellow": "Жёлтая цветная лампа",
+  "block.searchlight.colour_lamp_lime": "Лаймовая цветная лампа",
+  "block.searchlight.colour_lamp_pink": "Розовая цветная лампа",
+  "block.searchlight.colour_lamp_gray": "Серая цветная лампа",
+  "block.searchlight.colour_lamp_light_gray": "Светло-серая цветная лампа",
+  "block.searchlight.colour_lamp_cyan": "Бирюзовая цветная лампа",
+  "block.searchlight.colour_lamp_purple": "Фиолетовая цветная лампа",
+  "block.searchlight.colour_lamp_blue": "Синяя цветная лампа",
+  "block.searchlight.colour_lamp_brown": "Коричневая цветная лампа",
+  "block.searchlight.colour_lamp_green": "Зелёная цветная лампа",
+  "block.searchlight.colour_lamp_red": "Красная цветная лампа",
+  "block.searchlight.colour_lamp_black": "Чёрная цветная лампа"
 }

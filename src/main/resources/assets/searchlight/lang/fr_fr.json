@@ -61,5 +61,21 @@
   "searchlight.jade.color": "Couleur: %s",
   "searchlight.jade.brightness": "Luminosité: %s",
   "searchlight.jade.mode": "Mode: %s",
-  "config.jade.plugin_searchlight.light_data_component": "Données du projecteur"
+  "config.jade.plugin_searchlight.light_data_component": "Données du projecteur",
+  "block.searchlight.colour_lamp_white": "Lampe colorée blanche",
+  "block.searchlight.colour_lamp_orange": "Lampe colorée orange",
+  "block.searchlight.colour_lamp_magenta": "Lampe colorée magenta",
+  "block.searchlight.colour_lamp_light_blue": "Lampe colorée bleu clair",
+  "block.searchlight.colour_lamp_yellow": "Lampe colorée jaune",
+  "block.searchlight.colour_lamp_lime": "Lampe colorée vert lime",
+  "block.searchlight.colour_lamp_pink": "Lampe colorée rose",
+  "block.searchlight.colour_lamp_gray": "Lampe colorée grise",
+  "block.searchlight.colour_lamp_light_gray": "Lampe colorée gris clair",
+  "block.searchlight.colour_lamp_cyan": "Lampe colorée cyan",
+  "block.searchlight.colour_lamp_purple": "Lampe colorée violette",
+  "block.searchlight.colour_lamp_blue": "Lampe colorée bleue",
+  "block.searchlight.colour_lamp_brown": "Lampe colorée marron",
+  "block.searchlight.colour_lamp_green": "Lampe colorée verte",
+  "block.searchlight.colour_lamp_red": "Lampe colorée rouge",
+  "block.searchlight.colour_lamp_black": "Lampe colorée noire"
 }
