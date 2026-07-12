@@ -23,6 +23,11 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
+import java.util.Set;
+
 import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 
 @Getter
@@ -87,7 +92,47 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
             state = getDirection(dir, level, pos, state);
         }
 
-        return state.setValue(LIT, !level.hasNeighborSignal(pos));
+        return state.setValue(LIT, level.hasNeighborSignal(pos));
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
+        if (!level.isClientSide) {
+            boolean shouldBeLit = !level.hasNeighborSignal(pos);
+
+            // If the signal state changed, propagate the new state through the whole chain
+            if (state.getValue(LIT) != shouldBeLit) {
+                updateLitState(level, pos, shouldBeLit);
+            }
+        }
+    }
+
+    public void updateLitState(Level level, BlockPos pos, boolean newState) {
+        Queue<BlockPos> queue = new ArrayDeque<>();
+        queue.add(pos);
+        Set<BlockPos> visited = new HashSet<>();
+        visited.add(pos);
+
+        while (!queue.isEmpty()) {
+            BlockPos currentPos = queue.poll();
+            BlockState currentState = level.getBlockState(currentPos);
+
+            if (currentState.getBlock() == this && currentState.getValue(LIT) != newState) {
+                // Using flag 10 prevents this update from triggering neighborChanged
+                // 10 = 2 (notify client) + 8 (no neighbor notification)
+                level.setBlock(currentPos, currentState.setValue(LIT, newState), 10);
+
+                for (Direction dir : Direction.values()) {
+                    BlockPos neighborPos = currentPos.relative(dir);
+                    BlockState neighborState = level.getBlockState(neighborPos);
+
+                    if (neighborState.getBlock() == this && !visited.contains(neighborPos)) {
+                        visited.add(neighborPos);
+                        queue.add(neighborPos);
+                    }
+                }
+            }
+        }
     }
 
     private BlockState getDirection(Direction dir, Level level, BlockPos pos, BlockState state) {
@@ -106,7 +151,7 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         boolean isConnected = neighborState.getBlock() instanceof ColourLampBlock;
-        
+
         return state.setValue(getPropertyForDirection(direction), isConnected);
     }
 
