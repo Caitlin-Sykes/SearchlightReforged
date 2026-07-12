@@ -1,18 +1,18 @@
 {
   "textures": {
-    "0": "searchlight:block/colour_light_face_on",
-    "particle": "searchlight:block/colour_light_face_on"
+    "0": "searchlight:block/colour_light_face",
+    "particle": "searchlight:block/colour_light_face"
   },
   "elements": [
     {
       "from": [
         1,
-        1,
+        0,
         1
       ],
       "to": [
         15,
-        15,
+        1,
         15
       ],
       "rotation": {
@@ -20,7 +20,7 @@
         "axis": "y",
         "origin": [
           8,
-          8,
+          7,
           8
         ]
       },
@@ -28,7 +28,7 @@
         "north": {
           "uv": [
             0,
-            0,
+            14.85714,
             16,
             16
           ],
@@ -38,7 +38,7 @@
         "east": {
           "uv": [
             0,
-            0,
+            14.85714,
             16,
             16
           ],
@@ -48,7 +48,7 @@
         "south": {
           "uv": [
             0,
-            0,
+            14.85714,
             16,
             16
           ],
@@ -58,7 +58,7 @@
         "west": {
           "uv": [
             0,
-            0,
+            14.85714,
             16,
             16
           ],
@@ -87,5 +87,73 @@
         }
       }
     }
-  ]
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_lefthand": {
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "firstperson_righthand": {
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    },
+    "firstperson_lefthand": {
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        -1.5,
+        -1.5
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "gui": {
+      "rotation": [
+        31,
+        46,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "head": {
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ]
+    },
+    "fixed": {
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ]
+    }
+  }
 }

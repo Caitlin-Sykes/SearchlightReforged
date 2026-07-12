@@ -18,7 +18,8 @@
     },
     {
       "when": {
-        "up": false
+        "up": false,
+        "east": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -27,7 +28,8 @@
     },
     {
       "when": {
-        "up": false
+        "up": false,
+        "south": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -37,7 +39,8 @@
     },
     {
       "when": {
-        "up": false
+        "up": false,
+        "west": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -47,7 +50,8 @@
     },
     {
       "when": {
-        "up": false
+        "up": false,
+        "north": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -57,7 +61,28 @@
     },
     {
       "when": {
-        "north": false
+        "up": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_top",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "up": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_top_on",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "north": false,
+        "east": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece"
@@ -65,6 +90,7 @@
     },
     {
       "when": {
+        "east": false,
         "south": false
       },
       "apply": {
@@ -74,7 +100,8 @@
     },
     {
       "when": {
-        "south": false
+        "south": false,
+        "west": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -83,7 +110,8 @@
     },
     {
       "when": {
-        "north": false
+        "north": false,
+        "west": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -92,7 +120,86 @@
     },
     {
       "when": {
-        "down": false
+        "north": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side"
+      }
+    },
+    {
+      "when": {
+        "east": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side_on"
+      }
+    },
+    {
+      "when": {
+        "east": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_side_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "down": false,
+        "east": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -101,7 +208,8 @@
     },
     {
       "when": {
-        "down": false
+        "down": false,
+        "south": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -111,7 +219,8 @@
     },
     {
       "when": {
-        "down": false
+        "down": false,
+        "west": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
@@ -121,12 +230,31 @@
     },
     {
       "when": {
-        "down": false
+        "down": false,
+        "north": false
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece",
         "x": 90,
         "y": 270
+      }
+    },
+    {
+      "when": {
+        "down": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_top_on"
+      }
+    },
+    {
+      "when": {
+        "down": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_addition_top"
       }
     }
   ]
