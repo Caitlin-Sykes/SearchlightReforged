@@ -61,5 +61,21 @@
   "searchlight.jade.color": "Cor: %s",
   "searchlight.jade.brightness": "Brilho: %s",
   "searchlight.jade.mode": "Modo: %s",
-  "config.jade.plugin_searchlight.light_data_component": "Dados do holofote"
+  "config.jade.plugin_searchlight.light_data_component": "Dados do holofote",
+  "block.searchlight.colour_lamp_white": "Lâmpada colorida branca",
+  "block.searchlight.colour_lamp_orange": "Lâmpada colorida laranja",
+  "block.searchlight.colour_lamp_magenta": "Lâmpada colorida magenta",
+  "block.searchlight.colour_lamp_light_blue": "Lâmpada colorida azul claro",
+  "block.searchlight.colour_lamp_yellow": "Lâmpada colorida amarela",
+  "block.searchlight.colour_lamp_lime": "Lâmpada colorida limão",
+  "block.searchlight.colour_lamp_pink": "Lâmpada colorida rosa",
+  "block.searchlight.colour_lamp_gray": "Lâmpada colorida cinza",
+  "block.searchlight.colour_lamp_light_gray": "Lâmpada colorida cinza claro",
+  "block.searchlight.colour_lamp_cyan": "Lâmpada colorida ciano",
+  "block.searchlight.colour_lamp_purple": "Lâmpada colorida roxa",
+  "block.searchlight.colour_lamp_blue": "Lâmpada colorida azul",
+  "block.searchlight.colour_lamp_brown": "Lâmpada colorida marrom",
+  "block.searchlight.colour_lamp_green": "Lâmpada colorida verde",
+  "block.searchlight.colour_lamp_red": "Lâmpada colorida vermelha",
+  "block.searchlight.colour_lamp_black": "Lâmpada colorida preta"
 }
