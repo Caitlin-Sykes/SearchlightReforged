@@ -1,6 +1,6 @@
 package com.csykes.searchlight.features.lighting_director;
 
-import com.csykes.searchlight.SearchlightClient;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -15,14 +15,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class LightingDirectorBlock extends Block implements EntityBlock {
-    public static final com.mojang.serialization.MapCodec<LightingDirectorBlock> CODEC = simpleCodec(LightingDirectorBlock::new);
+    public static final MapCodec<LightingDirectorBlock> CODEC = simpleCodec(LightingDirectorBlock::new);
 
     public LightingDirectorBlock(Properties properties) {
         super(properties);
     }
 
     @Override
-    protected com.mojang.serialization.MapCodec<? extends Block> codec() {
+    protected MapCodec<? extends Block> codec() {
         return CODEC;
     }
 

@@ -16,8 +16,10 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.csykes.searchlight.MutableVector3d;
+import com.csykes.searchlight.utils.lighting.AddressableLight;
+import net.minecraft.world.item.DyeColor;
 
-public class SearchlightBlockEntity extends BlockEntity implements com.csykes.searchlight.utils.lighting.AddressableLight {
+public class SearchlightBlockEntity extends BlockEntity implements AddressableLight {
     private @Nullable BlockPos lightSourcePos;
     private String address = "";
 
@@ -67,6 +69,29 @@ public class SearchlightBlockEntity extends BlockEntity implements com.csykes.se
             lightSourcePos = new BlockPos(tag.getInt("light_source_x"), tag.getInt("light_source_y"), tag.getInt("light_source_z"));
         } else {
             lightSourcePos = null;
+        }
+    }
+
+    public DyeColor getColor() {
+        BlockState state = getBlockState();
+        if (state.hasProperty(SearchlightBlock.COLOR)) {
+            return state.getValue(SearchlightBlock.COLOR);
+        }
+        return DyeColor.WHITE;
+    }
+
+    public void setColor(DyeColor color) {
+        if (level != null) {
+            BlockState state = getBlockState();
+            if (state.hasProperty(SearchlightBlock.COLOR)) {
+                level.setBlockAndUpdate(getBlockPos(), state.setValue(SearchlightBlock.COLOR, color));
+                if (lightSourcePos != null) {
+                    BlockState lightState = level.getBlockState(lightSourcePos);
+                    if (lightState.is(Searchlight.LIGHT_SOURCE_BLOCK.get()) && lightState.hasProperty(SearchlightLightSourceBlock.COLOR)) {
+                        level.setBlockAndUpdate(lightSourcePos, lightState.setValue(SearchlightLightSourceBlock.COLOR, color));
+                    }
+                }
+            }
         }
     }
 
@@ -151,7 +176,9 @@ public class SearchlightBlockEntity extends BlockEntity implements com.csykes.se
         }
 
         BlockState oldBlockState = level.getBlockState(newLightPos);
-        if (!level.setBlockAndUpdate(newLightPos, Searchlight.LIGHT_SOURCE_BLOCK.get().defaultBlockState()))
+        DyeColor currentColor = getColor();
+        BlockState lightSourceState = Searchlight.LIGHT_SOURCE_BLOCK.get().defaultBlockState().setValue(SearchlightLightSourceBlock.COLOR, currentColor);
+        if (!level.setBlockAndUpdate(newLightPos, lightSourceState))
             return false;
 
         if (!SearchlightUtil.castBlockEntity(level.getBlockEntity(newLightPos), newLightPos, (SearchlightLightSourceBlockEntity lightBlockEntity) -> {
@@ -176,20 +203,17 @@ public class SearchlightBlockEntity extends BlockEntity implements com.csykes.se
         BlockPos.MutableBlockPos prevBlockPos = new BlockPos.MutableBlockPos(0, 0, 0);
         BlockPos lastValidBlockPos = null;
         int distance = 0;
+        int safetySteps = 0;
 
         while (distance < Searchlight.MAX_DISTANCE) {
             prevBlockPos.set(currentBlockPos);
             currentBlockPosD.add(beamDirection);
             currentBlockPos.set(currentBlockPosD.x, currentBlockPosD.y, currentBlockPosD.z);
             if (prevBlockPos.equals(currentBlockPos)) {
-                // If we didn't move to a new block, we increment distance slightly to avoid infinite loops
-                // but we don't want to increment it too fast. 
-                // Since beamDirection is normalized, adding it should move us at least 0.5 blocks.
-                // If it doesn't move us to a new block, it might be due to floating point precision
-                // or very small components. 
-                // However, a normalized vector ALWAYS has at least one component >= 1/sqrt(3) ~= 0.57.
-                // So it should move us to a new block in at most 2 iterations.
-                distance++; // Safety increment
+                safetySteps++;
+                if (safetySteps > 2000) {
+                    break;
+                }
                 continue;
             }
             distance++;

@@ -1,7 +1,9 @@
 package com.csykes.searchlight;
 
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
@@ -16,6 +18,7 @@ import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -25,12 +28,21 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import com.csykes.searchlight.network.SetLightAddressPayload;
+import com.csykes.searchlight.utils.lighting.AddressableLight;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
@@ -41,6 +53,7 @@ public class Searchlight {
     public static final String MODID = "searchlight";
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final int MAX_DISTANCE = 256;
+    public static final ResourceLocation LIGHT_DATA_COMPONENT = ResourceLocation.fromNamespaceAndPath(MODID, "light_data_component");
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
@@ -60,7 +73,7 @@ public class Searchlight {
 
     public static final DeferredItem<BlockItem> SEARCHLIGHT_ITEM = ITEMS.registerSimpleBlockItem("searchlight", SEARCHLIGHT_BLOCK);
 
-    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = net.neoforged.fml.ModList.get().isLoaded("computercraft")
+    public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = ModList.get().isLoaded("computercraft")
             ? BLOCKS.register("lighting_director", () -> new LightingDirectorBlock(BlockBehaviour.Properties.of()
             .sound(SoundType.METAL)
             .strength(3.0f)
@@ -71,7 +84,7 @@ public class Searchlight {
             ? ITEMS.registerSimpleBlockItem("lighting_director", LIGHTING_DIRECTOR_BLOCK)
             : null;
 
-    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = net.neoforged.fml.ModList.get().isLoaded("computercraft")
+    public static final DeferredItem<Item> LIGHTING_LINKER_CARD = ModList.get().isLoaded("computercraft")
             ? ITEMS.register("lighting_linker_card", () -> new LightingLinkerCardItem(new Item.Properties().stacksTo(1)))
             : null;
 
@@ -87,9 +100,13 @@ public class Searchlight {
     public static final Map<String, DeferredBlock<Block>> WALL_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> CORNER_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> CENTRE_LIGHTS = new LinkedHashMap<>();
+    public static final Map<String, DeferredBlock<Block>> EDGE_LIGHTS = new LinkedHashMap<>();
+    public static final Map<String, DeferredBlock<Block>> COLOUR_LAMPS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> WALL_LIGHT_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> CORNER_LIGHTS_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> CENTRE_LIGHTS_ITEMS = new LinkedHashMap<>();
+    public static final Map<String, DeferredItem<? extends Item>> EDGE_LIGHTS_ITEMS = new LinkedHashMap<>();
+    public static final Map<String, DeferredItem<? extends Item>> COLOUR_LAMP_ITEMS = new LinkedHashMap<>();
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightBlockEntity>> SEARCHLIGHT_BE = BLOCK_ENTITY_TYPES.register("searchlight_entity", () -> BlockEntityType.Builder.of(SearchlightBlockEntity::new, SEARCHLIGHT_BLOCK.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> WALL_LIGHT_BE = BLOCK_ENTITY_TYPES.register("wall_light_entity", () -> {
@@ -102,6 +119,14 @@ public class Searchlight {
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> CENTRE_LIGHT_BE = BLOCK_ENTITY_TYPES.register("centre_light_entity", () -> {
         Block[] blocks = CENTRE_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
+        return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
+    });
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> COLOUR_LAMPS_BE = BLOCK_ENTITY_TYPES.register("colour_lamp_entity", () -> {
+        Block[] blocks = COLOUR_LAMPS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
+        return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
+    });
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<WallLightBlockEntity>> EDGE_LIGHT_BE = BLOCK_ENTITY_TYPES.register("edge_light_entity", () -> {
+        Block[] blocks = EDGE_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
         return BlockEntityType.Builder.of(WallLightBlockEntity::new, blocks).build(null);
     });
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SearchlightLightSourceBlockEntity>> LIGHT_SOURCE_BE = BLOCK_ENTITY_TYPES.register("searchlight_lightsource_entity", () -> BlockEntityType.Builder.of(SearchlightLightSourceBlockEntity::new, LIGHT_SOURCE_BLOCK.get()).build(null));
@@ -117,6 +142,8 @@ public class Searchlight {
             registerWallLight(color.getName());
             registerCornerLight(color.getName());
             registerCentreLight(color.getName());
+            registerEdgeLight(color.getName());
+            registerColourLampLight(color.getName());
         }
     }
 
@@ -143,7 +170,7 @@ public class Searchlight {
 
         String cl_name = "corner_light_" + postfix;
 
-        final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
 
         DeferredBlock<Block> corner_light = BLOCKS.register(cl_name, () -> new CornerLightBlock(BlockBehaviour.Properties.of()
                 .lightLevel((state) -> {
@@ -160,12 +187,33 @@ public class Searchlight {
         CORNER_LIGHTS.put(postfix, corner_light);
         CORNER_LIGHTS_ITEMS.put(postfix, item);
     }
+    private static void registerEdgeLight(String postfix) {
+
+        String cl_name = "edge_light_" + postfix;
+
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
+
+        DeferredBlock<Block> edge_light = BLOCKS.register(cl_name, () -> new EdgeLightBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> {
+                    if (!state.getValue(BlockStateProperties.LIT)) return 0;
+                    return state.hasProperty(AbstractLightBlock.BRIGHTNESS)
+                            ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3
+                            : 15; // Safe default light value
+                })
+                .sound(SoundType.GLASS)
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
+                .noOcclusion(), blockColor));
+        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(cl_name, edge_light);
+        EDGE_LIGHTS.put(postfix, edge_light);
+        EDGE_LIGHTS_ITEMS.put(postfix, item);
+    }
 
     private static void registerCentreLight(String postfix) {
 
         String cl_name = "centre_light_" + postfix;
 
-        final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
 
         DeferredBlock<Block> centre_light = BLOCKS.register(cl_name, () -> new CentreLightBlock(BlockBehaviour.Properties.of()
                 .lightLevel((state) -> {
@@ -181,6 +229,28 @@ public class Searchlight {
         DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(cl_name, centre_light);
         CENTRE_LIGHTS.put(postfix, centre_light);
         CENTRE_LIGHTS_ITEMS.put(postfix, item);
+    }
+
+    private static void registerColourLampLight(String postfix) {
+
+        String cl_name = "colour_lamp_" + postfix;
+
+        final DyeColor blockColor = DyeColor.byName(postfix, DyeColor.WHITE);
+
+        DeferredBlock<Block> centre_light = BLOCKS.register(cl_name, () -> new ColourLampBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> {
+                    if (!state.getValue(BlockStateProperties.LIT)) return 0;
+                    return state.hasProperty(AbstractLightBlock.BRIGHTNESS)
+                            ? (state.getValue(AbstractLightBlock.BRIGHTNESS).getId() + 1) * 3
+                            : 15; // Safe default light value
+                })
+                .sound(SoundType.GLASS)
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
+                .noOcclusion(), blockColor));
+        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(cl_name, centre_light);
+        COLOUR_LAMPS.put(postfix, centre_light);
+        COLOUR_LAMP_ITEMS.put(postfix, item);
     }
 
 
@@ -199,11 +269,13 @@ public class Searchlight {
                 WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
                 CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
                 CENTRE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
+                EDGE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
+                COLOUR_LAMP_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 
     public Searchlight(IEventBus modEventBus) {
         modEventBus.addListener(this::registerCapabilities);
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft")) {
+        if (ModList.get().isLoaded("computercraft")) {
             modEventBus.addListener(this::registerPayloads);
         }
 
@@ -213,18 +285,18 @@ public class Searchlight {
         BLOCK_ENTITY_TYPES.register(modEventBus);
     }
 
-    private void registerPayloads(final net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event) {
-        final net.neoforged.neoforge.network.registration.PayloadRegistrar registrar = event.registrar("searchlight");
+    private void registerPayloads(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("searchlight");
         registrar.playToServer(
-                com.csykes.searchlight.network.SetLightAddressPayload.TYPE,
-                com.csykes.searchlight.network.SetLightAddressPayload.STREAM_CODEC,
+                SetLightAddressPayload.TYPE,
+                SetLightAddressPayload.STREAM_CODEC,
                 (payload, context) -> {
                     context.enqueueWork(() -> {
-                        net.minecraft.world.entity.player.Player player = context.player();
-                        net.minecraft.world.level.Level level = player.level();
-                        net.minecraft.core.BlockPos pos = payload.pos();
-                        net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
-                        if (be instanceof com.csykes.searchlight.utils.lighting.AddressableLight addressable) {
+                        Player player = context.player();
+                        Level level = player.level();
+                        BlockPos pos = payload.pos();
+                        BlockEntity be = level.getBlockEntity(pos);
+                        if (be instanceof AddressableLight addressable) {
                             addressable.setAddress(payload.address());
                             be.setChanged();
                             level.sendBlockUpdated(pos, be.getBlockState(), be.getBlockState(), 3);
@@ -235,7 +307,7 @@ public class Searchlight {
     }
 
     private void registerCapabilities(RegisterCapabilitiesEvent event) {
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft")) {
+        if (ModList.get().isLoaded("computercraft")) {
             try {
                 CCIntegration.register(event);
             } catch (Throwable e) {

@@ -1,7 +1,10 @@
 package com.csykes.searchlight.features.searchlight;
 
+import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.mojang.serialization.MapCodec;
+import net.neoforged.fml.ModList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -11,14 +14,18 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -35,7 +42,16 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM));
+                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
+                .setValue(COLOR, DyeColor.WHITE));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(FACE);
+        builder.add(FACING);
+        builder.add(COLOR);
     }
 
     @Override
@@ -94,9 +110,9 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
-        if (net.neoforged.fml.ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
+        if (ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
             if (world.isClientSide) {
-                com.csykes.searchlight.SearchlightClient.openLightAddressScreen(pos);
+                SearchlightClient.openLightAddressScreen(pos);
                 return InteractionResult.SUCCESS;
             }
             return InteractionResult.SUCCESS;
@@ -121,10 +137,10 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
         });
     }
 
-    public static final com.mojang.serialization.MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
+    public static final MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
 
     @Override
-    protected com.mojang.serialization.MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 }

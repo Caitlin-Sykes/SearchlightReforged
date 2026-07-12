@@ -1,0 +1,23 @@
+{
+  "format_version": "1.9.0",
+  "credit": "Made with Blockbench",
+  "textures": {
+    "rod": "searchlight:block/edge_light_rod_on",
+    "particle": "searchlight:block/edge_light_rod"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 2, 2],
+      "rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+      "faces": {
+        "north": {"uv": [0, 0, 2, 16], "rotation": 270, "texture": "#rod", "tintindex": 0},
+        "east": {"uv": [0, 14, 2, 16], "texture": "#rod", "tintindex": 0},
+        "south": {"uv": [0, 16, 2, 0], "rotation": 270, "texture": "#rod", "tintindex": 0},
+        "west": {"uv": [0, 0, 2, 2], "texture": "#rod", "tintindex": 0},
+        "up": {"uv": [0, 0, 2, 16], "rotation": 270, "texture": "#rod", "tintindex": 0},
+        "down": {"uv": [0, 0, 2, 16], "rotation": 90, "texture": "#rod", "tintindex": 0}
+      }
+    }
+  ]
+}

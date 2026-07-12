@@ -1,0 +1,6 @@
+{
+  "parent": "searchlight:block/centre_light_single",
+  "textures": {
+    "rod": "searchlight:block/corner_light_rod_on"
+  }
+}

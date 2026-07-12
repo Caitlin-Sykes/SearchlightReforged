@@ -1,6 +1,6 @@
 package com.csykes.searchlight.features.searchlight;
 
-import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -22,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -68,7 +69,7 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
 
     @Override
     public int getViewDistance() {
-        return SearchlightUtil.displayBeams() ? 256 : BlockEntityRenderer.super.getViewDistance();
+        return SearchlightClient.displayBeams() ? 256 : BlockEntityRenderer.super.getViewDistance();
     }
 
     @Override
@@ -93,16 +94,19 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
         body.render(poseStack, vertexConsumer, packedLight, packedOverlay);
 
         boolean shouldRenderLight = blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT);
+        DyeColor dyeColor = state.getValue(SearchlightBlock.COLOR);
+        int colorInt = dyeColor.getTextureDiffuseColor();
+
         if (shouldRenderLight) {
             lightFace.setPos((float) pivot.x, (float) pivot.y, (float) pivot.z);
             lightFace.yRot = body.yRot;
             lightFace.xRot = body.xRot;
-            lightFace.render(poseStack, vertexConsumer, 15728880, OverlayTexture.NO_OVERLAY);
+            lightFace.render(poseStack, vertexConsumer, 15728880, OverlayTexture.NO_OVERLAY, 0xFF000000 | colorInt);
         }
 
-        if (SearchlightUtil.displayBeams() && blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT)) {
+        if (SearchlightClient.displayBeams() && blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT)) {
             float distance = Mth.sqrt((float) blockEntity.getLightSourcePos().distSqr(blockEntity.getBlockPos())) + 1.0f;
-            drawBeam(pivot, body.yRot, body.xRot, distance, poseStack, bufferSource, blockEntity.getLevel().getGameTime(), partialTick);
+            drawBeam(pivot, body.yRot, body.xRot, distance, poseStack, bufferSource, blockEntity.getLevel().getGameTime(), partialTick, colorInt);
         }
     }
 
@@ -119,15 +123,16 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
      * @param bufferSource
      * @param gameTime
      * @param partialTick
+     * @param colorInt
      */
-    protected void drawBeam(Vec3 pivot, float yRot, float xRot, float distance, PoseStack poseStack, MultiBufferSource bufferSource, long gameTime, float partialTick) {
+    protected void drawBeam(Vec3 pivot, float yRot, float xRot, float distance, PoseStack poseStack, MultiBufferSource bufferSource, long gameTime, float partialTick, int colorInt) {
         poseStack.pushPose();
         poseStack.translate(pivot.x / 16.0, pivot.y / 16.0, pivot.z / 16.0);
         poseStack.mulPose(Axis.YP.rotation(yRot));
         poseStack.mulPose(Axis.XP.rotation((float) (Math.PI + xRot)));
         poseStack.translate(-0.5, 0.35, -0.5);
 
-        BeaconRenderer.renderBeaconBeam(poseStack, bufferSource, SEARCHLIGHT_BEAM, partialTick, 0.6f, gameTime, 0, (int) distance, 0xC8A2C8, 0.20f, 0.20f);
+        BeaconRenderer.renderBeaconBeam(poseStack, bufferSource, SEARCHLIGHT_BEAM, partialTick, 0.6f, gameTime, 0, (int) distance, colorInt, 0.20f, 0.20f);
         poseStack.popPose();
     }
 
