@@ -5,12 +5,13 @@ import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
-import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
+import com.csykes.searchlight.features.searchlight.SearchlightBlock;
+import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRequest;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
@@ -133,6 +134,11 @@ public class LightingDirectorPeripheral implements IPeripheral {
             }
         } else if (block instanceof ColourLampBlock) {
             DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
+            if (newBlockHolder != null && newBlockHolder.get() != block) {
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof SearchlightBlock) {
+            DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
             if (newBlockHolder != null && newBlockHolder.get() != block) {
                 newBlock = newBlockHolder.get();
             }

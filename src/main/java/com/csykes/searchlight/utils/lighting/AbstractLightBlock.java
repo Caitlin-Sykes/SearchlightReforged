@@ -31,11 +31,7 @@ import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.AttachFace;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.*;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -187,6 +183,10 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (player.isShiftKeyDown()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         if (stack.getItem() instanceof DyeItem dyeItem) {
             if (world.isClientSide) {
                 return ItemInteractionResult.sidedSuccess(world.isClientSide);
@@ -224,6 +224,9 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 if (newBlockHolder != null) newBlock = newBlockHolder.get();
             } else if (block instanceof ColourLampBlock) {
                 DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            } else if (block instanceof SearchlightBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
                 if (newBlockHolder != null) newBlock = newBlockHolder.get();
             }
 

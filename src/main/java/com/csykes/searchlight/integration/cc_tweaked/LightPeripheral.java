@@ -5,18 +5,15 @@ import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
-import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
-import net.minecraft.world.item.DyeColor;
+import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRequest;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
-import java.util.List;
-import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,6 +23,9 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Map;
 
 public class LightPeripheral implements IPeripheral {
     private final BlockEntity tile;
@@ -156,17 +156,6 @@ public class LightPeripheral implements IPeripheral {
 
         Block newBlock = null;
 
-        if (block instanceof SearchlightBlock) {
-            DyeColor dyeColor = DyeColor.byName(normalizedColor, null);
-            if (dyeColor != null) {
-                if (tile instanceof SearchlightBlockEntity searchlightBe) {
-                    searchlightBe.setColor(dyeColor);
-                    return true;
-                }
-            }
-            return false;
-        }
-
         if (block instanceof WallLightBlock) {
             DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
             if (newBlockHolder != null) {
@@ -189,6 +178,11 @@ public class LightPeripheral implements IPeripheral {
             }
         } else if (block instanceof ColourLampBlock) {
             DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
+            if (newBlockHolder != null) {
+                newBlock = newBlockHolder.get();
+            }
+        } else if (block instanceof SearchlightBlock) {
+            DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
             if (newBlockHolder != null) {
                 newBlock = newBlockHolder.get();
             }

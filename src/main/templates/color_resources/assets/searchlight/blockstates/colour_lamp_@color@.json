@@ -436,6 +436,92 @@
         "x": 180,
         "y": 90
       }
+    },
+    {
+      "when": {
+        "east": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "east": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "west": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "north": true,
+        "west": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up_on"
+      }
+    },
+    {
+      "when": {
+        "north": true,
+        "west": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up"
+      }
+    },
+    {
+      "when": {
+        "east": true,
+        "north": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "east": true,
+        "north": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_up",
+        "y": 90
+      }
     }
   ]
 }

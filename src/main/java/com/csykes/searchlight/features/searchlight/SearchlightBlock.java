@@ -3,8 +3,8 @@ package com.csykes.searchlight.features.searchlight;
 import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
-import net.neoforged.fml.ModList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -25,25 +25,28 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 
 public class SearchlightBlock extends AbstractLightBlock implements EntityBlock {
-    public SearchlightBlock(@NotNull Properties properties) {
+    public SearchlightBlock(@NotNull Properties properties, DyeColor color) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
-                .setValue(COLOR, DyeColor.WHITE));
+                .setValue(COLOR, color));
+    }
+
+    public SearchlightBlock(@NotNull Properties properties) {
+        this(properties, DyeColor.WHITE);
     }
 
     @Override
@@ -98,6 +101,10 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (player.isShiftKeyDown()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         ItemInteractionResult result = super.useItemOn(stack, state, world, pos, player, hand, hit);
         if (result.consumesAction()) return result;
 

@@ -38,3 +38,9 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Documentation ###
+/node_modules/
+.vitepress/dist
+**/.vitepress/.temp
+**/.vitepress/cache

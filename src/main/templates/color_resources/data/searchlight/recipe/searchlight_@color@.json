@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "searchlight",
+  "ingredients": [
+    {
+      "item": "minecraft:@color@_dye"
+    },
+    {
+      "tag": "searchlight:searchlights"
+    }
+  ],
+  "result": {
+    "id": "searchlight:searchlight_@color@",
+    "count": 1
+  }
+}

@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "searchlight:searchlight"
+          "name": "searchlight:searchlight_@color@"
         }
       ],
       "conditions": [
