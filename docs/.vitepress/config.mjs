@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Searchlight Reforged",
   description: "Advanced lighting for Minecraft",
+  ignoreDeadLinks: true,
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
@@ -29,10 +30,10 @@ export default defineConfig({
               { text: 'Corner Light', link: '/blocks/corner-light' },
               { text: 'Centre Light', link: '/blocks/centre-light' },
               { text: 'Edge Light', link: '/blocks/edge-light' },
-              { text: 'Colour Lamp', link: '/blocks/colour-lamp' }
-              { text: 'Searchlight', link: '/blocks/searchlight' }
-            ]
-          }
+              { text: 'Colour Lamp', link: '/blocks/colour-lamp' },
+              { text: 'Searchlight', link: '/blocks/searchlight' },
+            ],
+          },
         ]
       }
     ],
