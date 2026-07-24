@@ -1,6 +1,6 @@
 # Wall Light
 
-![Wall Light](/images/wall-light.png)
+![Wall Light](/images/blocks/block/searchlight.png)
 
 ## Description
 

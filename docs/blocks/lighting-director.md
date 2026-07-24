@@ -1,6 +1,6 @@
 # Wireless Lighting Director
 
-![Lighting Director](/images/lighting-director.png)
+![Lighting Director](/images/blocks/block/searchlight.png)
 
 The central hub for wireless light management.
 
