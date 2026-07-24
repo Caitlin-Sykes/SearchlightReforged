@@ -1,5 +1,6 @@
 package com.csykes.searchlight;
 
+import com.csykes.searchlight.features.teddy.TeddyBearEntity;
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
 import com.csykes.searchlight.network.SetLightAddressPayload;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
@@ -8,6 +9,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -17,9 +20,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -40,6 +46,8 @@ public class Searchlight {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
+    public static final DeferredRegister<EntityType<?>> ENTITIES =
+            DeferredRegister.create(Registries.ENTITY_TYPE, MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
 
@@ -254,6 +262,12 @@ public class Searchlight {
                 SEARCHLIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 
+    public static final DeferredHolder<EntityType<?>, EntityType<TeddyBearEntity>> TEDDY_BEAR =
+            ENTITIES.register("teddy_bear",
+                    () -> EntityType.Builder.of(TeddyBearEntity::new, MobCategory.CREATURE)
+                            .sized(0.6f, 1.2f) // Hitbox size (width, height)
+                            .build("teddy_bear"));
+
     public Searchlight(IEventBus modEventBus) {
         modEventBus.addListener(this::registerCapabilities);
         if (ModList.get().isLoaded("computercraft")) {
@@ -262,6 +276,7 @@ public class Searchlight {
 
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
+        ENTITIES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
     }
@@ -297,3 +312,4 @@ public class Searchlight {
         }
     }
 }
+

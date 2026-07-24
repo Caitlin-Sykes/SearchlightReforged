@@ -7,6 +7,8 @@ import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockRenderer;
+import com.csykes.searchlight.features.teddy.TeddyBearRenderer;
+import com.csykes.searchlight.features.teddy.TeddyEntityModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -54,6 +56,13 @@ public class SearchlightClient {
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Searchlight.SEARCHLIGHT_BE.get(), SearchlightBlockRenderer::new);
+        event.registerEntityRenderer(Searchlight.TEDDY_BEAR.get(), TeddyBearRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        // Registers the model's geometry layer
+        event.registerLayerDefinition(TeddyEntityModel.LAYER_LOCATION, TeddyEntityModel::createBodyLayer);
     }
 
     @SubscribeEvent
