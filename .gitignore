@@ -44,3 +44,4 @@ repo/
 .vitepress/dist
 **/.vitepress/.temp
 **/.vitepress/cache
+/docs/.vitepress/dist/

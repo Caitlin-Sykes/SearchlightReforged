@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public class CornerLightBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
+    private final String dyenamicColor;
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -37,8 +38,17 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
     }
 
     public CornerLightBlock(Properties properties, DyeColor blockColor) {
+        this(properties, blockColor, null);
+    }
+
+    public CornerLightBlock(Properties properties, String dyenamicColor) {
+        this(properties, null, dyenamicColor);
+    }
+
+    private CornerLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
         super(properties);
         this.blockColor = blockColor;
+        this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)

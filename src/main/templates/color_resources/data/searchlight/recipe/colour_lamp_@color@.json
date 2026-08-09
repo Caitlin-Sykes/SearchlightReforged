@@ -3,7 +3,7 @@
   "group": "colour_lamp",
   "ingredients": [
     {
-      "item": "minecraft:@color@_dye"
+      "item": "@namespace@:@color@_dye"
     },
     {
       "tag": "searchlight:colour_lamps"

@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 @Getter
 public class CentreLightBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
+    private final String dyenamicColor;
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;
 
     @Override
@@ -39,8 +40,17 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
     }
 
     public CentreLightBlock(Properties properties, DyeColor blockColor) {
+        this(properties, blockColor, null);
+    }
+
+    public CentreLightBlock(Properties properties, String dyenamicColor) {
+        this(properties, null, dyenamicColor);
+    }
+
+    private CentreLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
         super(properties);
         this.blockColor = blockColor;
+        this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)

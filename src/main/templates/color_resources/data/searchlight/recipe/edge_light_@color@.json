@@ -3,7 +3,7 @@
   "group": "edge_light",
   "ingredients": [
     {
-      "item": "minecraft:@color@_dye"
+      "item": "@namespace@:@color@_dye"
     },
     {
       "tag": "searchlight:edge_lights"

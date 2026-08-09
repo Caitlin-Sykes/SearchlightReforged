@@ -22,8 +22,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +34,7 @@ import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 @Getter
 public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
+    private final String dyenamicColor;
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
     public static final BooleanProperty SOUTH = BooleanProperty.create("south");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
@@ -46,8 +47,17 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
     }
 
     public EdgeLightBlock(Properties properties, DyeColor blockColor) {
+        this(properties, blockColor, null);
+    }
+
+    public EdgeLightBlock(Properties properties, String dyenamicColor) {
+        this(properties, null, dyenamicColor);
+    }
+
+    private EdgeLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
         super(properties);
         this.blockColor = blockColor;
+        this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACE, AttachFace.CEILING)
                 .setValue(LIT, true)
@@ -78,7 +88,7 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         // Calculate the axis based on the face the player clicked
         Direction[] axis = context.getNearestLookingDirections();
-        Direction placementDir = Arrays.stream(axis).filter((d)->d==Direction.DOWN||d==Direction.UP).findFirst().orElse(Direction.DOWN);
+        Direction placementDir = Arrays.stream(axis).filter((d) -> d == Direction.DOWN || d == Direction.UP).findFirst().orElse(Direction.DOWN);
 
         // Start with the default state and apply the axis
         Level level = context.getLevel();
@@ -88,8 +98,8 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
                 .setValue(FACE, placementDir == Direction.DOWN ? AttachFace.FLOOR : AttachFace.CEILING)
                 .setValue(NORTH, level.getBlockState(pos.north()).isFaceSturdy(level, pos.north(), Direction.SOUTH))
                 .setValue(SOUTH, level.getBlockState(pos.south()).isFaceSturdy(level, pos.south(), Direction.NORTH))
-                .setValue(EAST,  level.getBlockState(pos.east()).isFaceSturdy(level, pos.east(), Direction.WEST))
-                .setValue(WEST,  level.getBlockState(pos.west()).isFaceSturdy(level, pos.west(), Direction.EAST));
+                .setValue(EAST, level.getBlockState(pos.east()).isFaceSturdy(level, pos.east(), Direction.WEST))
+                .setValue(WEST, level.getBlockState(pos.west()).isFaceSturdy(level, pos.west(), Direction.EAST));
 
         if (!state.getValue(NORTH) && !state.getValue(SOUTH) && !state.getValue(EAST) && !state.getValue(WEST))
             state = state

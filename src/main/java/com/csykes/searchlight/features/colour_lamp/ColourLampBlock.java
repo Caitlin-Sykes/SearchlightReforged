@@ -33,6 +33,7 @@ import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 @Getter
 public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
+    private final String dyenamicColor;
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
     public static final BooleanProperty SOUTH = BooleanProperty.create("south");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
@@ -47,8 +48,17 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
     }
 
     public ColourLampBlock(Properties properties, DyeColor blockColor) {
+        this(properties, blockColor, null);
+    }
+
+    public ColourLampBlock(Properties properties, String dyenamicColor) {
+        this(properties, null, dyenamicColor);
+    }
+
+    private ColourLampBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
         super(properties);
         this.blockColor = blockColor;
+        this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACE, AttachFace.CEILING)
                 .setValue(LIT, true)

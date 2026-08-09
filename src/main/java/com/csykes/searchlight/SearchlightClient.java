@@ -7,6 +7,7 @@ import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockRenderer;
+import com.csykes.searchlight.integration.dyenamics.DyenamicHelper;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -28,6 +29,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -40,7 +42,6 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.Map.Entry;
 
-import static net.minecraft.world.item.DyeColor.PURPLE;
 import static net.minecraft.world.item.DyeColor.byName;
 
 @Mod(value = Searchlight.MODID, dist = Dist.CLIENT)
@@ -58,13 +59,38 @@ public class SearchlightClient {
 
     @SubscribeEvent
     static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+        for (DeferredBlock<Block> blockHolder : Searchlight.WALL_LIGHTS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    String name = Searchlight.WALL_LIGHTS.entrySet().stream()
+                            .filter(e -> e.getValue().get() == state.getBlock())
+                            .map(Entry::getKey)
+                            .findFirst()
+                            .orElse("white");
+
+                    DyeColor standard = byName(name, null);
+                    if (standard != null) return standard.getTextureDiffuseColor();
+
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(name);
+                    }
+                }
+                return -1;
+            }, blockHolder.get());
+        }
+
         for (DeferredBlock<Block> blockHolder : Searchlight.CORNER_LIGHTS.values()) {
             event.register((state, world, pos, tintIndex) -> {
 
                 if (tintIndex == 0) {
                     // Read directly from the block instance cast
                     if (state.getBlock() instanceof CornerLightBlock cornerBlock) {
-                        return cornerBlock.getBlockColor().getTextureDiffuseColor();
+                        if (cornerBlock.getBlockColor() != null) {
+                            return cornerBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && cornerBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(cornerBlock.getDyenamicColor());
+                        }
                     }
                     return -1;
                 }
@@ -90,7 +116,12 @@ public class SearchlightClient {
                 if (tintIndex == 0) {
                     // Read directly from the block instance cast
                     if (state.getBlock() instanceof CentreLightBlock centreLightBlock) {
-                        return centreLightBlock.getBlockColor().getTextureDiffuseColor();
+                        if (centreLightBlock.getBlockColor() != null) {
+                            return centreLightBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && centreLightBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(centreLightBlock.getDyenamicColor());
+                        }
                     }
                     return -1;
                 }
@@ -115,7 +146,12 @@ public class SearchlightClient {
             event.register((state, world, pos, tintIndex) -> {
                 if (tintIndex == 0) {
                     if (state.getBlock() instanceof ColourLampBlock colourLampBlock) {
-                        return colourLampBlock.getBlockColor().getTextureDiffuseColor();
+                        if (colourLampBlock.getBlockColor() != null) {
+                            return colourLampBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && colourLampBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(colourLampBlock.getDyenamicColor());
+                        }
                     }
                 }
                 return -1;
@@ -127,7 +163,12 @@ public class SearchlightClient {
                 if (tintIndex == 0) {
                     // Read directly from the block instance cast
                     if (state.getBlock() instanceof EdgeLightBlock edgeLightBlock) {
-                        return edgeLightBlock.getBlockColor().getTextureDiffuseColor();
+                        if (edgeLightBlock.getBlockColor() != null) {
+                            return edgeLightBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && edgeLightBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(edgeLightBlock.getDyenamicColor());
+                        }
                     }
                     return -1;
                 }
@@ -148,13 +189,17 @@ public class SearchlightClient {
             }, edgeBlockHolder.get());
         }
 
-        for (DeferredBlock<Block> edgeBlockHolder : Searchlight.SEARCHLIGHTS.values()) {
+        for (DeferredBlock<Block> blockHolder : Searchlight.SEARCHLIGHTS.values()) {
             event.register((state, world, pos, tintIndex) -> {
 
                 if (tintIndex == 0) {
-                    // Read directly from the block instance cast
-                    if (state.getBlock() instanceof EdgeLightBlock edgeLightBlock) {
-                        return edgeLightBlock.getBlockColor().getTextureDiffuseColor();
+                    if (state.getBlock() instanceof com.csykes.searchlight.features.searchlight.SearchlightBlock searchlightBlock) {
+                        if (searchlightBlock.getBlockColor() != null) {
+                            return searchlightBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && searchlightBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(searchlightBlock.getDyenamicColor());
+                        }
                     }
                     return -1;
                 }
@@ -172,7 +217,7 @@ public class SearchlightClient {
                 }
 
                 return -1;
-            }, edgeBlockHolder.get());
+            }, blockHolder.get());
         }
     }
 
@@ -181,13 +226,15 @@ public class SearchlightClient {
     static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         // 1. Handle Wall Light Item Colors
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.WALL_LIGHT_ITEMS.entrySet()) {
-            DyeColor color = byName(entry.getKey(), PURPLE);
-            int hexColor = color.getTextureDiffuseColor();
+            String colorName = entry.getKey();
 
-            // FIX: Passing entry.getValue().get() extracts the raw Item instance required by the event register method signature
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
-                    return hexColor;
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
                 }
                 return -1;
             }, entry.getValue().get());
@@ -195,13 +242,14 @@ public class SearchlightClient {
 
         // 2. Handle Corner Light Item Colors
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.CORNER_LIGHTS_ITEMS.entrySet()) {
-            DyeColor color = byName(entry.getKey(), PURPLE);
-            int hexColor = color.getTextureDiffuseColor();
-
-            // FIX: Unpacking the corner light item out of the lazy DeferredItem map holder
+            String colorName = entry.getKey();
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
-                    return hexColor;
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
                 }
                 return -1;
             }, entry.getValue().get());
@@ -210,13 +258,14 @@ public class SearchlightClient {
 
         // 2. Handle Colour Lamp Light Item Colors
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.COLOUR_LAMP_ITEMS.entrySet()) {
-            DyeColor color = byName(entry.getKey(), PURPLE);
-            int hexColor = color.getTextureDiffuseColor();
-
-            // FIX: Unpacking the corner light item out of the lazy DeferredItem map holder
+            String colorName = entry.getKey();
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
-                    return hexColor;
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
                 }
                 return -1;
             }, entry.getValue().get());
@@ -224,13 +273,14 @@ public class SearchlightClient {
 
 
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.CENTRE_LIGHTS_ITEMS.entrySet()) {
-            DyeColor color = byName(entry.getKey(), PURPLE);
-            int hexColor = color.getTextureDiffuseColor();
-
-            // FIX: Unpacking the corner light item out of the lazy DeferredItem map holder
+            String colorName = entry.getKey();
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
-                    return hexColor;
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
                 }
                 return -1;
             }, entry.getValue().get());
@@ -238,26 +288,28 @@ public class SearchlightClient {
 
         // 2. Handle Edge Light Item Colors
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.EDGE_LIGHTS_ITEMS.entrySet()) {
-            DyeColor color = byName(entry.getKey(), PURPLE);
-            int hexColor = color.getTextureDiffuseColor();
-
-            // FIX: Unpacking the edge light item out of the lazy DeferredItem map holder
+            String colorName = entry.getKey();
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
-                    return hexColor;
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
                 }
                 return -1;
             }, entry.getValue().get());
         }
 
         for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.SEARCHLIGHT_ITEMS.entrySet()) {
-            DyeColor color = byName(entry.getKey(), PURPLE);
-            int hexColor = color.getTextureDiffuseColor();
-
-            // FIX: Unpacking the corner light item out of the lazy DeferredItem map holder
+            String colorName = entry.getKey();
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
-                    return hexColor;
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
                 }
                 return -1;
             }, entry.getValue().get());

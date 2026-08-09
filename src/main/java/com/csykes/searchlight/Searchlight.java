@@ -1,6 +1,7 @@
 package com.csykes.searchlight;
 
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
+import com.csykes.searchlight.integration.dyenamics.DyenamicsIntegration;
 import com.csykes.searchlight.network.SetLightAddressPayload;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.mojang.logging.LogUtils;
@@ -10,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -170,13 +172,17 @@ public class Searchlight {
         registerWallLight("iron");
         registerWallLight("copper");
         registerWallLight("prismarine");
-        for (net.minecraft.world.item.DyeColor color : net.minecraft.world.item.DyeColor.values()) {
+        for (DyeColor color : DyeColor.values()) {
             registerWallLight(color.getName());
             registerCornerLight(color.getName());
             registerCentreLight(color.getName());
             registerEdgeLight(color.getName());
             registerColourLampLight(color.getName());
             registerSearchlight(color.getName());
+        }
+
+        if (ModList.get().isLoaded("dyenamics")) {
+            DyenamicsIntegration.init();
         }
     }
 
