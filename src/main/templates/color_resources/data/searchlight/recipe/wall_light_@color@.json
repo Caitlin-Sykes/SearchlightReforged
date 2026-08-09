@@ -3,7 +3,7 @@
   "group": "wall_light",
   "ingredients": [
     {
-      "item": "minecraft:@color@_dye"
+      "item": "@namespace@:@color@_dye"
     },
     {
       "tag": "searchlight:wall_lights"

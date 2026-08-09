@@ -19,10 +19,10 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -96,6 +96,10 @@ public class SearchlightBlockRenderer implements BlockEntityRenderer<Searchlight
         boolean shouldRenderLight = blockEntity.getLightSourcePos() != null && state.getValue(AbstractLightBlock.LIT);
         DyeColor dyeColor = state.getValue(SearchlightBlock.COLOR);
         int colorInt = dyeColor.getTextureDiffuseColor();
+
+        if (state.getBlock() instanceof SearchlightBlock searchlightBlock && searchlightBlock.getDyenamicColor() != null) {
+            colorInt = com.csykes.searchlight.integration.dyenamics.DyenamicHelper.getDyenamicColor(searchlightBlock.getDyenamicColor());
+        }
 
         if (shouldRenderLight) {
             lightFace.setPos((float) pivot.x, (float) pivot.y, (float) pivot.z);

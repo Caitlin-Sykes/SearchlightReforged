@@ -35,18 +35,31 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class SearchlightBlock extends AbstractLightBlock implements EntityBlock {
+    private final DyeColor blockColor;
+    private final String dyenamicColor;
+
     public SearchlightBlock(@NotNull Properties properties, DyeColor color) {
+        this(properties, color, null);
+    }
+
+    public SearchlightBlock(@NotNull Properties properties, String dyenamicColor) {
+        this(properties, null, dyenamicColor);
+    }
+
+    private SearchlightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
         super(properties);
+        this.blockColor = blockColor;
+        this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
-                .setValue(COLOR, color));
+                .setValue(COLOR, blockColor != null ? blockColor : DyeColor.WHITE));
     }
 
     public SearchlightBlock(@NotNull Properties properties) {
-        this(properties, DyeColor.WHITE);
+        this(properties, DyeColor.WHITE, null);
     }
 
     @Override
@@ -142,6 +155,14 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
             }
             blockEntity.raycastAndPlaceLightSource(direction);
         });
+    }
+
+    public DyeColor getBlockColor() {
+        return blockColor;
+    }
+
+    public String getDyenamicColor() {
+        return dyenamicColor;
     }
 
     public static final MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
