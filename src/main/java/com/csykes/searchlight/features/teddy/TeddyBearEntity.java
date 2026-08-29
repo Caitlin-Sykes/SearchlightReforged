@@ -136,12 +136,36 @@ public class TeddyBearEntity extends TamableAnimal {
         // 6. FOLLOW OWNER
         this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.0D, 10.0F, 2.0F));
 
-        // 7. WANDER AROUND
-        this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+        // 7. RETURN & REST ON BED WHEN IDLE OR OWNER SLEEPING
+        this.goalSelector.addGoal(7, new MoveToBlockGoal(this, 1.0D, 24) {
+            @Override
+            protected boolean isValidTarget(LevelReader level, BlockPos pos) {
+                return level.getBlockState(pos).is(net.minecraft.tags.BlockTags.BEDS);
+            }
 
-        // 8. IDLE LOOKING
-        this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
+            @Override
+            public boolean canUse() {
+                if (!TeddyBearEntity.this.isTame() || TeddyBearEntity.this.isOrderedToSit() || TeddyBearEntity.this.isHugging()) {
+                    return false;
+                }
+                return super.canUse();
+            }
+
+            @Override
+            public void tick() {
+                super.tick();
+                if (this.isReachedTarget()) {
+                    TeddyBearEntity.this.getNavigation().stop();
+                }
+            }
+        });
+
+        // 8. WANDER AROUND
+        this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 1.0D));
+
+        // 9. IDLE LOOKING
+        this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(10, new RandomLookAroundGoal(this));
     }
 
     // Define core attributes (health, speed, etc.)

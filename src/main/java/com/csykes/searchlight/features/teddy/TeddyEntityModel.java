@@ -141,15 +141,30 @@ public class TeddyEntityModel<T extends Entity> extends EntityModel<T> {
 		this.hood.yRot = 0.0F;
 		this.hood.zRot = 0.0F;
 
+		this.pawFR.x = -2.3F;
+		this.pawFR.y = 5.25F;
+		this.pawFR.z = 1.5F;
 		this.pawFR.xRot = 0.0F;
 		this.pawFR.yRot = 0.0F;
 		this.pawFR.zRot = 0.0F;
+
+		this.pawFL.x = -2.3F;
+		this.pawFL.y = 5.25F;
+		this.pawFL.z = 1.5F;
 		this.pawFL.xRot = 0.0F;
 		this.pawFL.yRot = 0.0F;
 		this.pawFL.zRot = 0.0F;
+
+		this.pawHR.x = -2.3F;
+		this.pawHR.y = 5.25F;
+		this.pawHR.z = 1.5F;
 		this.pawHR.xRot = 0.0F;
 		this.pawHR.yRot = 0.0F;
 		this.pawHR.zRot = 0.0F;
+
+		this.pawHL.x = -2.3F;
+		this.pawHL.y = 5.25F;
+		this.pawHL.z = 1.5F;
 		this.pawHL.xRot = 0.0F;
 		this.pawHL.yRot = 0.0F;
 		this.pawHL.zRot = 0.0F;
@@ -165,32 +180,41 @@ public class TeddyEntityModel<T extends Entity> extends EntityModel<T> {
 		this.hood.xRot = -0.10F * this.head.xRot;
 
 		// 3. Walk Cycle & Honey Pot Physics
+		// pawFR/pawFL are LEGS (feet). pawHR/pawHL are ARMS (hands).
 		if (limbSwingAmount > 0.01F) {
-			this.pawHR.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-			this.pawHL.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
-			this.pawFL.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
-			this.pawFR.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
+			// Legs (feet) swing for walking
+			this.pawFR.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+			this.pawFL.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
+			// Arms (hands) swing opposite legs
+			this.pawHL.xRot = Mth.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount;
+			this.pawHR.xRot = Mth.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount;
 
 			// Honey jar sloshing physics while walking
 			this.honey_pot.xRot = Mth.cos(limbSwing * 0.6662F) * 0.25F * limbSwingAmount;
 			this.honey_pot.zRot = Mth.sin(limbSwing * 0.6662F) * 0.15F * limbSwingAmount;
 		} else {
-			// Gentle breathing when standing still
-			this.pawFR.zRot = Mth.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
-			this.pawFL.zRot = Mth.cos(ageInTicks * 0.09F) * -0.05F - 0.05F;
+			// Gentle arm breathing when standing still (pawHR/pawHL are ARMS)
+			this.pawHR.zRot = Mth.cos(ageInTicks * 0.09F) * 0.05F + 0.05F;
+			this.pawHL.zRot = Mth.cos(ageInTicks * 0.09F) * -0.05F - 0.05F;
 		}
 
-		// 4. Sitting Pose
+		// 4. Sitting Pose (Legs tucked compactly against torso without floor clipping)
 		if (bear.isInSittingPose() || bear.isOrderedToSit()) {
-			this.Body.y = 15.0F;
-			this.pawHR.xRot = -1.4F;
-			this.pawHL.xRot = -1.4F;
-			this.pawHR.yRot = -0.2F;
-			this.pawHL.yRot = 0.2F;
-			this.pawFR.xRot = -0.4F;
-			this.pawFL.xRot = -0.4F;
-			this.pawFR.zRot = 0.1F;
-			this.pawFL.zRot = -0.1F;
+			this.Body.y = 12.5F;
+			// Lift leg joints slightly and angle forward at 40 degrees
+			this.pawFR.y = 4.0F;
+			this.pawFL.y = 4.0F;
+			this.pawFR.z = 0.0F;
+			this.pawFL.z = 0.0F;
+			this.pawFR.xRot = -0.7F;
+			this.pawFL.xRot = -0.7F;
+			this.pawFR.yRot = -0.15F;
+			this.pawFL.yRot = 0.15F;
+			// Arms (hands: pawHR, pawHL) rest on lap
+			this.pawHR.xRot = -0.4F;
+			this.pawHL.xRot = -0.4F;
+			this.pawHR.zRot = 0.1F;
+			this.pawHL.zRot = -0.1F;
 			// Drowsy head dip
 			this.head.xRot += Mth.sin(ageInTicks * 0.04F) * 0.05F + 0.05F;
 		}
@@ -198,29 +222,33 @@ public class TeddyEntityModel<T extends Entity> extends EntityModel<T> {
 		// 5. Hugging Animation (Warm Cuddle Squeeze)
 		if (bear.isHugging()) {
 			this.honey_pot.visible = false;
-			this.pawFR.xRot = (float) -Math.PI / 2F;
-			this.pawFL.xRot = (float) -Math.PI / 2F;
+			// Arms (hands: pawHR, pawHL) raise forward to hug!
+			this.pawHR.xRot = (float) -Math.PI / 2F;
+			this.pawHL.xRot = (float) -Math.PI / 2F;
 			// Soft pulsing cuddle squeeze
-			this.pawFR.zRot = -0.15F + Mth.sin(ageInTicks * 0.2F) * 0.05F;
-			this.pawFL.zRot = 0.15F - Mth.sin(ageInTicks * 0.2F) * 0.05F;
+			this.pawHR.zRot = -0.15F + Mth.sin(ageInTicks * 0.2F) * 0.05F;
+			this.pawHL.zRot = 0.15F - Mth.sin(ageInTicks * 0.2F) * 0.05F;
 			// Happy cuddle head nudge
 			this.head.zRot = Mth.cos(ageInTicks * 0.12F) * 0.08F;
 		}
 
 		// 6. Eating Honey Licking Feast Animation
 		if (bear.isEatingHoney()) {
+			// Right arm (pawHR holding honey pot) brings pot to mouth
 			this.pawHR.xRot = -1.2F;
 			this.pawHR.yRot = 0.3F;
 			this.head.xRot += 0.35F;
 			this.Muzzle.y = Mth.sin(ageInTicks * 0.5F) * 0.15F;
-			this.pawFL.xRot = -0.6F;
-			this.pawFL.zRot = -0.2F + Mth.cos(ageInTicks * 0.3F) * 0.1F;
+			// Left arm (pawHL) pats belly
+			this.pawHL.xRot = -0.6F;
+			this.pawHL.zRot = 0.2F + Mth.cos(ageInTicks * 0.3F) * 0.1F;
 		}
 
 		// 7. Begging for Honey Animation (When player holds honey item nearby)
 		if (!bear.isEatingHoney() && !bear.isHugging() && bear.isBeggingForHoney()) {
-			this.pawFR.xRot = -0.8F + Mth.sin(ageInTicks * 0.3F) * 0.2F;
-			this.pawFL.xRot = -0.8F + Mth.cos(ageInTicks * 0.3F) * 0.2F;
+			// Arms (hands: pawHR, pawHL) wave up and down in begging motion!
+			this.pawHR.xRot = -0.8F + Mth.sin(ageInTicks * 0.3F) * 0.2F;
+			this.pawHL.xRot = -0.8F + Mth.cos(ageInTicks * 0.3F) * 0.2F;
 			this.head.xRot -= 0.2F;
 			this.head.zRot = 0.12F;
 		}
