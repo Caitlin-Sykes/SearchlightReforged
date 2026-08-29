@@ -1,5 +1,7 @@
 package com.csykes.searchlight;
 
+import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
+import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
 import com.csykes.searchlight.integration.dyenamics.DyenamicsIntegration;
 import com.csykes.searchlight.network.SetLightAddressPayload;
@@ -10,14 +12,13 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
@@ -50,17 +51,19 @@ public class Searchlight {
     public static final Map<String, DeferredBlock<Block>> CENTRE_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> EDGE_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> COLOUR_LAMPS = new LinkedHashMap<>();
+    public static final Map<String, DeferredBlock<Block>> COLOUR_SLAB_LAMPS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> SEARCHLIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> WALL_LIGHT_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> CORNER_LIGHTS_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> CENTRE_LIGHTS_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> EDGE_LIGHTS_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> COLOUR_LAMP_ITEMS = new LinkedHashMap<>();
+    public static final Map<String, DeferredItem<? extends Item>> COLOUR_SLAB_ITEMS = new LinkedHashMap<>();
     public static final Map<String, DeferredItem<? extends Item>> SEARCHLIGHT_ITEMS = new LinkedHashMap<>();
 
     private static void registerWallLight(String postfix) {
         String wl_name = "wall_light_" + postfix;
-        DeferredBlock<Block> block = BLOCKS.register(wl_name, () -> new com.csykes.searchlight.features.wall_light.WallLightBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
+        DeferredBlock<Block> block = BLOCKS.register(wl_name, () -> new WallLightBlock(BlockBehaviour.Properties.of()
                 .lightLevel((state) -> {
                     return 15;
                 })
@@ -168,6 +171,25 @@ public class Searchlight {
         COLOUR_LAMP_ITEMS.put(postfix, item);
     }
 
+    private static void registerColourLampSlabLight(String postfix) {
+
+        String cl_name = "colour_lamp_slab_" + postfix;
+
+        final DyeColor blockColor = DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
+
+        DeferredBlock<Block> colour_slab = BLOCKS.register(cl_name, () -> new ColourLampSlabBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> {
+                    return 15;
+                })
+                .sound(SoundType.GLASS)
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
+                .noOcclusion(), blockColor));
+        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(cl_name, colour_slab);
+        COLOUR_SLAB_LAMPS.put(postfix, colour_slab);
+        COLOUR_SLAB_ITEMS.put(postfix, item);
+    }
+
     static {
         registerWallLight("iron");
         registerWallLight("copper");
@@ -178,6 +200,7 @@ public class Searchlight {
             registerCentreLight(color.getName());
             registerEdgeLight(color.getName());
             registerColourLampLight(color.getName());
+            registerColourLampSlabLight(color.getName());
             registerSearchlight(color.getName());
         }
 
@@ -205,6 +228,11 @@ public class Searchlight {
         Block[] blocks = COLOUR_LAMPS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
         return BlockEntityType.Builder.of(com.csykes.searchlight.features.wall_light.WallLightBlockEntity::new, blocks).build(null);
     });
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.csykes.searchlight.features.wall_light.WallLightBlockEntity>> COLOUR_LAMPS_SLAB_BE = BLOCK_ENTITY_TYPES.register("colour_lamp_slab_entity", () -> {
+        Block[] blocks = COLOUR_SLAB_LAMPS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
+        return BlockEntityType.Builder.of(com.csykes.searchlight.features.wall_light.WallLightBlockEntity::new, blocks).build(null);
+    });
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.csykes.searchlight.features.wall_light.WallLightBlockEntity>> EDGE_LIGHT_BE = BLOCK_ENTITY_TYPES.register("edge_light_entity", () -> {
         Block[] blocks = EDGE_LIGHTS.values().stream().map(DeferredBlock::get).toArray(Block[]::new);
         return BlockEntityType.Builder.of(com.csykes.searchlight.features.wall_light.WallLightBlockEntity::new, blocks).build(null);
@@ -257,6 +285,7 @@ public class Searchlight {
                 CENTRE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
                 EDGE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
                 COLOUR_LAMP_ITEMS.values().forEach(item -> output.accept(item.get()));
+                COLOUR_SLAB_ITEMS.values().forEach(item -> output.accept(item.get()));
                 SEARCHLIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
             }).build());
 

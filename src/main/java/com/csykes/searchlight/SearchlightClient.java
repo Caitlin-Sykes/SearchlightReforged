@@ -314,6 +314,19 @@ public class SearchlightClient {
                 return -1;
             }, entry.getValue().get());
         }
+        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.COLOUR_SLAB_ITEMS.entrySet()) {
+            String colorName = entry.getKey();
+            event.register((stack, tintIndex) -> {
+                if (tintIndex == 0) {
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
+                }
+                return -1;
+            }, entry.getValue().get());
+        }
     }
 
     public static void openLightAddressScreen(BlockPos pos) {
