@@ -225,6 +225,9 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
             } else if (block instanceof ColourLampBlock) {
                 DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
                 if (newBlockHolder != null) newBlock = newBlockHolder.get();
+            } else if (block instanceof com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock) {
+                DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_SLAB_LAMPS.get(normalizedColor);
+                if (newBlockHolder != null) newBlock = newBlockHolder.get();
             } else if (block instanceof SearchlightBlock) {
                 DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
                 if (newBlockHolder != null) newBlock = newBlockHolder.get();

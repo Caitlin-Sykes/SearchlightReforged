@@ -2,6 +2,7 @@ package com.csykes.searchlight;
 
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
+import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
@@ -156,6 +157,22 @@ public class SearchlightClient {
                 }
                 return -1;
             }, colourLampHolder.get());
+        }
+
+        for (DeferredBlock<Block> colourLampSlabHolder : Searchlight.COLOUR_SLAB_LAMPS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    if (state.getBlock() instanceof ColourLampSlabBlock colourLampSlabBlock) {
+                        if (colourLampSlabBlock.getBlockColor() != null) {
+                            return colourLampSlabBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && colourLampSlabBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(colourLampSlabBlock.getDyenamicColor());
+                        }
+                    }
+                }
+                return -1;
+            }, colourLampSlabHolder.get());
         }
         for (DeferredBlock<Block> edgeBlockHolder : Searchlight.EDGE_LIGHTS.values()) {
             event.register((state, world, pos, tintIndex) -> {

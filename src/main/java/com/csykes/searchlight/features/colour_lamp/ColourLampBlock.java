@@ -60,7 +60,6 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
         this.blockColor = blockColor;
         this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
-                .setValue(FACE, AttachFace.CEILING)
                 .setValue(LIT, true)
                 .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(NORTH, false)
@@ -81,7 +80,6 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
         builder.add(WEST);
         builder.add(UP);
         builder.add(DOWN);
-        builder.add(FACE);
     }
 
     @Override

@@ -5,9 +5,8 @@
 ## DISCLAIMER
 
 This is a ported version of the Searchlight mod, originally created by Lizard-Of-Oz. The port is unofficial and not
-affiliated with the original mod or its creators.
-Please do not report bugs to the original mod author. If you encounter any issues, please report them to this
-repository's issue tracker.
+affiliated with the original mod or its creators. Please do not report bugs to the original mod author. If you encounter
+any issues, please report them to this repository's issue tracker.
 
 You can visit the original mod's CurseForge page at https://www.curseforge.com/minecraft/mc-mods/searchlight-forge or
 the GitHub repository https://github.com/Lizard-Of-Oz/Searchlight.
@@ -31,19 +30,37 @@ original [SearchLight Repository](https://github.com/Lizard-Of-Oz/Searchlight).
 - Refactored codebase for better internal compatibility
 - You can dim and brighten the lights by right-clicking with glowstone (to increase) or redstone (to decrease)
 - Redstone toggleable (if provided with a redstone signal, light goes off)
-- Computer Craft Integration
-    - GetBrightness()
-    - SetBrightness(int)
-    - GetColor()
-    - SetColor(colour)
-    - SetLit(lit)
-    - IsLit()
+- ComputerCraft / CC: Tweaked Integration:
+    - Peripheral support on all lights and Lighting Director
+    - Methods: `getBrightness()`, `setBrightness(int)`, `getColor()`, `setColor(name)`, `setLit(mode)`, `isLit()`,
+      `getLinkedLights()`, `setLight(key, options)`
+- Dyenamics Integration:
+    - Full color variant support for Wall Lights, Searchlights, Corner Lights, Edge Lights, Centre Lights, and Colour
+      Lamps
+- Jade Integration:
+    - Tooltip display for light state, color, brightness level, and redstone mode
+- Automated E2E Testing with MAT (Minecraft Automated Testing) framework:
+    - Full GameTest coverage running headlessly via CI (`./gradlew test` / `./gradlew runGameTestServer`)
+    - Zero-dependency dynamic structure generation with `StructureBuilder`
 - Added french translation
 
 ### Todo List:
 
-- [ ] Dyeable searchlights
-- [ ] DYENAMICS SUPPORT?
+- [x] Dyeable searchlights
+- [x] DYENAMICS SUPPORT
+- [x] CC: Tweaked Integration
+- [x] Jade Integration
+- [x] Automated E2E Testing Pipeline (MAT)
+
+### Running Automated Tests
+
+Run the complete headless GameTest suite with:
+
+```bash
+./gradlew test
+# or directly
+./gradlew runGameTestServer
+```
 
 ### Release Automation
 

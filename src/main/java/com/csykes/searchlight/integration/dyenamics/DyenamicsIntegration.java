@@ -3,6 +3,7 @@ package com.csykes.searchlight.integration.dyenamics;
 import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
+import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
@@ -24,6 +25,7 @@ public class DyenamicsIntegration {
             registerDyenamicCentreLight(color.getSerializedName());
             registerDyenamicEdgeLight(color.getSerializedName());
             registerDyenamicColourLampLight(color.getSerializedName());
+            registerDyenamicColourLampSlabLight(color.getSerializedName());
             registerDyenamicSearchlight(color.getSerializedName());
         });
     }
@@ -103,5 +105,17 @@ public class DyenamicsIntegration {
                 .noOcclusion(), postfix));
         Searchlight.COLOUR_LAMPS.put(postfix, block);
         Searchlight.COLOUR_LAMP_ITEMS.put(postfix, Searchlight.ITEMS.registerSimpleBlockItem(cl_name, block));
+    }
+
+    private static void registerDyenamicColourLampSlabLight(String postfix) {
+        String cl_name = "colour_lamp_slab_" + postfix;
+        DeferredBlock<Block> block = Searchlight.BLOCKS.register(cl_name, () -> new ColourLampSlabBlock(BlockBehaviour.Properties.of()
+                .lightLevel((state) -> 15)
+                .sound(SoundType.GLASS)
+                .strength(2.0f, 4.0f)
+                .requiresCorrectToolForDrops()
+                .noOcclusion(), postfix));
+        Searchlight.COLOUR_SLAB_LAMPS.put(postfix, block);
+        Searchlight.COLOUR_SLAB_ITEMS.put(postfix, Searchlight.ITEMS.registerSimpleBlockItem(cl_name, block));
     }
 }

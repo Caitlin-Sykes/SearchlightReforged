@@ -5,6 +5,7 @@ import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
+import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -34,6 +35,7 @@ import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@Getter
 public class SearchlightBlock extends AbstractLightBlock implements EntityBlock {
     private final DyeColor blockColor;
     private final String dyenamicColor;
@@ -155,14 +157,6 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
             }
             blockEntity.raycastAndPlaceLightSource(direction);
         });
-    }
-
-    public DyeColor getBlockColor() {
-        return blockColor;
-    }
-
-    public String getDyenamicColor() {
-        return dyenamicColor;
     }
 
     public static final MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
