@@ -24,6 +24,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -53,7 +54,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(LIT, BRIGHTNESS, LIGHT_REQUEST);
+        builder.add(LIT);
     }
 
     @Override
@@ -111,7 +112,8 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
         if (world.isClientSide) return;
         boolean isPoweredNow = world.hasNeighborSignal(pos);
         boolean wasLitBefore = state.getValue(LIT);
-        LightRequest requested = state.getValue(LIGHT_REQUEST);
+        BlockEntity be = world.getBlockEntity(pos);
+        LightRequest requested = (be instanceof AddressableLight light) ? light.getLightRequest() : LightRequest.RELEASE;
 
         if (state.hasProperty(CONNECTION)) {
             Direction.Axis axis = state.hasProperty(BlockStateProperties.AXIS) ? state.getValue(BlockStateProperties.AXIS) : Direction.Axis.Y;
@@ -133,8 +135,9 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 BlockState target = world.getBlockState(pos.relative(upDir, distance));
                 while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
                     isPoweredNow |= world.hasNeighborSignal(pos.relative(upDir, distance));
-                    if (target.getValue(LIGHT_REQUEST) != LightRequest.RELEASE) {
-                        requested = target.getValue(LIGHT_REQUEST);
+                    BlockEntity neighborBe = world.getBlockEntity(pos.relative(upDir, distance));
+                    if (neighborBe instanceof AddressableLight neighborLight && neighborLight.getLightRequest() != LightRequest.RELEASE) {
+                        requested = neighborLight.getLightRequest();
                     }
                     distance++;
                     target = world.getBlockState(pos.relative(upDir, distance));
@@ -158,8 +161,23 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
         if (wasLitBefore != shouldBeLit) {
             world.setBlockAndUpdate(pos, state.setValue(LIT, shouldBeLit));
+            world.getLightEngine().checkBlock(pos);
             world.updateNeighborsAt(pos, this);
         }
+    }
+
+    @Override
+    public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+        if (state.hasProperty(LIT) && !state.getValue(LIT)) {
+            return 0;
+        }
+        if (level != null && pos != null) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof AddressableLight light) {
+                return light.getBrightness().getLightLevel();
+            }
+        }
+        return 15;
     }
 
     @Override
@@ -236,9 +254,13 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
             if (newBlock != null && newBlock != block) {
                 BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
                 String address = "";
+                BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
+                LightRequest oldLightRequest = LightRequest.RELEASE;
                 BlockEntity oldBe = world.getBlockEntity(pos);
                 if (oldBe instanceof AddressableLight addressable) {
                     address = addressable.getAddress();
+                    oldBrightness = addressable.getBrightness();
+                    oldLightRequest = addressable.getLightRequest();
                 }
 
                 if (block instanceof CornerLightBlock) {
@@ -257,8 +279,11 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 BlockEntity newBe = world.getBlockEntity(pos);
                 if (newBe instanceof AddressableLight addressable) {
                     addressable.setAddress(address);
+                    addressable.setBrightness(oldBrightness);
+                    addressable.setLightRequest(oldLightRequest);
                     newBe.setChanged();
                     world.sendBlockUpdated(pos, newState, newState, 3);
+                    world.getLightEngine().checkBlock(pos);
                 }
 
                 if (!player.getAbilities().instabuild) {
@@ -269,33 +294,66 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
             }
         }
 
-        BrightnessStage brightness = state.getValue(BRIGHTNESS);
-        BrightnessStage next = brightness;
-        boolean success = false;
-        if (world.isClientSide) return super.useItemOn(stack, state, world, pos, player, hand, hit);
-        if (stack.is(Items.GLOWSTONE_DUST) && brightness != BrightnessStage.ULTRA) {
-            next = brightness.next();
-            world.playSound(null, pos, SoundEvents.GLOW_ITEM_FRAME_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (next == BrightnessStage.ULTRA) {
-                player.displayClientMessage(Component.translatable("searchlight.message.highest_brightness"), true);
+        if (stack.is(Items.GLOWSTONE_DUST) || stack.is(Items.REDSTONE)) {
+            if (world.isClientSide) {
+                return ItemInteractionResult.sidedSuccess(world.isClientSide);
             }
-            success = true;
-        } else if (stack.is(Items.REDSTONE) && brightness != BrightnessStage.OFF) {
-            next = brightness.previous();
-            world.playSound(null, pos, SoundEvents.SAND_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
-            if (next == BrightnessStage.OFF) {
-                player.displayClientMessage(Component.translatable("searchlight.message.lowest_brightness"), true);
-            }
-            success = true;
-        }
 
-        if (success) {
-            world.setBlockAndUpdate(pos, state.setValue(BRIGHTNESS, next));
-            world.updateNeighborsAt(pos, this);
-            if (!player.getAbilities().instabuild) {
-                stack.shrink(1);
+            BlockEntity be = world.getBlockEntity(pos);
+            if (be instanceof AddressableLight light) {
+                BrightnessStage brightness = light.getBrightness();
+                BrightnessStage next = brightness;
+                boolean success = false;
+
+                if (stack.is(Items.GLOWSTONE_DUST) && brightness != BrightnessStage.ULTRA) {
+                    next = brightness.next();
+                    world.playSound(null, pos, SoundEvents.GLOW_ITEM_FRAME_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                    if (next == BrightnessStage.ULTRA) {
+                        player.displayClientMessage(Component.translatable("searchlight.message.highest_brightness"), true);
+                    }
+                    success = true;
+                } else if (stack.is(Items.REDSTONE) && brightness != BrightnessStage.OFF) {
+                    next = brightness.previous();
+                    world.playSound(null, pos, SoundEvents.SAND_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
+                    if (next == BrightnessStage.OFF) {
+                        player.displayClientMessage(Component.translatable("searchlight.message.lowest_brightness"), true);
+                    }
+                    success = true;
+                }
+
+                if (success) {
+                    if (this instanceof CornerLightBlock) {
+                        List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
+                        for (BlockPos connectedPos : connected) {
+                            BlockEntity targetBe = world.getBlockEntity(connectedPos);
+                            if (targetBe instanceof AddressableLight targetLight) {
+                                targetLight.setBrightness(next);
+                                targetBe.setChanged();
+                                BlockState targetState = world.getBlockState(connectedPos);
+                                world.sendBlockUpdated(connectedPos, targetState, targetState, 3);
+                                world.getLightEngine().checkBlock(connectedPos);
+                                world.updateNeighborsAt(connectedPos, targetState.getBlock());
+                            }
+                        }
+                    } else {
+                        light.setBrightness(next);
+                        be.setChanged();
+                        world.sendBlockUpdated(pos, state, state, 3);
+                        world.getLightEngine().checkBlock(pos);
+                        world.updateNeighborsAt(pos, this);
+                        if (be instanceof SearchlightBlockEntity searchlight && searchlight.getLightSourcePos() != null) {
+                            world.getLightEngine().checkBlock(searchlight.getLightSourcePos());
+                            BlockState lsState = world.getBlockState(searchlight.getLightSourcePos());
+                            world.sendBlockUpdated(searchlight.getLightSourcePos(), lsState, lsState, 3);
+                        }
+                    }
+
+                    if (!player.getAbilities().instabuild) {
+                        stack.shrink(1);
+                    }
+                    return ItemInteractionResult.sidedSuccess(world.isClientSide);
+                }
             }
-            return ItemInteractionResult.sidedSuccess(false);
         }
 
         return super.useItemOn(stack, state, world, pos, player, hand, hit);

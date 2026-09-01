@@ -2,7 +2,6 @@ package com.csykes.searchlight.features.edge_light;
 
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -61,7 +60,6 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACE, AttachFace.CEILING)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(NORTH, true)
                 .setValue(SOUTH, true)
                 .setValue(EAST, true)

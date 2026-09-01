@@ -3,7 +3,6 @@ package com.csykes.searchlight.features.searchlight;
 import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -56,7 +55,6 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(COLOR, blockColor != null ? blockColor : DyeColor.WHITE));
     }
 

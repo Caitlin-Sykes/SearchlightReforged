@@ -9,6 +9,9 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 
+import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
+import net.minecraft.gametest.framework.GameTestAssertException;
+
 @GameTestHolder(Searchlight.MODID)
 public class LightBrightnessGameTest {
 
@@ -22,27 +25,75 @@ public class LightBrightnessGameTest {
 
         BlockHandle lamp = context.placeBlock("searchlight:colour_lamp_white");
 
-        lamp.assertProperty(AbstractLightBlock.BRIGHTNESS, BrightnessStage.MEDIUM)
-                // Increase to HIGH with glowstone dust
-                .rightClickWithItem("minecraft:glowstone_dust")
-                .waitTicks(1)
-                .assertProperty(AbstractLightBlock.BRIGHTNESS, BrightnessStage.HIGH)
-                // Increase to ULTRA with glowstone dust
-                .rightClickWithItem("minecraft:glowstone_dust")
-                .waitTicks(1)
-                .assertProperty(AbstractLightBlock.BRIGHTNESS, BrightnessStage.ULTRA)
-                // Decrease back to HIGH with redstone
-                .rightClickWithItem("minecraft:redstone")
-                .waitTicks(1)
-                .assertProperty(AbstractLightBlock.BRIGHTNESS, BrightnessStage.HIGH)
-                // Decrease to MEDIUM with redstone
-                .rightClickWithItem("minecraft:redstone")
-                .waitTicks(1)
-                .assertProperty(AbstractLightBlock.BRIGHTNESS, BrightnessStage.MEDIUM)
-                // Decrease to LOW with redstone
-                .rightClickWithItem("minecraft:redstone")
-                .waitTicks(1)
-                .assertProperty(AbstractLightBlock.BRIGHTNESS, BrightnessStage.LOW);
+        lamp.verifyBlockEntity(WallLightBlockEntity.class, be -> {
+            if (be.getBrightness() != BrightnessStage.MEDIUM) {
+                throw new GameTestAssertException("Expected initial MEDIUM brightness, but was " + be.getBrightness());
+            }
+            int emission = lamp.getBlock().getLightEmission(lamp.getBlockState(), helper.getLevel(), lamp.getAbsolutePos());
+            if (emission != BrightnessStage.MEDIUM.getLightLevel()) {
+                throw new GameTestAssertException("Expected light emission " + BrightnessStage.MEDIUM.getLightLevel() + " but was " + emission);
+            }
+        })
+        // Increase to HIGH with glowstone dust
+        .rightClickWithItem("minecraft:glowstone_dust")
+        .waitTicks(1)
+        .verifyBlockEntity(WallLightBlockEntity.class, be -> {
+            if (be.getBrightness() != BrightnessStage.HIGH) {
+                throw new GameTestAssertException("Expected HIGH brightness, but was " + be.getBrightness());
+            }
+            int emission = lamp.getBlock().getLightEmission(lamp.getBlockState(), helper.getLevel(), lamp.getAbsolutePos());
+            if (emission != BrightnessStage.HIGH.getLightLevel()) {
+                throw new GameTestAssertException("Expected light emission " + BrightnessStage.HIGH.getLightLevel() + " but was " + emission);
+            }
+        })
+        // Increase to ULTRA with glowstone dust
+        .rightClickWithItem("minecraft:glowstone_dust")
+        .waitTicks(1)
+        .verifyBlockEntity(WallLightBlockEntity.class, be -> {
+            if (be.getBrightness() != BrightnessStage.ULTRA) {
+                throw new GameTestAssertException("Expected ULTRA brightness, but was " + be.getBrightness());
+            }
+            int emission = lamp.getBlock().getLightEmission(lamp.getBlockState(), helper.getLevel(), lamp.getAbsolutePos());
+            if (emission != BrightnessStage.ULTRA.getLightLevel()) {
+                throw new GameTestAssertException("Expected light emission " + BrightnessStage.ULTRA.getLightLevel() + " but was " + emission);
+            }
+        })
+        // Decrease back to HIGH with redstone
+        .rightClickWithItem("minecraft:redstone")
+        .waitTicks(1)
+        .verifyBlockEntity(WallLightBlockEntity.class, be -> {
+            if (be.getBrightness() != BrightnessStage.HIGH) {
+                throw new GameTestAssertException("Expected HIGH brightness, but was " + be.getBrightness());
+            }
+            int emission = lamp.getBlock().getLightEmission(lamp.getBlockState(), helper.getLevel(), lamp.getAbsolutePos());
+            if (emission != BrightnessStage.HIGH.getLightLevel()) {
+                throw new GameTestAssertException("Expected light emission " + BrightnessStage.HIGH.getLightLevel() + " but was " + emission);
+            }
+        })
+        // Decrease to MEDIUM with redstone
+        .rightClickWithItem("minecraft:redstone")
+        .waitTicks(1)
+        .verifyBlockEntity(WallLightBlockEntity.class, be -> {
+            if (be.getBrightness() != BrightnessStage.MEDIUM) {
+                throw new GameTestAssertException("Expected MEDIUM brightness, but was " + be.getBrightness());
+            }
+            int emission = lamp.getBlock().getLightEmission(lamp.getBlockState(), helper.getLevel(), lamp.getAbsolutePos());
+            if (emission != BrightnessStage.MEDIUM.getLightLevel()) {
+                throw new GameTestAssertException("Expected light emission " + BrightnessStage.MEDIUM.getLightLevel() + " but was " + emission);
+            }
+        })
+        // Decrease to LOW with redstone
+        .rightClickWithItem("minecraft:redstone")
+        .waitTicks(1)
+        .verifyBlockEntity(WallLightBlockEntity.class, be -> {
+            if (be.getBrightness() != BrightnessStage.LOW) {
+                throw new GameTestAssertException("Expected LOW brightness, but was " + be.getBrightness());
+            }
+            int emission = lamp.getBlock().getLightEmission(lamp.getBlockState(), helper.getLevel(), lamp.getAbsolutePos());
+            if (emission != BrightnessStage.LOW.getLightLevel()) {
+                throw new GameTestAssertException("Expected light emission " + BrightnessStage.LOW.getLightLevel() + " but was " + emission);
+            }
+        });
 
         context.execute();
     }

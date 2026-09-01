@@ -6,6 +6,7 @@ import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -17,11 +18,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.csykes.searchlight.MutableVector3d;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
+import com.csykes.searchlight.utils.lighting.LightRequest;
 import net.minecraft.world.item.DyeColor;
 
 public class SearchlightBlockEntity extends BlockEntity implements AddressableLight {
     private @Nullable BlockPos lightSourcePos;
     private String address = "";
+    private BrightnessStage brightness = BrightnessStage.MEDIUM;
+    private LightRequest lightRequest = LightRequest.RELEASE;
 
     public SearchlightBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(Searchlight.SEARCHLIGHT_BE.get(), blockPos, blockState);
@@ -39,6 +44,35 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
     }
 
     @Override
+    public BrightnessStage getBrightness() {
+        return brightness;
+    }
+
+    @Override
+    public void setBrightness(BrightnessStage brightness) {
+        this.brightness = brightness != null ? brightness : BrightnessStage.MEDIUM;
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            level.getLightEngine().checkBlock(worldPosition);
+            if (lightSourcePos != null) {
+                level.getLightEngine().checkBlock(lightSourcePos);
+            }
+        }
+    }
+
+    @Override
+    public LightRequest getLightRequest() {
+        return lightRequest;
+    }
+
+    @Override
+    public void setLightRequest(LightRequest lightRequest) {
+        this.lightRequest = lightRequest != null ? lightRequest : LightRequest.RELEASE;
+        setChanged();
+    }
+
+    @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
@@ -51,9 +85,37 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
     }
 
     @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+        super.onDataPacket(net, pkt, lookupProvider);
+        if (level != null && level.isClientSide) {
+            level.getLightEngine().checkBlock(worldPosition);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            if (lightSourcePos != null) {
+                level.getLightEngine().checkBlock(lightSourcePos);
+                level.sendBlockUpdated(lightSourcePos, level.getBlockState(lightSourcePos), level.getBlockState(lightSourcePos), 3);
+            }
+        }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        super.handleUpdateTag(tag, lookupProvider);
+        if (level != null && level.isClientSide) {
+            level.getLightEngine().checkBlock(worldPosition);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            if (lightSourcePos != null) {
+                level.getLightEngine().checkBlock(lightSourcePos);
+                level.sendBlockUpdated(lightSourcePos, level.getBlockState(lightSourcePos), level.getBlockState(lightSourcePos), 3);
+            }
+        }
+    }
+
+    @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         tag.putString("address", address);
+        tag.putString("brightness", brightness.name());
+        tag.putString("light_request", lightRequest.name());
         if (lightSourcePos != null) {
             tag.putInt("light_source_x", lightSourcePos.getX());
             tag.putInt("light_source_y", lightSourcePos.getY());
@@ -65,6 +127,24 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
         this.address = tag.getString("address");
+        if (tag.contains("brightness")) {
+            try {
+                this.brightness = BrightnessStage.valueOf(tag.getString("brightness"));
+            } catch (IllegalArgumentException e) {
+                this.brightness = BrightnessStage.MEDIUM;
+            }
+        } else {
+            this.brightness = BrightnessStage.MEDIUM;
+        }
+        if (tag.contains("light_request")) {
+            try {
+                this.lightRequest = LightRequest.valueOf(tag.getString("light_request"));
+            } catch (IllegalArgumentException e) {
+                this.lightRequest = LightRequest.RELEASE;
+            }
+        } else {
+            this.lightRequest = LightRequest.RELEASE;
+        }
         if (tag.contains("light_source_x") && tag.contains("light_source_y") && tag.contains("light_source_z")) {
             lightSourcePos = new BlockPos(tag.getInt("light_source_x"), tag.getInt("light_source_y"), tag.getInt("light_source_z"));
         } else {

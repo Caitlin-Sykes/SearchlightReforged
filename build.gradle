@@ -143,11 +143,11 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
 
     implementation "dev.architectury:architectury-neoforge:${architectury_version}"
-    localRuntime "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
+//    localRuntime "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
     compileOnly "maven.modrinth:cc-tweaked:1.120.0-neoforge"
     localRuntime "maven.modrinth:cc-tweaked:1.120.0-neoforge"
     compileOnly "maven.modrinth:jade:${jade_version}"
-    localRuntime "maven.modrinth:jade:${jade_version}"
+//    localRuntime "maven.modrinth:jade:${jade_version}"
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.6.13-neoforge"
     localRuntime "maven.modrinth:iris:1.8.8+1.21.1-neoforge"
 
@@ -300,6 +300,10 @@ publishing {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.compilerArgs << "-Xlint:deprecation"
+}
+
+tasks.named('runClient') {
+    jvmArgs '-Xmx1256M'
 }
 
 configurations {

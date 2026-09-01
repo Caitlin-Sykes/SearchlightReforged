@@ -7,6 +7,7 @@ import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
+import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
 import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
@@ -195,30 +196,28 @@ public class LightingDirectorPeripheral implements IPeripheral {
             updatedState = updateColorProperty(world, pos, updatedState, colorName);
         }
 
-        if (options.containsKey("brightness")) {
-            BrightnessStage stage = parseBrightness(options.get("brightness"));
-            if (stage != null && updatedState.hasProperty(AbstractLightBlock.BRIGHTNESS)) {
-                updatedState = updatedState.setValue(AbstractLightBlock.BRIGHTNESS, stage);
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof AddressableLight light) {
+            if (options.containsKey("brightness")) {
+                BrightnessStage stage = parseBrightness(options.get("brightness"));
+                if (stage != null) {
+                    light.setBrightness(stage);
+                    be.setChanged();
+                }
             }
-        }
 
-        boolean hasLitRequest = false;
-        if (options.containsKey("lit")) {
-            LightRequest request = parseLightRequest(options.get("lit"));
-            if (updatedState.hasProperty(AbstractLightBlock.LIGHT_REQUEST)) {
-                updatedState = updatedState.setValue(AbstractLightBlock.LIGHT_REQUEST, request);
+            boolean hasLitRequest = false;
+            if (options.containsKey("lit")) {
+                LightRequest request = parseLightRequest(options.get("lit"));
+                light.setLightRequest(request);
                 hasLitRequest = true;
-            }
-        }
-
-        if (updatedState != state) {
-            world.setBlockAndUpdate(pos, updatedState);
-            world.updateNeighborsAt(pos, updatedState.getBlock());
-
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be != null) {
                 be.setChanged();
-                world.sendBlockUpdated(pos, state, updatedState, 3);
+            }
+
+            world.sendBlockUpdated(pos, updatedState, updatedState, 3);
+            world.getLightEngine().checkBlock(pos);
+            if (be instanceof SearchlightBlockEntity searchlight && searchlight.getLightSourcePos() != null) {
+                world.getLightEngine().checkBlock(searchlight.getLightSourcePos());
             }
 
             if (hasLitRequest && updatedState.getBlock() instanceof AbstractLightBlock abstractLightBlock) {
@@ -268,14 +267,16 @@ public class LightingDirectorPeripheral implements IPeripheral {
                 lightInfo.put("active", true);
                 lightInfo.put("type", block.getClass().getSimpleName());
                 lightInfo.put("lit", state.getValue(AbstractLightBlock.LIT));
-                lightInfo.put("light_request", state.getValue(AbstractLightBlock.LIGHT_REQUEST).name().toLowerCase());
-                lightInfo.put("brightness", state.getValue(AbstractLightBlock.BRIGHTNESS).name().toLowerCase());
+
+                AddressableLight addressable = (world.getBlockEntity(pos) instanceof AddressableLight a) ? a : null;
+                String lightRequestName = addressable != null ? addressable.getLightRequest().name().toLowerCase() : "release";
+                String brightnessName = addressable != null ? addressable.getBrightness().name().toLowerCase() : "medium";
+                String address = addressable != null ? addressable.getAddress() : "";
+
+                lightInfo.put("light_request", lightRequestName);
+                lightInfo.put("brightness", brightnessName);
                 lightInfo.put("color", getLightColorName(state));
 
-                String address = "";
-                if (world.getBlockEntity(pos) instanceof AddressableLight addressable) {
-                    address = addressable.getAddress();
-                }
                 if (address.isEmpty()) {
                     address = "light_" + (i + 1);
                 }

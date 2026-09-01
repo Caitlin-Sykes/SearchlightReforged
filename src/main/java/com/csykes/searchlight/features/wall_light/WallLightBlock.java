@@ -2,7 +2,6 @@ package com.csykes.searchlight.features.wall_light;
 
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,8 +34,7 @@ public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
-                .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM));
+                .setValue(LIT, true));
     }
 
     @Override

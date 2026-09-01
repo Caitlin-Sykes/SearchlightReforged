@@ -15,7 +15,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -33,6 +32,12 @@ import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
+import static net.minecraft.world.level.block.SoundType.GLASS;
+import static net.minecraft.world.level.block.SoundType.METAL;
+import static net.minecraft.world.level.block.SoundType.STONE;
+import static net.minecraft.world.level.material.PushReaction.DESTROY;
 
 @Mod(Searchlight.MODID)
 public class Searchlight {
@@ -64,12 +69,10 @@ public class Searchlight {
     private static void registerWallLight(String postfix) {
         String wl_name = "wall_light_" + postfix;
         DeferredBlock<Block> block = BLOCKS.register(wl_name, () -> new WallLightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
-                .sound(net.minecraft.world.level.block.SoundType.STONE)
+                .sound(STONE)
                 .noOcclusion()));
 
         WALL_LIGHTS.put(postfix, block);
@@ -81,14 +84,12 @@ public class Searchlight {
         final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
 
         DeferredBlock<Block> block = BLOCKS.register(wl_name, () -> new com.csykes.searchlight.features.searchlight.SearchlightBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
-                .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
-                .sound(net.minecraft.world.level.block.SoundType.METAL)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
+                .pushReaction(DESTROY)
+                .sound(METAL)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
-                .sound(net.minecraft.world.level.block.SoundType.STONE)
+                .sound(STONE)
                 .noOcclusion(), blockColor));
 
         SEARCHLIGHTS.put(postfix, block);
@@ -102,10 +103,8 @@ public class Searchlight {
         final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
 
         DeferredBlock<Block> corner_light = BLOCKS.register(cl_name, () -> new com.csykes.searchlight.features.corner_light.CornerLightBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
-                .sound(net.minecraft.world.level.block.SoundType.GLASS)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
+                .sound(GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .noOcclusion(), blockColor));
@@ -121,10 +120,8 @@ public class Searchlight {
         final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
 
         DeferredBlock<Block> edge_light = BLOCKS.register(cl_name, () -> new com.csykes.searchlight.features.edge_light.EdgeLightBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
-                .sound(net.minecraft.world.level.block.SoundType.GLASS)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
+                .sound(GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .noOcclusion(), blockColor));
@@ -140,10 +137,8 @@ public class Searchlight {
         final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
 
         DeferredBlock<Block> centre_light = BLOCKS.register(cl_name, () -> new com.csykes.searchlight.features.centre_light.CentreLightBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
-                .sound(net.minecraft.world.level.block.SoundType.GLASS)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
+                .sound(GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .noOcclusion(), blockColor));
@@ -159,10 +154,8 @@ public class Searchlight {
         final net.minecraft.world.item.DyeColor blockColor = net.minecraft.world.item.DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
 
         DeferredBlock<Block> centre_light = BLOCKS.register(cl_name, () -> new com.csykes.searchlight.features.colour_lamp.ColourLampBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
-                .sound(net.minecraft.world.level.block.SoundType.GLASS)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
+                .sound(GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .noOcclusion(), blockColor));
@@ -178,10 +171,8 @@ public class Searchlight {
         final DyeColor blockColor = DyeColor.byName(postfix, net.minecraft.world.item.DyeColor.WHITE);
 
         DeferredBlock<Block> colour_slab = BLOCKS.register(cl_name, () -> new ColourLampSlabBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> {
-                    return 15;
-                })
-                .sound(SoundType.GLASS)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
+                .sound(GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .noOcclusion(), blockColor));
@@ -244,7 +235,7 @@ public class Searchlight {
 
     public static final DeferredBlock<Block> LIGHTING_DIRECTOR_BLOCK = ModList.get().isLoaded("computercraft")
             ? BLOCKS.register("lighting_director", () -> new com.csykes.searchlight.features.lighting_director.LightingDirectorBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
-            .sound(net.minecraft.world.level.block.SoundType.METAL)
+            .sound(METAL)
             .strength(3.0f)
             .noOcclusion()))
             : null;
@@ -262,7 +253,7 @@ public class Searchlight {
             .replaceable()
             .noOcclusion()
             .noLootTable()
-            .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+            .pushReaction(DESTROY)
             .lightLevel((state) -> 15)));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.csykes.searchlight.features.searchlight.SearchlightLightSourceBlockEntity>> LIGHT_SOURCE_BE = BLOCK_ENTITY_TYPES.register("searchlight_lightsource_entity", () -> BlockEntityType.Builder.of(com.csykes.searchlight.features.searchlight.SearchlightLightSourceBlockEntity::new, LIGHT_SOURCE_BLOCK.get()).build(null));

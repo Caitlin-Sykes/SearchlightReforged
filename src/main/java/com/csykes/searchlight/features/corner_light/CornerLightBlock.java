@@ -2,7 +2,6 @@ package com.csykes.searchlight.features.corner_light;
 
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.CornerLightStage;
 import com.csykes.searchlight.utils.lighting.LightRodConnection;
 import com.mojang.serialization.MapCodec;
@@ -51,7 +50,6 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
         this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(CONNECTION, LightRodConnection.SINGLE)
                 .setValue(CORNER, CornerLightStage.BOTTOM_LEFT));
     }

@@ -108,7 +108,8 @@ public class CCIntegrationTest {
             // Control light via Director peripheral
             peripheral.setLight("test_light_1", Map.of("brightness", 3, "colour", "red", "lit", false));
 
-            context.assertThat(() -> lightHandle.getBlockState().getValue(AbstractLightBlock.BRIGHTNESS) == BrightnessStage.HIGH,
+            WallLightBlockEntity updatedLightBe = lightHandle.getBlockEntity(WallLightBlockEntity.class);
+            context.assertThat(() -> updatedLightBe != null && updatedLightBe.getBrightness() == BrightnessStage.HIGH,
                     "Expected light brightness to be updated to HIGH via director peripheral");
 
             context.assertThat(() -> !lightHandle.getBlockState().getValue(AbstractLightBlock.LIT),

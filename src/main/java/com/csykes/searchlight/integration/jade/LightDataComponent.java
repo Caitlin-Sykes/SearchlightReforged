@@ -52,13 +52,13 @@ public enum LightDataComponent implements IBlockComponentProvider, IServerDataPr
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
+        if (accessor.getBlockEntity() instanceof com.csykes.searchlight.utils.lighting.AddressableLight addressable) {
+            data.putString(SERVERDATA_BRIGHTNESS, addressable.getBrightness().getName());
+            data.putString(SERVERDATA_MODE, addressable.getLightRequest().getName());
+        }
         BlockState light = accessor.getBlockEntity().getBlockState();
         if (light.hasProperty(COLOR))
             data.putString(SERVERDATA_COLOR, light.getValue(COLOR).getName());
-        if (light.hasProperty(BRIGHTNESS))
-            data.putString(SERVERDATA_BRIGHTNESS, light.getValue(BRIGHTNESS).getName());
-        if (light.hasProperty(LIGHT_REQUEST))
-            data.putString(SERVERDATA_MODE, light.getValue(LIGHT_REQUEST).getName());
     }
 
     @Override

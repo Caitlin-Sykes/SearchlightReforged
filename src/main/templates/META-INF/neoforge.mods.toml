@@ -72,3 +72,10 @@ Adds Searchlight and Wall Lights
     ordering="AFTER"
     side="BOTH"
 
+[[dependencies.${mod_id}]]
+    modId="dyenamics"
+    type="optional"
+    versionRange="[1.21.1,)"
+    ordering="AFTER"
+    side="BOTH"
+

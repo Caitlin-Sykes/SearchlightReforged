@@ -2,7 +2,6 @@ package com.csykes.searchlight.features.centre_light;
 
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRodConnection;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -55,7 +54,6 @@ public class CentreLightBlock extends AbstractLightBlock implements EntityBlock 
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(CONNECTION, LightRodConnection.SINGLE)
                 .setValue(AXIS, Direction.Axis.Y));
     }

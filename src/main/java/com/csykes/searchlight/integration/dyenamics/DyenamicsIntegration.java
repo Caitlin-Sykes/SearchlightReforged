@@ -17,6 +17,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 
 import java.util.Arrays;
 
+import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
+
 public class DyenamicsIntegration {
     public static void init() {
         Arrays.stream(DyenamicDyeColor.dyenamicValues()).forEach(color -> {
@@ -33,7 +35,7 @@ public class DyenamicsIntegration {
     private static void registerDyenamicWallLight(String postfix) {
         String wl_name = "wall_light_" + postfix;
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(wl_name, () -> new WallLightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.STONE)
@@ -47,7 +49,7 @@ public class DyenamicsIntegration {
         String wl_name = "searchlight_" + postfix;
 
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(wl_name, () -> new SearchlightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .pushReaction(PushReaction.DESTROY)
                 .sound(SoundType.METAL)
                 .strength(2.0f, 4.0f)
@@ -62,7 +64,7 @@ public class DyenamicsIntegration {
     private static void registerDyenamicCornerLight(String postfix) {
         String cl_name = "corner_light_" + postfix;
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(cl_name, () -> new CornerLightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.STONE)
@@ -74,7 +76,7 @@ public class DyenamicsIntegration {
     private static void registerDyenamicEdgeLight(String postfix) {
         String el_name = "edge_light_" + postfix;
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(el_name, () -> new EdgeLightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.STONE)
@@ -86,7 +88,7 @@ public class DyenamicsIntegration {
     private static void registerDyenamicCentreLight(String postfix) {
         String cl_name = "centre_light_" + postfix;
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(cl_name, () -> new CentreLightBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.STONE)
@@ -98,7 +100,7 @@ public class DyenamicsIntegration {
     private static void registerDyenamicColourLampLight(String postfix) {
         String cl_name = "colour_lamp_" + postfix;
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(cl_name, () -> new ColourLampBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .sound(SoundType.GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()
@@ -110,7 +112,7 @@ public class DyenamicsIntegration {
     private static void registerDyenamicColourLampSlabLight(String postfix) {
         String cl_name = "colour_lamp_slab_" + postfix;
         DeferredBlock<Block> block = Searchlight.BLOCKS.register(cl_name, () -> new ColourLampSlabBlock(BlockBehaviour.Properties.of()
-                .lightLevel((state) -> 15)
+                .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .sound(SoundType.GLASS)
                 .strength(2.0f, 4.0f)
                 .requiresCorrectToolForDrops()

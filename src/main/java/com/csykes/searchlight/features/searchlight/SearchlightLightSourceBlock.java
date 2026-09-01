@@ -48,6 +48,24 @@ public class SearchlightLightSourceBlock extends Block implements EntityBlock {
     }
 
     @Override
+    public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+        if (level != null && pos != null) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof SearchlightLightSourceBlockEntity sourceBe && sourceBe.searchlightBlockPos != null) {
+                BlockEntity parentBe = level.getBlockEntity(sourceBe.searchlightBlockPos);
+                if (parentBe instanceof com.csykes.searchlight.utils.lighting.AddressableLight light) {
+                    BlockState parentState = level.getBlockState(sourceBe.searchlightBlockPos);
+                    if (parentState.hasProperty(com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT) && !parentState.getValue(com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT)) {
+                        return 0;
+                    }
+                    return light.getBrightness().getLightLevel();
+                }
+            }
+        }
+        return 15;
+    }
+
+    @Override
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!world.isClientSide) {
             SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightLightSourceBlockEntity be) -> be.moveLightSource());

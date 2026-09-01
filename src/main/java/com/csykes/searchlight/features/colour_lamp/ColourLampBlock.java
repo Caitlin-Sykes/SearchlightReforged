@@ -2,7 +2,6 @@ package com.csykes.searchlight.features.colour_lamp;
 
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -61,7 +60,6 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
         this.dyenamicColor = dyenamicColor;
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(NORTH, false)
                 .setValue(SOUTH, false)
                 .setValue(EAST, false)
