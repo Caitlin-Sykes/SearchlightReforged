@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -213,6 +215,8 @@ var generateColorResources = tasks.register("generateColorResources") {
 
     var templatesDir = file("src/main/templates/color_resources")
     inputs.dir(templatesDir)
+    var staticLangFile = file("src/main/resources/assets/searchlight/lang/en_us.json")
+    inputs.file(staticLangFile)
 
 
     doLast {
@@ -282,10 +286,97 @@ var generateColorResources = tasks.register("generateColorResources") {
                 }
             }
         }
+
+        // Generate en_us locale strings for all color block families
+        var colorDisplayNames = [
+                // Vanilla
+                "white": "White",
+                "orange": "Orange",
+                "magenta": "Magenta",
+                "light_blue": "Light Blue",
+                "yellow": "Yellow",
+                "lime": "Lime",
+                "pink": "Pink",
+                "gray": "Gray",
+                "light_gray": "Light Gray",
+                "cyan": "Cyan",
+                "purple": "Purple",
+                "blue": "Blue",
+                "brown": "Brown",
+                "green": "Green",
+                "red": "Red",
+                "black": "Black",
+                // Dyenamics
+                "peach": "Peach",
+                "aquamarine": "Aquamarine",
+                "fluorescent": "Fluorescent",
+                "mint": "Mint",
+                "light_mint": "Light Mint",
+                "maroon": "Maroon",
+                "bubblegum": "Bubblegum",
+                "lavender": "Lavender",
+                "persimmon": "Persimmon",
+                "cherenkov": "Cherenkov",
+                "amber": "Amber",
+                "honey": "Honey",
+                "ultramarine": "Ultramarine",
+                "spring_green": "Spring Green",
+                "rose": "Rose",
+                "navy": "Navy",
+                "icy_blue": "Icy Blue",
+                "wine": "Wine",
+                "conifer": "Conifer"
+        ]
+
+        var wallMaterialNames = [
+                "iron": "Iron",
+                "copper": "Copper",
+                "prismarine": "Prismarine"
+        ]
+
+        var colorFamilies = [
+                "colour_lamp_slab": "Coloured Lamp Slab",
+                "colour_lamp": "Coloured Lamp",
+                "corner_light": "Corner Light",
+                "centre_light": "Centre Light",
+                "edge_light": "Edge Light",
+                "searchlight": "Searchlight"
+        ]
+
+        var langMap = new LinkedHashMap()
+        if (staticLangFile.exists()) {
+            langMap.putAll(new JsonSlurper().parse(staticLangFile))
+        }
+
+        wallMaterialNames.each { key, name ->
+            langMap["block.searchlight.wall_light_${key}"] = "${name} Wall Light".toString()
+        }
+        colorDisplayNames.each { key, name ->
+            langMap["block.searchlight.wall_light_${key}"] = "${name} Wall Light".toString()
+        }
+
+        colorFamilies.each { prefix, suffix ->
+            colorDisplayNames.each { key, name ->
+                langMap["block.searchlight.${prefix}_${key}"] = "${name} ${suffix}".toString()
+            }
+        }
+
+        var outLangFile = new File(outputDir, "assets/searchlight/lang/en_us.json")
+        outLangFile.parentFile.mkdirs()
+        outLangFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(langMap)) + "\n"
+
+        var buildLangFile = new File(outputDir.parentFile.parentFile.parentFile, "resources/main/assets/searchlight/lang/en_us.json")
+        if (buildLangFile.parentFile.exists()) {
+            buildLangFile.text = outLangFile.text
+        }
     }
 }
 sourceSets.main.resources.srcDir generateColorResources
 neoForge.ideSyncTask generateColorResources
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
 
 
 // Example configuration to allow publishing using the maven-publish plugin
