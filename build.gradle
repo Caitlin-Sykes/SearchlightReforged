@@ -378,6 +378,249 @@ tasks.withType(ProcessResources).configureEach {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+var generateShaderConfig = tasks.register("generateShaderConfig") {
+    var inputBlockShaderFile = file("src/main/shader_files/block.properties")
+    var outputBlockShaderFile = file("build/generated/sources/shaderConfig/block.properties")
+    var inputItemShaderFile = file("src/main/shader_files/item.properties")
+    var outputItemShaderFile = file("build/generated/sources/shaderConfig/item.properties")
+
+    inputs.file(inputBlockShaderFile).optional()
+    inputs.file(inputItemShaderFile).optional()
+    outputs.file(outputBlockShaderFile)
+    outputs.file(outputItemShaderFile)
+
+    doLast {
+        var baseColorGroups = [
+                white: [
+                        blockId: "block.21000",
+                        itemId: "item.44097",
+                        colors: ["white", "light_gray", "gray", "black"],
+                        materials: ["iron"],
+                        itemExtra: ["searchlight:searchlight"]
+                ],
+                brown: [
+                        blockId: "block.21002",
+                        itemId: "item.44043",
+                        colors: ["brown"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                red: [
+                        blockId: "block.21004",
+                        itemId: "item.44070",
+                        colors: ["red", "maroon", "rose"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                orange: [
+                        blockId: "block.21006",
+                        itemId: "item.44071",
+                        colors: ["orange", "peach", "persimmon", "amber"],
+                        materials: ["copper"],
+                        itemExtra: []
+                ],
+                yellow: [
+                        blockId: "block.21008",
+                        itemId: "item.44072",
+                        colors: ["yellow", "fluorescent", "honey"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                lime: [
+                        blockId: "block.21010",
+                        itemId: "item.44073",
+                        colors: ["lime", "mint", "light_mint", "spring_green"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                green: [
+                        blockId: "block.21012",
+                        itemId: "item.44074",
+                        colors: ["green", "conifer"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                cyan: [
+                        blockId: "block.21014",
+                        itemId: "item.44075",
+                        colors: ["cyan", "aquamarine"],
+                        materials: ["prismarine"],
+                        itemExtra: []
+                ],
+                light_blue: [
+                        blockId: "block.21016",
+                        itemId: "item.44076",
+                        colors: ["light_blue", "cherenkov", "icy_blue"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                blue: [
+                        blockId: "block.21018",
+                        itemId: "item.44077",
+                        colors: ["blue", "ultramarine", "navy"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                purple: [
+                        blockId: "block.21020",
+                        itemId: "item.44078",
+                        colors: ["purple", "wine"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                magenta: [
+                        blockId: "block.21022",
+                        itemId: "item.44079",
+                        colors: ["magenta", "lavender"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                pink: [
+                        blockId: "block.21024",
+                        itemId: "item.44080",
+                        colors: ["pink", "bubblegum"],
+                        materials: [],
+                        itemExtra: []
+                ]
+        ]
+
+        var getSearchlightBlockLines = { Map groupData ->
+            var resultLines = []
+            for (c in groupData.colors) {
+                var blocks = [
+                        "searchlight:searchlight:lit=true:color=${c}".toString(),
+                        "searchlight:searchlight_${c}:lit=true".toString(),
+                        "searchlight:searchlight_lightsource:color=${c}".toString(),
+                        "searchlight:wall_light_${c}:lit=true".toString(),
+                        "searchlight:corner_light_${c}:lit=true".toString(),
+                        "searchlight:edge_light_${c}:lit=true".toString(),
+                        "searchlight:centre_light_${c}:lit=true".toString(),
+                        "searchlight:colour_lamp_${c}:lit=true".toString(),
+                        "searchlight:colour_lamp_slab_${c}:lit=true".toString()
+                ]
+                resultLines.add(blocks.join(' '))
+            }
+            for (m in groupData.materials) {
+                resultLines.add("searchlight:wall_light_${m}:lit=true".toString())
+            }
+            return resultLines
+        }
+
+        var getSearchlightItemLines = { Map groupData ->
+            var resultLines = []
+            if (groupData.containsKey('itemExtra') && !groupData.itemExtra.isEmpty()) {
+                resultLines.add(groupData.itemExtra.join(' '))
+            }
+            for (c in groupData.colors) {
+                var items = [
+                        "searchlight:searchlight_${c}".toString(),
+                        "searchlight:wall_light_${c}".toString(),
+                        "searchlight:corner_light_${c}".toString(),
+                        "searchlight:edge_light_${c}".toString(),
+                        "searchlight:centre_light_${c}".toString(),
+                        "searchlight:colour_lamp_${c}".toString(),
+                        "searchlight:colour_lamp_slab_${c}".toString()
+                ]
+                resultLines.add(items.join(' '))
+            }
+            for (m in groupData.materials) {
+                resultLines.add("searchlight:wall_light_${m}".toString())
+            }
+            return resultLines
+        }
+
+        var updateShaderProperties = { File inputFile, File outputFile, Map targetLinesMap ->
+            var lines = inputFile.readLines('UTF-8')
+
+            // 1. Remove existing searchlight tokens to avoid duplicates
+            var cleanedLines = []
+            for (line in lines) {
+                if (line.contains('searchlight:')) {
+                    var tokens = line.replace('\\', '').split(/\s+/)
+                    var nonSearchlightTokens = tokens.findAll { it && !it.startsWith('searchlight:') }
+                    if (!nonSearchlightTokens.isEmpty()) {
+                        var trailing = line.trim().endsWith('\\') ? ' \\' : ''
+                        cleanedLines.add(nonSearchlightTokens.join(' ') + trailing)
+                    }
+                } else {
+                    cleanedLines.add(line)
+                }
+            }
+
+            // 2. Find the last occurrence index of each target property ID
+            var targetIds = targetLinesMap.keySet() as List<String>
+            var lastIndices = [:]
+            for (int i = 0; i < cleanedLines.size(); i++) {
+                var trimmed = cleanedLines[i].trim()
+                for (tid in targetIds) {
+                    if (trimmed.startsWith(tid + ' ') || trimmed.startsWith(tid + '=')) {
+                        lastIndices[tid] = i
+                    }
+                }
+            }
+
+            // 3. Insert the Searchlight entries in reverse order of index
+            var sortedTids = targetIds.findAll { lastIndices.containsKey(it) }
+                    .sort { a, b -> (lastIndices[b] as int) <=> (lastIndices[a] as int) }
+
+            for (tid in sortedTids) {
+                int idx = lastIndices[tid] as int
+                int curr = idx
+                while (curr < cleanedLines.size() && cleanedLines[curr].trim().endsWith('\\')) {
+                    curr++
+                }
+                // Ensure the line before our searchlight additions ends with ' \'
+                if (!cleanedLines[curr].trim().endsWith('\\')) {
+                    cleanedLines[curr] = cleanedLines[curr].stripTrailing() + ' \\'
+                }
+
+                var slLines = targetLinesMap[tid] as List<String>
+                var formattedLines = []
+                for (int j = 0; j < slLines.size(); j++) {
+                    if (j < slLines.size() - 1) {
+                        formattedLines.add(slLines[j] + ' \\')
+                    } else {
+                        formattedLines.add(slLines[j])
+                    }
+                }
+                cleanedLines.addAll(curr + 1, formattedLines)
+            }
+
+            outputFile.parentFile.mkdirs()
+            outputFile.withWriter('UTF-8') { writer ->
+                for (line in cleanedLines) {
+                    writer.write(line)
+                    writer.newLine()
+                }
+            }
+        }
+
+        if (inputBlockShaderFile.exists()) {
+            var blockTargetLinesMap = [:]
+            baseColorGroups.values().each { grp ->
+                blockTargetLinesMap[grp.blockId] = getSearchlightBlockLines(grp)
+            }
+            updateShaderProperties(inputBlockShaderFile, outputBlockShaderFile, blockTargetLinesMap)
+        } else {
+            logger.warn("Block shader config file not found at: ${inputBlockShaderFile.absolutePath}")
+        }
+
+        if (inputItemShaderFile.exists()) {
+            var itemTargetLinesMap = [:]
+            baseColorGroups.values().each { grp ->
+                itemTargetLinesMap[grp.itemId] = getSearchlightItemLines(grp)
+            }
+            updateShaderProperties(inputItemShaderFile, outputItemShaderFile, itemTargetLinesMap)
+        } else {
+            logger.warn("Item shader config file not found at: ${inputItemShaderFile.absolutePath}")
+        }
+    }
+}
+generateColorResources.configure {
+    finalizedBy(generateShaderConfig)
+}
+neoForge.ideSyncTask generateShaderConfig
+
 
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {
