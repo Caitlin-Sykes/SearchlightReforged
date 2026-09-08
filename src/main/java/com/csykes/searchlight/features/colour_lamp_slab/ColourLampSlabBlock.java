@@ -17,13 +17,13 @@ import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
@@ -39,6 +39,7 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
     public static final BooleanProperty WEST = BooleanProperty.create("west");
     public static final BooleanProperty UP = BooleanProperty.create("up");
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
+    public static final BooleanProperty TOP_HALF = BooleanProperty.create("top_half");
 
 
     @Override
@@ -66,6 +67,7 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
                 .setValue(WEST, false)
                 .setValue(UP, false)
                 .setValue(DOWN, false)
+                .setValue(TOP_HALF, false)
         );
     }
 
@@ -78,6 +80,7 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
         builder.add(WEST);
         builder.add(UP);
         builder.add(DOWN);
+        builder.add(TOP_HALF);
     }
 
     @Override
@@ -142,11 +145,14 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
     }
 
     private BlockState getDirection(Direction dir, Level level, BlockPos pos, BlockState state) {
-        boolean isConnected = level.getBlockState(pos.relative(dir)).getBlock() instanceof ColourLampSlabBlock;
+        boolean isSameType = level.getBlockState(pos.relative(dir)).getBlock() instanceof ColourLampSlabBlock;
+        if (!isSameType)
+            return state;
+        boolean isConnected = (Objects.equals(level.getBlockState(pos.relative(dir)).getValue(TOP_HALF), state.getValue(TOP_HALF)));
 
         return switch (dir) {
-            case UP -> state.setValue(UP, isConnected);
-            case DOWN -> state.setValue(DOWN, isConnected);
+            case UP -> state.setValue(UP, !isConnected);
+            case DOWN -> state.setValue(DOWN, !isConnected);
             case NORTH -> state.setValue(NORTH, isConnected);
             case EAST -> state.setValue(EAST, isConnected);
             case WEST -> state.setValue(WEST, isConnected);
@@ -155,7 +161,7 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+    public @NotNull BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
         boolean isConnected = neighborState.getBlock() instanceof ColourLampSlabBlock;
 
         return state.setValue(getPropertyForDirection(direction), isConnected);
