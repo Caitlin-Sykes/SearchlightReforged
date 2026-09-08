@@ -1,4 +1,5 @@
 {
+  "ambientocclusion": false,
   "textures": {
     "0": "searchlight:block/colour_light_face_on",
     "particle": "searchlight:block/colour_light_face_on"

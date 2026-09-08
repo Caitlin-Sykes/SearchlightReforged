@@ -1,13 +1,16 @@
 package com.csykes.searchlight.features.colour_lamp_slab;
 
+import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.ConnectableLightSlab;
 import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -18,19 +21,21 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
 import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 
 @Getter
-public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlock {
+public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlock, ConnectableLightSlab {
     private final DyeColor blockColor;
     private final String dyenamicColor;
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
@@ -41,6 +46,10 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
     public static final BooleanProperty DOWN = BooleanProperty.create("down");
     public static final BooleanProperty TOP_HALF = BooleanProperty.create("top_half");
 
+    @Override
+    public BooleanProperty getTopHalfProperty() {
+        return TOP_HALF;
+    }
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -89,19 +98,36 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
-        BlockState state = super.getStateForPlacement(context);
-        if (state == null) return null;
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return ConnectableLightSlab.getSlabShape(state, TOP_HALF);
+    }
 
-        Level level = context.getLevel();
-        BlockPos pos = context.getClickedPos();
-
-        // Loop through directions and update the state variable
-        for (Direction dir : Direction.values()) {
-            state = getDirection(dir, level, pos, state);
+    @Override
+    public @Nullable Block getFullBlock() {
+        String colorKey = this.blockColor != null ? this.blockColor.getName() : this.dyenamicColor;
+        if (colorKey != null) {
+            DeferredBlock<Block> holder = Searchlight.COLOUR_LAMPS.get(colorKey);
+            if (holder != null) {
+                return holder.get();
+            }
         }
+        return null;
+    }
 
-        return state.setValue(LIT, level.hasNeighborSignal(pos));
+    @Override
+    protected boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+        return ConnectableLightSlab.canSlabBeReplaced(state, context, TOP_HALF, this.asItem());
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return ConnectableLightSlab.getSlabStateForPlacement(
+                this,
+                context,
+                TOP_HALF,
+                getFullBlock(),
+                (dir, st) -> getDirection(dir, context.getLevel(), context.getClickedPos(), st)
+        );
     }
 
     @Override
@@ -145,10 +171,8 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
     }
 
     private BlockState getDirection(Direction dir, Level level, BlockPos pos, BlockState state) {
-        boolean isSameType = level.getBlockState(pos.relative(dir)).getBlock() instanceof ColourLampSlabBlock;
-        if (!isSameType)
-            return state;
-        boolean isConnected = (Objects.equals(level.getBlockState(pos.relative(dir)).getValue(TOP_HALF), state.getValue(TOP_HALF)));
+        BlockState neighborState = level.getBlockState(pos.relative(dir));
+        boolean isConnected = ConnectableLightSlab.isSlabConnected(state, neighborState, TOP_HALF);
 
         return switch (dir) {
             case UP -> state.setValue(UP, !isConnected);
@@ -162,8 +186,11 @@ public class ColourLampSlabBlock extends AbstractLightBlock implements EntityBlo
 
     @Override
     public @NotNull BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        boolean isConnected = neighborState.getBlock() instanceof ColourLampSlabBlock;
+        boolean isConnected = ConnectableLightSlab.isSlabConnected(state, neighborState, TOP_HALF);
 
+        if (direction == Direction.UP || direction == Direction.DOWN) {
+            return state.setValue(getPropertyForDirection(direction), !isConnected);
+        }
         return state.setValue(getPropertyForDirection(direction), isConnected);
     }
 

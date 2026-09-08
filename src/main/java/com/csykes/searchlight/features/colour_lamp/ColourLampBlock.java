@@ -98,7 +98,7 @@ public class ColourLampBlock extends AbstractLightBlock implements EntityBlock {
             state = getDirection(dir, level, pos, state);
         }
 
-        return state.setValue(LIT, level.hasNeighborSignal(pos));
+        return state.setValue(LIT, !level.hasNeighborSignal(pos));
     }
 
     @Override

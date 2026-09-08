@@ -22,6 +22,25 @@
 
     {
       "when": {
+        "lit": true,
+        "top_half": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_light_slab_top_on"
+      }
+    },
+    {
+      "when": {
+        "lit": false,
+        "top_half": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_light_slab_top"
+      }
+    },
+
+    {
+      "when": {
         "top_half": false,
         "east": false
       },
@@ -60,6 +79,50 @@
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece_slab_middle",
         "x": 270,
+        "y": 90
+      }
+    },
+
+    {
+      "when": {
+        "top_half": true,
+        "east": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_middle",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "west": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_middle",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "north": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_middle",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "south": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_middle",
+        "x": 90,
         "y": 90
       }
     },
@@ -110,6 +173,50 @@
 
     {
       "when": {
+        "top_half": true,
+        "east": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab",
+        "x": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "west": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "north": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "south": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab",
+        "x": 270,
+        "y": 90
+      }
+    },
+
+    {
+      "when": {
         "top_half": false,
         "north": false,
         "west": false
@@ -148,6 +255,50 @@
       },
       "apply": {
         "model": "searchlight:block/colour_lamp_frame_piece_slab_vert",
+        "y": 180
+      }
+    },
+
+    {
+      "when": {
+        "top_half": true,
+        "north": false,
+        "west": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_top",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "north": false,
+        "east": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_top"
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "south": false,
+        "east": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_top",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "south": false,
+        "west": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_frame_piece_slab_top",
         "y": 180
       }
     },
@@ -198,6 +349,50 @@
 
     {
       "when": {
+        "top_half": true,
+        "east": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "west": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "north": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top"
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top",
+        "y": 180
+      }
+    },
+
+    {
+      "when": {
         "top_half": false,
         "east": true,
         "lit": true
@@ -238,6 +433,241 @@
         "model": "searchlight:block/colour_lamp_slab_addition_side_on",
         "y": 180
       }
+    },
+
+    {
+      "when": {
+        "top_half": true,
+        "east": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "west": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "north": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top_on"
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_slab_addition_side_top_on",
+        "y": 180
+      }
+    },
+
+    {
+      "when": {
+        "top_half": false,
+        "north": true,
+        "west": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_on"
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "north": true,
+        "west": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab"
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "east": true,
+        "north": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "east": true,
+        "north": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "east": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "east": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "west": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": false,
+        "west": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab",
+        "y": 270
+      }
+    },
+
+    {
+      "when": {
+        "top_half": true,
+        "north": true,
+        "west": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top_on"
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "north": true,
+        "west": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top"
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "east": true,
+        "north": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top_on",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "east": true,
+        "north": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "east": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top_on",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "east": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "west": true,
+        "south": true,
+        "lit": true
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top_on",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "top_half": true,
+        "west": true,
+        "south": true,
+        "lit": false
+      },
+      "apply": {
+        "model": "searchlight:block/colour_lamp_extra_pix_slab_top",
+        "y": 270
+      }
     }
+
   ]
 }
