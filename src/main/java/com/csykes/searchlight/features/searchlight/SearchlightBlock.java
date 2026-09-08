@@ -1,8 +1,9 @@
 package com.csykes.searchlight.features.searchlight;
 
+import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.SearchlightUtil;
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
 import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -31,13 +32,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class SearchlightBlock extends AbstractLightBlock implements EntityBlock {
-    private final DyeColor blockColor;
-    private final String dyenamicColor;
+public class SearchlightBlock extends AbstractColoredLightBlock implements EntityBlock {
 
     public SearchlightBlock(@NotNull Properties properties, DyeColor color) {
         this(properties, color, null);
@@ -47,10 +47,8 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
         this(properties, null, dyenamicColor);
     }
 
-    private SearchlightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
-        super(properties);
-        this.blockColor = blockColor;
-        this.dyenamicColor = dyenamicColor;
+    public SearchlightBlock(@NotNull Properties properties, DyeColor blockColor, String dyenamicColor) {
+        super(properties, blockColor, dyenamicColor);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
@@ -60,6 +58,12 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     public SearchlightBlock(@NotNull Properties properties) {
         this(properties, DyeColor.WHITE, null);
+    }
+
+    @Override
+    public @Nullable Block getBlockForColor(String colorKey) {
+        DeferredBlock<Block> holder = Searchlight.SEARCHLIGHTS.get(colorKey);
+        return holder != null ? holder.get() : null;
     }
 
     @Override
@@ -84,12 +88,12 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             if (!world.isClientSide) {
-                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity be) -> be.deleteLightSource());
+                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity be) -> be.deleteLightSource());
             }
             super.onRemove(state, world, pos, newState, isMoving);
         } else if (state.getValue(LIT) != newState.getValue(LIT)) {
             if (!world.isClientSide) {
-                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity be) -> {
+                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity be) -> {
                     if (newState.getValue(LIT)) {
                         be.turnOnLightSource();
                     } else {
@@ -104,7 +108,7 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         super.setPlacedBy(world, pos, state, placer, itemStack);
         if (!world.isClientSide) {
-            SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity be) -> {
+            SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity be) -> {
                 if (be.getLightSourcePos() == null) {
                     updateSearchLight(world, pos, state, placer);
                 }
@@ -146,7 +150,7 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
     }
 
     protected void updateSearchLight(@NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer) {
-        SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity blockEntity) -> {
+        SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity blockEntity) -> {
             Vec3 direction;
             if (placer != null) {
                 direction = placer.getLookAngle().scale(-1);

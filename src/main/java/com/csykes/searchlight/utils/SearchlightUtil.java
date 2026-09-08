@@ -20,6 +20,22 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public final class SearchlightUtil {
+    public static <T extends BlockEntity> boolean castBlockEntity(@Nullable BlockEntity blockEntity, @NotNull BlockPos blockPos, @NotNull Class<T> expectedClass, @NotNull Consumer<T> result) {
+        if (blockEntity == null) {
+            return false;
+        }
+        if (!blockEntity.hasLevel()) {
+            return false;
+        }
+        if (expectedClass.isInstance(blockEntity)) {
+            result.accept(expectedClass.cast(blockEntity));
+            return true;
+        } else {
+            Searchlight.LOGGER.error("Attempted to cast '{}' ({}) at {} to {} but failed", blockEntity, blockEntity.getClass(), blockPos, expectedClass);
+            return false;
+        }
+    }
+
     public static <T extends BlockEntity> boolean castBlockEntity(@Nullable BlockEntity blockEntity, @NotNull BlockPos blockPos, @NotNull Consumer<T> result) {
         if (blockEntity == null) {
             return false;

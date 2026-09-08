@@ -1,14 +1,9 @@
 package com.csykes.searchlight.utils.lighting;
 
-import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.SearchlightClient;
-import com.csykes.searchlight.features.centre_light.CentreLightBlock;
-import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
-import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
-import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,11 +27,15 @@ import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.*;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -50,6 +49,10 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     protected AbstractLightBlock(@NotNull Properties properties) {
         super(properties);
+    }
+
+    public @Nullable Block getBlockForColor(String colorKey) {
+        return null;
     }
 
     @Override
@@ -227,29 +230,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 return ItemInteractionResult.sidedSuccess(world.isClientSide);
             }
 
-            Block newBlock = null;
-            if (block instanceof WallLightBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            } else if (block instanceof CornerLightBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            } else if (block instanceof EdgeLightBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            } else if (block instanceof CentreLightBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            } else if (block instanceof ColourLampBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            } else if (block instanceof com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_SLAB_LAMPS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            } else if (block instanceof SearchlightBlock) {
-                DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
-                if (newBlockHolder != null) newBlock = newBlockHolder.get();
-            }
+            Block newBlock = getBlockForColor(normalizedColor);
 
             if (newBlock != null && newBlock != block) {
                 BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
@@ -374,7 +355,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
     @SuppressWarnings("unchecked")
     private BlockState copyMatchingProperties(BlockState from, BlockState to) {
         BlockState result = to;
-        for (net.minecraft.world.level.block.state.properties.Property<?> property : from.getProperties()) {
+        for (Property<?> property : from.getProperties()) {
             if (result.hasProperty(property)) {
                 result = copyProperty(from, result, (Property) property);
             }

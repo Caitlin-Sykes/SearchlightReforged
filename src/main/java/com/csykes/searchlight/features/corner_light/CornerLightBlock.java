@@ -1,7 +1,8 @@
 package com.csykes.searchlight.features.corner_light;
 
+import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
 import com.csykes.searchlight.utils.lighting.CornerLightStage;
 import com.csykes.searchlight.utils.lighting.LightRodConnection;
 import com.mojang.serialization.MapCodec;
@@ -23,17 +24,16 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Getter
-public class CornerLightBlock extends AbstractLightBlock implements EntityBlock {
-    private final DyeColor blockColor;
-    private final String dyenamicColor;
+public class CornerLightBlock extends AbstractColoredLightBlock implements EntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return new WallLightBlockEntity(pos, state);
+        return new WallLightBlockEntity(Searchlight.CORNER_LIGHT_BE.get(), pos, state);
     }
 
     public CornerLightBlock(Properties properties, DyeColor blockColor) {
@@ -44,14 +44,18 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
         this(properties, null, dyenamicColor);
     }
 
-    private CornerLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
-        super(properties);
-        this.blockColor = blockColor;
-        this.dyenamicColor = dyenamicColor;
+    public CornerLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
+        super(properties, blockColor, dyenamicColor);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(LIT, true)
                 .setValue(CONNECTION, LightRodConnection.SINGLE)
                 .setValue(CORNER, CornerLightStage.BOTTOM_LEFT));
+    }
+
+    @Override
+    public @Nullable Block getBlockForColor(String colorKey) {
+        DeferredBlock<Block> holder = Searchlight.CORNER_LIGHTS.get(colorKey);
+        return holder != null ? holder.get() : null;
     }
 
     @Override
@@ -125,7 +129,6 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
 
     private static final VoxelShape SHAPE_TL = Block.box(14, 0, 14, 16, 16, 16);
 
-
     @Override
     public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return switch (state.getValue(CORNER)) {
@@ -135,5 +138,4 @@ public class CornerLightBlock extends AbstractLightBlock implements EntityBlock 
             case TOP_LEFT -> SHAPE_TL;
         };
     }
-
 }

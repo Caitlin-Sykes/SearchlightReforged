@@ -12,10 +12,12 @@ import com.csykes.searchlight.utils.lighting.LightRequest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +25,10 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     private String address = "";
     private BrightnessStage brightness = BrightnessStage.MEDIUM;
     private LightRequest lightRequest = LightRequest.RELEASE;
+
+    public WallLightBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
 
     public WallLightBlockEntity(BlockPos pos, BlockState state) {
         super(
@@ -118,7 +124,7 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     }
 
     @Override
-    public void onDataPacket(net.minecraft.network.Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
         if (level != null && level.isClientSide) {
             level.getLightEngine().checkBlock(worldPosition);
