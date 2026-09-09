@@ -1,3 +1,6 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -62,6 +65,8 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
     }
 
+    addModdingDependenciesTo sourceSets.test
+
     // This line is optional. Access Transformers are automatically detected
     // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -70,15 +75,16 @@ neoForge {
     runs {
         client {
             client()
-
-            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        ciClient {
+            jvmArgument "-Xmx1256M"
+            systemProperty 'ciClient', 'true'
+            client()
         }
 
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -86,7 +92,8 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            sourceSet = sourceSets.test
+            systemProperty 'neoforge.enabledGameTestNamespaces', "${project.mod_id},minecraft"
         }
 
         data {
@@ -121,6 +128,10 @@ neoForge {
         // multi mod projects should define one per mod
         "${mod_id}" {
             sourceSet(sourceSets.main)
+            sourceSet(sourceSets.test)
+        }
+        "mat" {
+            sourceSet(project(':mat').sourceSets.main)
         }
     }
 }
@@ -147,9 +158,17 @@ dependencies {
     localRuntime "maven.modrinth:jade:${jade_version}"
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.6.13-neoforge"
     localRuntime "maven.modrinth:iris:1.8.8+1.21.1-neoforge"
+    localRuntime "curse.maven:construction-sticks-1156098:8763707"
 
     compileOnly "curse.maven:dyenamics-509276:6504540"
     localRuntime "curse.maven:dyenamics-509276:6504540"
+
+    testImplementation "maven.modrinth:cc-tweaked:1.120.0-neoforge"
+    testImplementation "maven.modrinth:jade:${jade_version}"
+    testImplementation "curse.maven:dyenamics-509276:6504540"
+    testImplementation "curse.maven:construction-sticks-1156098:8763707"
+    testImplementation project(':mat')
+    localRuntime project(':mat')
 
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
@@ -199,6 +218,11 @@ var generateColorResources = tasks.register("generateColorResources") {
 
     var templatesDir = file("src/main/templates/color_resources")
     inputs.dir(templatesDir)
+    var supportedLocales = ["en_us", "en_pt", "fr_fr", "pt_br", "ru_ru"]
+    var langInputDir = file("src/main/resources/assets/searchlight/lang")
+    supportedLocales.each { loc ->
+        inputs.file(new File(langInputDir, "${loc}.json"))
+    }
 
 
     doLast {
@@ -212,8 +236,8 @@ var generateColorResources = tasks.register("generateColorResources") {
                 "peach", "aquamarine", "fluorescent", "mint", "maroon", "bubblegum", "lavender", "persimmon", "cherenkov", "amber", "honey", "ultramarine", "spring_green", "rose", "navy", "icy_blue", "wine", "conifer"
         ]
 
-
-        var wallVariants = colors + ["iron", "copper", "prismarine"]
+        var allColors = colors + dyenamicColors
+        var wallVariants = allColors + ["iron", "copper", "prismarine"]
 
         var getParticle = { variant ->
             if (variant == "iron") return "minecraft:block/iron_block"
@@ -232,15 +256,17 @@ var generateColorResources = tasks.register("generateColorResources") {
                         var outPath = relativePath.replace("@color@", color)
                         var outFile = new File(outputDir, outPath)
                         outFile.parentFile.mkdirs()
-                        outFile.text = templateFile.text.replace("@color@", color)
-                        outFile.text = templateFile.text.replace("@namespace@", "minecraft")
+                        outFile.text = templateFile.text
+                                .replace("@color@", color)
+                                .replace("@namespace@", "minecraft")
                     }
                     for (dColor in dyenamicColors) {
                         var outPath = relativePath.replace("@color@", dColor)
                         var outFile = new File(outputDir, outPath)
                         outFile.parentFile.mkdirs()
-                        outFile.text = templateFile.text.replace("@color@", dColor)
-                        outFile.text = templateFile.text.replace("@namespace@", "dyenamics")
+                        outFile.text = templateFile.text
+                                .replace("@color@", dColor)
+                                .replace("@namespace@", "dyenamics")
                     }
 
                 } else if (relativePath.contains("@wall_variant@")) {
@@ -259,17 +285,647 @@ var generateColorResources = tasks.register("generateColorResources") {
                     outFile.parentFile.mkdirs()
 
                     var content = templateFile.text.replaceAll(/@list:([^:]+):([^@]+)@/) { match, prefix, placeholderType ->
-                        var valuesList = (placeholderType == "color") ? colors : wallVariants
+                        var valuesList = (placeholderType == "color") ? allColors : wallVariants
                         valuesList.collect { "\"searchlight:${prefix}_${it}\"" }.join(",\n    ")
                     }
                     outFile.text = content
                 }
             }
         }
+
+        // Generate locale strings for all supported locales and color block families
+        var colorKeys = [
+                // Vanilla
+                "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+                "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black",
+                // Dyenamics
+                "peach", "aquamarine", "fluorescent", "mint", "light_mint", "maroon", "bubblegum",
+                "lavender", "persimmon", "cherenkov", "amber", "honey", "ultramarine",
+                "spring_green", "rose", "navy", "icy_blue", "wine", "conifer"
+        ]
+        var wallMaterialKeys = ["iron", "copper", "prismarine"]
+        var nonWallFamilies = [
+                "colour_lamp_slab", "colour_lamp", "corner_light",
+                "centre_light", "edge_light", "searchlight"
+        ]
+
+        var localeGenerators = [:]
+
+        // --- en_us ---
+        var enColorNames = [
+                "white": "White", "orange": "Orange", "magenta": "Magenta", "light_blue": "Light Blue",
+                "yellow": "Yellow", "lime": "Lime", "pink": "Pink", "gray": "Gray",
+                "light_gray": "Light Gray", "cyan": "Cyan", "purple": "Purple", "blue": "Blue",
+                "brown": "Brown", "green": "Green", "red": "Red", "black": "Black",
+                "peach": "Peach", "aquamarine": "Aquamarine", "fluorescent": "Fluorescent",
+                "mint": "Mint", "light_mint": "Light Mint", "maroon": "Maroon", "bubblegum": "Bubblegum",
+                "lavender": "Lavender", "persimmon": "Persimmon", "cherenkov": "Cherenkov",
+                "amber": "Amber", "honey": "Honey", "ultramarine": "Ultramarine",
+                "spring_green": "Spring Green", "rose": "Rose", "navy": "Navy",
+                "icy_blue": "Icy Blue", "wine": "Wine", "conifer": "Conifer"
+        ]
+        var enWallMaterials = ["iron": "Iron", "copper": "Copper", "prismarine": "Prismarine"]
+        var enFamilySuffixes = [
+                "wall_light": "Wall Light",
+                "colour_lamp_slab": "Coloured Lamp Slab",
+                "colour_lamp": "Coloured Lamp",
+                "corner_light": "Corner Light",
+                "centre_light": "Centre Light",
+                "edge_light": "Edge Light",
+                "searchlight": "Searchlight"
+        ]
+        localeGenerators["en_us"] = { String family, String key ->
+            if (family == "wall_light" && enWallMaterials.containsKey(key)) {
+                return "${enWallMaterials[key]} Wall Light".toString()
+            }
+            return "${enColorNames[key]} ${enFamilySuffixes[family]}".toString()
+        }
+
+        // --- en_pt ---
+        var ptColorNames = [
+                "white": "Bone-White", "orange": "Tangerine", "magenta": "Shockin' Pink", "light_blue": "Sky-Blue",
+                "yellow": "Gold-Yellow", "lime": "Sour Green", "pink": "Rosy", "gray": "Ash-Grey",
+                "light_gray": "Sea-Foam Grey", "cyan": "Teal", "purple": "Royal Purple", "blue": "Deep-Sea Blue",
+                "brown": "Muddy Brown", "green": "Seaweed Green", "red": "Blood-Red", "black": "Pitch-Black",
+                "peach": "Peach", "aquamarine": "Aquamarine", "fluorescent": "Glowin'",
+                "mint": "Mint", "light_mint": "Pale Mint", "maroon": "Maroon", "bubblegum": "Bubblegum",
+                "lavender": "Lavender", "persimmon": "Persimmon", "cherenkov": "Cherenkov Gleam",
+                "amber": "Amber", "honey": "Golden Honey", "ultramarine": "High-Seas Blue",
+                "spring_green": "Spring-Green", "rose": "Wild Rose", "navy": "Admiralty Navy",
+                "icy_blue": "Glacier Blue", "wine": "Grog Wine", "conifer": "Pine Needle"
+        ]
+        var ptPirateWallMaterials = ["iron": "Iron", "copper": "Copper", "prismarine": "Prismarine"]
+        var ptFamilySuffixes = [
+                "wall_light": "Bulwark Lantern",
+                "colour_lamp_slab": "Tinctured Lamp Slab",
+                "colour_lamp": "Tinctured Lamp",
+                "corner_light": "Nook Lantern",
+                "centre_light": "Midship Lantern",
+                "edge_light": "Plank Lantern",
+                "searchlight": "Lookout Beacon"
+        ]
+        localeGenerators["en_pt"] = { String family, String key ->
+            if (family == "wall_light" && ptPirateWallMaterials.containsKey(key)) {
+                return "${ptPirateWallMaterials[key]} Bulwark Lantern".toString()
+            }
+            return "${ptColorNames[key]} ${ptFamilySuffixes[family]}".toString()
+        }
+
+        // --- fr_fr ---
+        var frWallMaterials = [
+                "iron": "Applique Murale En Fer",
+                "copper": "Applique Murale En Cuivre",
+                "prismarine": "Applique Murale En Prismarine"
+        ]
+        var frVanillaTitle = [
+                "white": "Blanche", "orange": "Orange", "magenta": "Magenta", "light_blue": "Bleu Clair",
+                "yellow": "Jaune", "lime": "Vert Citron", "pink": "Rose", "gray": "Grise",
+                "light_gray": "Gris Clair", "cyan": "Cyan", "purple": "Violette", "blue": "Bleue",
+                "brown": "Marron", "green": "Verte", "red": "Rouge", "black": "Noire"
+        ]
+        var frVanillaLower = [
+                "white": "blanche", "orange": "orange", "magenta": "magenta", "light_blue": "bleu clair",
+                "yellow": "jaune", "lime": "vert lime", "pink": "rose", "gray": "grise",
+                "light_gray": "gris clair", "cyan": "cyan", "purple": "violette", "blue": "bleue",
+                "brown": "marron", "green": "verte", "red": "rouge", "black": "noire"
+        ]
+        var frVanillaSearchlight = [
+                "white": "blanc", "orange": "orange", "magenta": "magenta", "light_blue": "bleu clair",
+                "yellow": "jaune", "lime": "vert citron", "pink": "rose", "gray": "gris",
+                "light_gray": "gris clair", "cyan": "cyan", "purple": "violet", "blue": "bleu",
+                "brown": "marron", "green": "vert", "red": "rouge", "black": "noir"
+        ]
+        var frDyenamicsColors = [
+                "peach": "pêche", "aquamarine": "aigue-marine", "fluorescent": "fluorescente",
+                "mint": "vert menthe", "light_mint": "vert menthe clair", "maroon": "marron",
+                "bubblegum": "Hubba-Bubba", "lavender": "lavande", "persimmon": "kaki",
+                "cherenkov": "effet Tcherenkov", "amber": "ambre", "honey": "miel",
+                "ultramarine": "bleu outremer", "spring_green": "vert printemps", "rose": "rose",
+                "navy": "bleu marine", "icy_blue": "bleu glacé", "wine": "vin", "conifer": "vert conifère"
+        ]
+        var frDyenamicsLamp = [
+                "peach": "couleur pêche", "aquamarine": "couleur aigue-marine", "fluorescent": "fluorescente",
+                "mint": "vert menthe", "light_mint": "vert menthe clair", "maroon": "marron",
+                "bubblegum": "couleur Hubba-Bubba", "lavender": "couleur lavande", "persimmon": "couleur kaki",
+                "cherenkov": "effet Tcherenkov", "amber": "couleur ambre", "honey": "couleur miel",
+                "ultramarine": "bleu outremer", "spring_green": "vert printemps", "rose": "rose",
+                "navy": "bleu marine", "icy_blue": "bleu glacé", "wine": "couleur vin", "conifer": "vert conifère"
+        ]
+        localeGenerators["fr_fr"] = { String family, String key ->
+            if (family == "wall_light") {
+                if (frWallMaterials.containsKey(key)) return frWallMaterials[key]
+                if (frVanillaTitle.containsKey(key)) return "Applique Murale ${frVanillaTitle[key]}".toString()
+                if (frDyenamicsColors.containsKey(key)) return "Applique murale ${frDyenamicsColors[key]}".toString()
+            } else if (family == "corner_light") {
+                if (frVanillaTitle.containsKey(key)) return "Lampe D'angle ${frVanillaTitle[key]}".toString()
+                if (frDyenamicsColors.containsKey(key)) return "Veilleuse d'angle ${frDyenamicsColors[key]}".toString()
+            } else if (family == "centre_light") {
+                if (frVanillaTitle.containsKey(key)) return "Lumière Centrale ${frVanillaTitle[key]}".toString()
+                if (frDyenamicsColors.containsKey(key)) {
+                    var c = (key == "fluorescent") ? "fluorescent" : frDyenamicsColors[key]
+                    return "Plafonnier central ${c}".toString()
+                }
+            } else if (family == "edge_light") {
+                if (frVanillaLower.containsKey(key)) return "Lumière de bordure ${frVanillaLower[key]}".toString()
+                if (frDyenamicsColors.containsKey(key)) return "Lumière de bordure ${frDyenamicsColors[key]}".toString()
+            } else if (family == "colour_lamp") {
+                if (frVanillaLower.containsKey(key)) return "Lampe colorée ${frVanillaLower[key]}".toString()
+                if (frDyenamicsLamp.containsKey(key)) return "Lampe ${frDyenamicsLamp[key]}".toString()
+            } else if (family == "colour_lamp_slab") {
+                if (frVanillaLower.containsKey(key)) return "Dalle de lampe colorée ${frVanillaLower[key]}".toString()
+                if (frDyenamicsLamp.containsKey(key)) return "Dalle de lampe ${frDyenamicsLamp[key]}".toString()
+            } else if (family == "searchlight") {
+                if (frVanillaSearchlight.containsKey(key)) return "Projecteur ${frVanillaSearchlight[key]}".toString()
+                if (frDyenamicsColors.containsKey(key)) {
+                    var c = (key == "fluorescent") ? "fluorescent" : frDyenamicsColors[key]
+                    return "Projecteur ${c}".toString()
+                }
+            }
+            return null
+        }
+
+        // --- pt_br ---
+        var ptWallMaterials = [
+                "iron": "Luz de parede de ferro",
+                "copper": "Luz de parede de cobre",
+                "prismarine": "Luz de parede de prismarinho"
+        ]
+        var ptVanillaWall = [
+                "white": "branca", "orange": "laranja", "magenta": "magenta", "light_blue": "azul claro",
+                "yellow": "amarelo", "lime": "lima", "pink": "rosa", "gray": "cinza",
+                "light_gray": "cinza claro", "cyan": "ciano", "purple": "roxo", "blue": "azul",
+                "brown": "marrom", "green": "verde", "red": "vermelho", "black": "preto"
+        ]
+        var ptVanillaCorner = [
+                "white": "Branca", "orange": "Laranja", "magenta": "Magenta", "light_blue": "Azul-Claro",
+                "yellow": "Amarela", "lime": "Verde-Limão", "pink": "Rosa", "gray": "Cinza",
+                "light_gray": "Cinza-Claro", "cyan": "Ciano", "purple": "Roxa", "blue": "Azul",
+                "brown": "Marrom", "green": "Verde", "red": "Vermelha", "black": "Preta"
+        ]
+        var ptVanillaCentre = [
+                "white": "Branca", "orange": "Laranja", "magenta": "Magenta", "light_blue": "Azul Clara",
+                "yellow": "Amarela", "lime": "Verde-Limão", "pink": "Rosa", "gray": "Cinza",
+                "light_gray": "Cinza Clara", "cyan": "Ciano", "purple": "Roxa", "blue": "Azul",
+                "brown": "Marrom", "green": "Verde", "red": "Vermelha", "black": "Preta"
+        ]
+        var ptVanillaEdge = [
+                "white": "Branca", "orange": "Laranja", "magenta": "Magenta", "light_blue": "Azul-Claro",
+                "yellow": "Amarela", "lime": "Verde-Lima", "pink": "Rosa", "gray": "Cinza",
+                "light_gray": "Cinza-Claro", "cyan": "Ciano", "purple": "Roxo", "blue": "Azul",
+                "brown": "Marrom", "green": "Verde", "red": "Vermelha", "black": "Preta"
+        ]
+        var ptVanillaLamp = [
+                "white": "branca", "orange": "laranja", "magenta": "magenta", "light_blue": "azul claro",
+                "yellow": "amarela", "lime": "limão", "pink": "rosa", "gray": "cinza",
+                "light_gray": "cinza claro", "cyan": "ciano", "purple": "roxa", "blue": "azul",
+                "brown": "marrom", "green": "verde", "red": "vermelha", "black": "preta"
+        ]
+        var ptVanillaSearchlight = [
+                "white": "branco", "orange": "laranja", "magenta": "magenta", "light_blue": "azul-claro",
+                "yellow": "amarelo", "lime": "verde-limão", "pink": "rosa", "gray": "cinza",
+                "light_gray": "cinza-claro", "cyan": "ciano", "purple": "roxo", "blue": "azul",
+                "brown": "marrom", "green": "verde", "red": "vermelho", "black": "preto"
+        ]
+        var ptDyenamicsColors = [
+                "peach": "Cor de Pêssego", "aquamarine": "Azul-Aquamarine", "fluorescent": "Fluorescente",
+                "mint": "Verde-Menta", "light_mint": "Verde-Menta Claro", "maroon": "Marrom-Bordô",
+                "bubblegum": "Cor de Chiclete", "lavender": "Cor de Lavanda", "persimmon": "Cor de Caqui",
+                "cherenkov": "Azul Cherenkov", "amber": "Cor de Âmbar", "honey": "Cor de Mel",
+                "ultramarine": "Azul-Ultramar", "spring_green": "Verde-Primavera", "rose": "Cor de Rosa",
+                "navy": "Azul-Marinho", "icy_blue": "Azul-Gelo", "wine": "Cor de Vinho", "conifer": "Verde-Conífera"
+        ]
+        localeGenerators["pt_br"] = { String family, String key ->
+            if (family == "wall_light") {
+                if (ptWallMaterials.containsKey(key)) return ptWallMaterials[key]
+                if (ptVanillaWall.containsKey(key)) return "Luz de parede ${ptVanillaWall[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Luminária de Parede ${ptDyenamicsColors[key]}".toString()
+            } else if (family == "corner_light") {
+                if (ptVanillaCorner.containsKey(key)) return "Luz de Canto ${ptVanillaCorner[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Luz de Canto ${ptDyenamicsColors[key]}".toString()
+            } else if (family == "centre_light") {
+                if (ptVanillaCentre.containsKey(key)) return "Luz Central ${ptVanillaCentre[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Luz Central ${ptDyenamicsColors[key]}".toString()
+            } else if (family == "edge_light") {
+                if (ptVanillaEdge.containsKey(key)) return "Luz de Borda ${ptVanillaEdge[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Luz de Borda ${ptDyenamicsColors[key]}".toString()
+            } else if (family == "colour_lamp") {
+                if (ptVanillaLamp.containsKey(key)) return "Lâmpada colorida ${ptVanillaLamp[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Lâmpada ${ptDyenamicsColors[key]}".toString()
+            } else if (family == "colour_lamp_slab") {
+                if (ptVanillaLamp.containsKey(key)) return "Laje de lâmpada colorida ${ptVanillaLamp[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Laje de lâmpada ${ptDyenamicsColors[key]}".toString()
+            } else if (family == "searchlight") {
+                if (ptVanillaSearchlight.containsKey(key)) return "Holofote ${ptVanillaSearchlight[key]}".toString()
+                if (ptDyenamicsColors.containsKey(key)) return "Holofote ${ptDyenamicsColors[key]}".toString()
+            }
+            return null
+        }
+
+        // --- ru_ru ---
+        var ruWallMaterials = [
+                "iron": "Железный настенный светильник",
+                "copper": "Медный настенный светильник",
+                "prismarine": "Призмариновый настенный светильник"
+        ]
+        var ruVanillaWall = [
+                "white": "Белый", "orange": "Оранжевый", "magenta": "Сиреневый", "light_blue": "Голубой",
+                "yellow": "Желтый", "lime": "Лаймовый", "pink": "Розовый", "gray": "Серый",
+                "light_gray": "Светло-серый", "cyan": "Бирюзовый", "purple": "Фиолетовый", "blue": "Синий",
+                "brown": "Коричневый", "green": "Зеленый", "red": "Красный", "black": "Черный"
+        ]
+        var ruVanillaCornerEdge = [
+                "white": "Белый", "orange": "Оранжевый", "magenta": "Пурпурный", "light_blue": "Светло-голубой",
+                "yellow": "Желтый", "lime": "Лаймовый", "pink": "Розовый", "gray": "Серый",
+                "light_gray": "Светло-серый", "cyan": "Бирюзовый", "purple": "Фиолетовый", "blue": "Синий",
+                "brown": "Коричневый", "green": "Зеленый", "red": "Красный", "black": "Черный"
+        ]
+        var ruVanillaCentre = [
+                "white": "Белый", "orange": "Оранжевый", "magenta": "Пурпурный", "light_blue": "Светло-Голубой",
+                "yellow": "Желтый", "lime": "Лаймовый", "pink": "Розовый", "gray": "Серый",
+                "light_gray": "Светло-Серый", "cyan": "Голубовато-Зеленый", "purple": "Фиолетовый", "blue": "Синий",
+                "brown": "Коричневый", "green": "Зеленый", "red": "Красный", "black": "Черный"
+        ]
+        var ruVanillaSearchlight = [
+                "white": "Белый", "orange": "Оранжевый", "magenta": "Пурпурный", "light_blue": "Голубой",
+                "yellow": "Желтый", "lime": "Лаймовый", "pink": "Розовый", "gray": "Серый",
+                "light_gray": "Светло-серый", "cyan": "Бирюзовый", "purple": "Фиолетовый", "blue": "Синий",
+                "brown": "Коричневый", "green": "Зеленый", "red": "Красный", "black": "Черный"
+        ]
+        var ruVanillaLamp = [
+                "white": "Белая", "orange": "Оранжевая", "magenta": "Пурпурная", "light_blue": "Светло-голубая",
+                "yellow": "Жёлтая", "lime": "Лаймовая", "pink": "Розовая", "gray": "Серая",
+                "light_gray": "Светло-серая", "cyan": "Бирюзовая", "purple": "Фиолетовая", "blue": "Синяя",
+                "brown": "Коричневая", "green": "Зелёная", "red": "Красная", "black": "Чёрная"
+        ]
+        var ruDyenamicsGenitive = [
+                "peach": "персикового цвета", "mint": "мятного цвета", "light_mint": "светло-мятного цвета",
+                "maroon": "бордового цвета", "bubblegum": "цвета бабл-гам", "lavender": "лавандового цвета",
+                "persimmon": "хурмового цвета", "honey": "медового цвета", "ultramarine": "ультрамаринового цвета",
+                "spring_green": "весенне-зеленого цвета", "navy": "темно-синего цвета", "icy_blue": "ледяно-голубого цвета",
+                "wine": "винного цвета", "conifer": "хвойно-зеленого цвета"
+        ]
+        var ruDyenamicsAdj = [
+                "aquamarine": [
+                        "wall_light": "Настенный аквамариновый светильник",
+                        "corner_light": "Угловой аквамариновый светильник",
+                        "centre_light": "Центральный аквамариновый светильник",
+                        "edge_light": "Краевой аквамариновый светильник",
+                        "colour_lamp": "Лампа аквамариновая",
+                        "colour_lamp_slab": "Аквамариновая плита цветной лампы",
+                        "searchlight": "Аквамариновый прожектор"
+                ],
+                "fluorescent": [
+                        "wall_light": "Флуоресцентный настенный светильник",
+                        "corner_light": "Флуоресцентный угловой светильник",
+                        "centre_light": "Флуоресцентный центральный светильник",
+                        "edge_light": "Флуоресцентный краевой светильник",
+                        "colour_lamp": "Флуоресцентная лампа",
+                        "colour_lamp_slab": "Флуоресцентная плита цветной лампы",
+                        "searchlight": "Флуоресцентный прожектор"
+                ],
+                "cherenkov": [
+                        "wall_light": "Настенный черенковский светильник",
+                        "corner_light": "Угловой черенковский светильник",
+                        "centre_light": "Центральный черенковский светильник",
+                        "edge_light": "Краевой черенковский светильник",
+                        "colour_lamp": "Черенковская лампа",
+                        "colour_lamp_slab": "Черенковская плита цветной лампы",
+                        "searchlight": "Черенковский прожектор"
+                ],
+                "amber": [
+                        "wall_light": "Янтарный настенный светильник",
+                        "corner_light": "Янтарный угловой светильник",
+                        "centre_light": "Янтарный центральный светильник",
+                        "edge_light": "Янтарный краевой светильник",
+                        "colour_lamp": "Янтарная лампа",
+                        "colour_lamp_slab": "Янтарная плита цветной лампы",
+                        "searchlight": "Янтарный прожектор"
+                ],
+                "rose": [
+                        "wall_light": "Розовый настенный светильник",
+                        "corner_light": "Розовый угловой светильник",
+                        "centre_light": "Розовый центральный светильник",
+                        "edge_light": "Розовый краевой светильник",
+                        "colour_lamp": "Розовая лампа",
+                        "colour_lamp_slab": "Розовая плита цветной лампы",
+                        "searchlight": "Розовый прожектор"
+                ]
+        ]
+        localeGenerators["ru_ru"] = { String family, String key ->
+            if (family == "wall_light") {
+                if (ruWallMaterials.containsKey(key)) return ruWallMaterials[key]
+                if (ruVanillaWall.containsKey(key)) return "${ruVanillaWall[key]} настенный светильник".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["wall_light"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Настенный светильник ${ruDyenamicsGenitive[key]}".toString()
+            } else if (family == "corner_light") {
+                if (ruVanillaCornerEdge.containsKey(key)) return "${ruVanillaCornerEdge[key]} угловой светильник".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["corner_light"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Угловой светильник ${ruDyenamicsGenitive[key]}".toString()
+            } else if (family == "centre_light") {
+                if (ruVanillaCentre.containsKey(key)) return "Центральный ${ruVanillaCentre[key]} Свет".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["centre_light"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Центральный светильник ${ruDyenamicsGenitive[key]}".toString()
+            } else if (family == "edge_light") {
+                if (ruVanillaCornerEdge.containsKey(key)) return "${ruVanillaCornerEdge[key]} краевой светильник".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["edge_light"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Краевой светильник ${ruDyenamicsGenitive[key]}".toString()
+            } else if (family == "colour_lamp") {
+                if (ruVanillaLamp.containsKey(key)) return "${ruVanillaLamp[key]} цветная лампа".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["colour_lamp"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Лампа ${ruDyenamicsGenitive[key]}".toString()
+            } else if (family == "colour_lamp_slab") {
+                if (ruVanillaLamp.containsKey(key)) return "${ruVanillaLamp[key]} плита цветной лампы".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["colour_lamp_slab"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Плита цветной лампы ${ruDyenamicsGenitive[key]}".toString()
+            } else if (family == "searchlight") {
+                if (ruVanillaSearchlight.containsKey(key)) return "${ruVanillaSearchlight[key]} прожектор".toString()
+                if (ruDyenamicsAdj.containsKey(key)) return ruDyenamicsAdj[key]["searchlight"]
+                if (ruDyenamicsGenitive.containsKey(key)) return "Прожектор ${ruDyenamicsGenitive[key]}".toString()
+            }
+            return null
+        }
+
+        supportedLocales.each { locale ->
+            var staticLangFile = new File(langInputDir, "${locale}.json")
+            var langMap = new LinkedHashMap()
+            if (staticLangFile.exists()) {
+                langMap.putAll(new JsonSlurper().parseText(staticLangFile.getText("UTF-8")))
+            }
+
+            var generator = localeGenerators[locale]
+
+            wallMaterialKeys.each { mat ->
+                langMap["block.searchlight.wall_light_${mat}"] = generator("wall_light", mat)
+            }
+            colorKeys.each { col ->
+                langMap["block.searchlight.wall_light_${col}"] = generator("wall_light", col)
+            }
+            nonWallFamilies.each { fam ->
+                colorKeys.each { col ->
+                    langMap["block.searchlight.${fam}_${col}"] = generator(fam, col)
+                }
+            }
+
+            var outLangFile = new File(outputDir, "assets/searchlight/lang/${locale}.json")
+            outLangFile.parentFile.mkdirs()
+            outLangFile.setText(JsonOutput.prettyPrint(JsonOutput.toJson(langMap)) + "\n", "UTF-8")
+
+            var buildLangFile = new File(outputDir.parentFile.parentFile.parentFile, "resources/main/assets/searchlight/lang/${locale}.json")
+            if (buildLangFile.parentFile.exists()) {
+                buildLangFile.setText(outLangFile.getText("UTF-8"), "UTF-8")
+            }
+        }
     }
 }
 sourceSets.main.resources.srcDir generateColorResources
 neoForge.ideSyncTask generateColorResources
+
+tasks.withType(ProcessResources).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+var generateShaderConfig = tasks.register("generateShaderConfig") {
+    var inputBlockShaderFile = file("src/main/shader_files/block.properties")
+    var outputBlockShaderFile = file("build/generated/sources/shaderConfig/block.properties")
+    var inputItemShaderFile = file("src/main/shader_files/item.properties")
+    var outputItemShaderFile = file("build/generated/sources/shaderConfig/item.properties")
+
+    inputs.file(inputBlockShaderFile).optional()
+    inputs.file(inputItemShaderFile).optional()
+    outputs.file(outputBlockShaderFile)
+    outputs.file(outputItemShaderFile)
+
+    doLast {
+        var baseColorGroups = [
+                white: [
+                        blockId: "block.21000",
+                        itemId: "item.44097",
+                        colors: ["white", "light_gray", "gray", "black"],
+                        materials: ["iron"],
+                        itemExtra: ["searchlight:searchlight"]
+                ],
+                brown: [
+                        blockId: "block.21002",
+                        itemId: "item.44043",
+                        colors: ["brown"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                red: [
+                        blockId: "block.21004",
+                        itemId: "item.44070",
+                        colors: ["red", "maroon", "rose"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                orange: [
+                        blockId: "block.21006",
+                        itemId: "item.44071",
+                        colors: ["orange", "peach", "persimmon", "amber"],
+                        materials: ["copper"],
+                        itemExtra: []
+                ],
+                yellow: [
+                        blockId: "block.21008",
+                        itemId: "item.44072",
+                        colors: ["yellow", "fluorescent", "honey"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                lime: [
+                        blockId: "block.21010",
+                        itemId: "item.44073",
+                        colors: ["lime", "mint", "light_mint", "spring_green"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                green: [
+                        blockId: "block.21012",
+                        itemId: "item.44074",
+                        colors: ["green", "conifer"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                cyan: [
+                        blockId: "block.21014",
+                        itemId: "item.44075",
+                        colors: ["cyan", "aquamarine"],
+                        materials: ["prismarine"],
+                        itemExtra: []
+                ],
+                light_blue: [
+                        blockId: "block.21016",
+                        itemId: "item.44076",
+                        colors: ["light_blue", "cherenkov", "icy_blue"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                blue: [
+                        blockId: "block.21018",
+                        itemId: "item.44077",
+                        colors: ["blue", "ultramarine", "navy"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                purple: [
+                        blockId: "block.21020",
+                        itemId: "item.44078",
+                        colors: ["purple", "wine"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                magenta: [
+                        blockId: "block.21022",
+                        itemId: "item.44079",
+                        colors: ["magenta", "lavender"],
+                        materials: [],
+                        itemExtra: []
+                ],
+                pink: [
+                        blockId: "block.21024",
+                        itemId: "item.44080",
+                        colors: ["pink", "bubblegum"],
+                        materials: [],
+                        itemExtra: []
+                ]
+        ]
+
+        var getSearchlightBlockLines = { Map groupData ->
+            var resultLines = []
+            for (c in groupData.colors) {
+                var blocks = [
+                        "searchlight:searchlight:lit=true:color=${c}".toString(),
+                        "searchlight:searchlight_${c}:lit=true".toString(),
+                        "searchlight:searchlight_lightsource:color=${c}".toString(),
+                        "searchlight:wall_light_${c}:lit=true".toString(),
+                        "searchlight:corner_light_${c}:lit=true".toString(),
+                        "searchlight:edge_light_${c}:lit=true".toString(),
+                        "searchlight:centre_light_${c}:lit=true".toString(),
+                        "searchlight:colour_lamp_${c}:lit=true".toString(),
+                        "searchlight:colour_lamp_slab_${c}:lit=true".toString()
+                ]
+                resultLines.add(blocks.join(' '))
+            }
+            for (m in groupData.materials) {
+                resultLines.add("searchlight:wall_light_${m}:lit=true".toString())
+            }
+            return resultLines
+        }
+
+        var getSearchlightItemLines = { Map groupData ->
+            var resultLines = []
+            if (groupData.containsKey('itemExtra') && !groupData.itemExtra.isEmpty()) {
+                resultLines.add(groupData.itemExtra.join(' '))
+            }
+            for (c in groupData.colors) {
+                var items = [
+                        "searchlight:searchlight_${c}".toString(),
+                        "searchlight:wall_light_${c}".toString(),
+                        "searchlight:corner_light_${c}".toString(),
+                        "searchlight:edge_light_${c}".toString(),
+                        "searchlight:centre_light_${c}".toString(),
+                        "searchlight:colour_lamp_${c}".toString(),
+                        "searchlight:colour_lamp_slab_${c}".toString()
+                ]
+                resultLines.add(items.join(' '))
+            }
+            for (m in groupData.materials) {
+                resultLines.add("searchlight:wall_light_${m}".toString())
+            }
+            return resultLines
+        }
+
+        var updateShaderProperties = { File inputFile, File outputFile, Map targetLinesMap ->
+            var lines = inputFile.readLines('UTF-8')
+
+            // 1. Remove existing searchlight tokens to avoid duplicates
+            var cleanedLines = []
+            for (line in lines) {
+                if (line.contains('searchlight:')) {
+                    var tokens = line.replace('\\', '').split(/\s+/)
+                    var nonSearchlightTokens = tokens.findAll { it && !it.startsWith('searchlight:') }
+                    if (!nonSearchlightTokens.isEmpty()) {
+                        var trailing = line.trim().endsWith('\\') ? ' \\' : ''
+                        cleanedLines.add(nonSearchlightTokens.join(' ') + trailing)
+                    }
+                } else {
+                    cleanedLines.add(line)
+                }
+            }
+
+            // 2. Find the last occurrence index of each target property ID
+            var targetIds = targetLinesMap.keySet() as List<String>
+            var lastIndices = [:]
+            for (int i = 0; i < cleanedLines.size(); i++) {
+                var trimmed = cleanedLines[i].trim()
+                for (tid in targetIds) {
+                    if (trimmed.startsWith(tid + ' ') || trimmed.startsWith(tid + '=')) {
+                        lastIndices[tid] = i
+                    }
+                }
+            }
+
+            // 3. Insert the Searchlight entries in reverse order of index
+            var sortedTids = targetIds.findAll { lastIndices.containsKey(it) }
+                    .sort { a, b -> (lastIndices[b] as int) <=> (lastIndices[a] as int) }
+
+            for (tid in sortedTids) {
+                int idx = lastIndices[tid] as int
+                int curr = idx
+                while (curr < cleanedLines.size() && cleanedLines[curr].trim().endsWith('\\')) {
+                    curr++
+                }
+                // Ensure the line before our searchlight additions ends with ' \'
+                if (!cleanedLines[curr].trim().endsWith('\\')) {
+                    cleanedLines[curr] = cleanedLines[curr].stripTrailing() + ' \\'
+                }
+
+                var slLines = targetLinesMap[tid] as List<String>
+                var formattedLines = []
+                for (int j = 0; j < slLines.size(); j++) {
+                    if (j < slLines.size() - 1) {
+                        formattedLines.add(slLines[j] + ' \\')
+                    } else {
+                        formattedLines.add(slLines[j])
+                    }
+                }
+                cleanedLines.addAll(curr + 1, formattedLines)
+            }
+
+            outputFile.parentFile.mkdirs()
+            outputFile.withWriter('UTF-8') { writer ->
+                for (line in cleanedLines) {
+                    writer.write(line)
+                    writer.newLine()
+                }
+            }
+        }
+
+        if (inputBlockShaderFile.exists()) {
+            var blockTargetLinesMap = [:]
+            baseColorGroups.values().each { grp ->
+                blockTargetLinesMap[grp.blockId] = getSearchlightBlockLines(grp)
+            }
+            updateShaderProperties(inputBlockShaderFile, outputBlockShaderFile, blockTargetLinesMap)
+        } else {
+            logger.warn("Block shader config file not found at: ${inputBlockShaderFile.absolutePath}")
+        }
+
+        if (inputItemShaderFile.exists()) {
+            var itemTargetLinesMap = [:]
+            baseColorGroups.values().each { grp ->
+                itemTargetLinesMap[grp.itemId] = getSearchlightItemLines(grp)
+            }
+            updateShaderProperties(inputItemShaderFile, outputItemShaderFile, itemTargetLinesMap)
+        } else {
+            logger.warn("Item shader config file not found at: ${inputItemShaderFile.absolutePath}")
+        }
+    }
+}
+generateColorResources.configure {
+    finalizedBy(generateShaderConfig)
+}
+neoForge.ideSyncTask generateShaderConfig
 
 
 // Example configuration to allow publishing using the maven-publish plugin
@@ -281,13 +937,66 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            url = "file://${project.projectDir}/repo"
         }
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:deprecation"
+}
+
+configurations.configureEach {
+    if (providers.gradleProperty("ciClient").isPresent()) {
+        resolutionStrategy {
+            exclude group: "maven.modrinth", module: "roughlyenoughitems"
+            exclude group: "maven.modrinth", module: "jade"
+        }
+    }
+}
+
+//tasks.register('runCiClient', GradleBuild) {
+//    startParameter.projectProperties = [
+//            'ciClient': 'true'
+//    ]
+//}
+
+configurations {
+    matGenerator
+}
+
+dependencies {
+    matGenerator project(':mat')
+}
+
+var generateGameTestStructures = tasks.register("generateGameTestStructures", JavaExec) {
+    classpath = configurations.matGenerator
+    mainClass = 'com.mat.structure.MatStructureGenerator'
+
+    var outputDir = file("build/generated/sources/gametestStructures")
+    var javaSourceFiles = files(sourceSets.main.allJava, sourceSets.test.allJava)
+    inputs.files(javaSourceFiles)
+    outputs.dir(outputDir)
+
+    args = [
+            outputDir.absolutePath,
+            mod_id,
+            file("src/main/java").absolutePath,
+            file("src/test/java").absolutePath
+    ]
+}
+sourceSets.test.resources.srcDir generateGameTestStructures
+neoForge.ideSyncTask generateGameTestStructures
+
+// Configure test and check tasks so running ./gradlew test or ./gradlew check executes GameTests across all subfolders
+tasks.named('test') {
+    failOnNoDiscoveredTests = false
+    dependsOn 'runGameTestServer'
+}
+
+tasks.named('check') {
+    dependsOn 'runGameTestServer'
 }
 
 // IDEA no longer automatically downloads sources/javadoc jars for dependencies, so we need to explicitly enable the behavior.

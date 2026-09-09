@@ -1,8 +1,8 @@
 package com.csykes.searchlight.features.edge_light;
 
+import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
 import com.mojang.serialization.MapCodec;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -24,6 +24,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,18 +34,20 @@ import java.util.Arrays;
 import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 
 @Getter
-public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
-    private final DyeColor blockColor;
-    private final String dyenamicColor;
+public class EdgeLightBlock extends AbstractColoredLightBlock implements EntityBlock {
     public static final BooleanProperty NORTH = BooleanProperty.create("north");
     public static final BooleanProperty SOUTH = BooleanProperty.create("south");
     public static final BooleanProperty EAST = BooleanProperty.create("east");
     public static final BooleanProperty WEST = BooleanProperty.create("west");
 
+    @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.EDGE_LIGHT_BE.get();
+    }
 
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return new WallLightBlockEntity(pos, state);
+        return new WallLightBlockEntity(getBlockEntityType(), pos, state);
     }
 
     public EdgeLightBlock(Properties properties, DyeColor blockColor) {
@@ -54,19 +58,22 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
         this(properties, null, dyenamicColor);
     }
 
-    private EdgeLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
-        super(properties);
-        this.blockColor = blockColor;
-        this.dyenamicColor = dyenamicColor;
+    public EdgeLightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
+        super(properties, blockColor, dyenamicColor);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACE, AttachFace.CEILING)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM)
                 .setValue(NORTH, true)
                 .setValue(SOUTH, true)
                 .setValue(EAST, true)
                 .setValue(WEST, true)
         );
+    }
+
+    @Override
+    public @Nullable Block getBlockForColor(String colorKey) {
+        DeferredBlock<Block> holder = Searchlight.EDGE_LIGHTS.get(colorKey);
+        return holder != null ? holder.get() : null;
     }
 
     @Override
@@ -112,7 +119,6 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
         return state.setValue(LIT, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
-
     @Override
     public @NotNull BlockState updateShape(BlockState state, @NotNull Direction direction, @NotNull BlockState neighborState, @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos) {
         return state;
@@ -154,6 +160,4 @@ public class EdgeLightBlock extends AbstractLightBlock implements EntityBlock {
 
         return shape.isEmpty() ? Shapes.block() : shape;
     }
-
-
 }

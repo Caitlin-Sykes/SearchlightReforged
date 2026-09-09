@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "colour_lamp",
+  "ingredients": [
+    {
+      "item": "@namespace@:@color@_dye"
+    },
+    {
+      "tag": "searchlight:colour_lamp_slab"
+    }
+  ],
+  "result": {
+    "id": "searchlight:colour_lamp_slab_@color@",
+    "count": 1
+  }
+}

@@ -39,7 +39,12 @@ public class CCIntegration {
         event.registerBlockEntity(
                 CAPABILITY,
                 Searchlight.COLOUR_LAMPS_BE.get(),
-                (be, side) -> new LightPeripheral(be, "centre_light")
+                (be, side) -> new LightPeripheral(be, "colour_lamp")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.COLOUR_LAMPS_SLAB_BE.get(),
+                (be, side) -> new LightPeripheral(be, "colour_lamp_slab")
         );
         event.registerBlockEntity(
                 CAPABILITY,

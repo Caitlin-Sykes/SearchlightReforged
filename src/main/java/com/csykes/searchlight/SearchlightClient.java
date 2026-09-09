@@ -2,14 +2,21 @@ package com.csykes.searchlight;
 
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
+import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
+import com.csykes.searchlight.features.lighting_director.LightingDirectorScreen;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
+import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockRenderer;
 import com.csykes.searchlight.integration.dyenamics.DyenamicHelper;
+import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
@@ -17,11 +24,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -37,9 +47,11 @@ import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static net.minecraft.world.item.DyeColor.byName;
@@ -95,16 +107,8 @@ public class SearchlightClient {
                     return -1;
                 }
 
-                if (tintIndex == 1 && world != null && pos != null) {
-                    Direction facing = state.getValue(BlockStateProperties.FACING);
-                    BlockPos targetPos = pos.relative(facing.getOpposite());
-                    BlockState targetState = world.getBlockState(targetPos);
-
-                    int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
-                    if (color == -1) {
-                        return targetState.getMapColor(world, targetPos).col;
-                    }
-                    return color;
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
                 }
 
                 return -1;
@@ -126,16 +130,8 @@ public class SearchlightClient {
                     return -1;
                 }
 
-                if (tintIndex == 1 && world != null && pos != null) {
-                    Direction facing = state.getValue(BlockStateProperties.FACING);
-                    BlockPos targetPos = pos.relative(facing.getOpposite());
-                    BlockState targetState = world.getBlockState(targetPos);
-
-                    int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
-                    if (color == -1) {
-                        return targetState.getMapColor(world, targetPos).col;
-                    }
-                    return color;
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
                 }
 
                 return -1;
@@ -157,6 +153,22 @@ public class SearchlightClient {
                 return -1;
             }, colourLampHolder.get());
         }
+
+        for (DeferredBlock<Block> colourLampSlabHolder : Searchlight.COLOUR_SLAB_LAMPS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    if (state.getBlock() instanceof ColourLampSlabBlock colourLampSlabBlock) {
+                        if (colourLampSlabBlock.getBlockColor() != null) {
+                            return colourLampSlabBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && colourLampSlabBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(colourLampSlabBlock.getDyenamicColor());
+                        }
+                    }
+                }
+                return -1;
+            }, colourLampSlabHolder.get());
+        }
         for (DeferredBlock<Block> edgeBlockHolder : Searchlight.EDGE_LIGHTS.values()) {
             event.register((state, world, pos, tintIndex) -> {
 
@@ -173,16 +185,8 @@ public class SearchlightClient {
                     return -1;
                 }
 
-                if (tintIndex == 1 && world != null && pos != null) {
-                    Direction facing = state.getValue(BlockStateProperties.FACING);
-                    BlockPos targetPos = pos.relative(facing.getOpposite());
-                    BlockState targetState = world.getBlockState(targetPos);
-
-                    int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
-                    if (color == -1) {
-                        return targetState.getMapColor(world, targetPos).col;
-                    }
-                    return color;
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
                 }
 
                 return -1;
@@ -193,7 +197,7 @@ public class SearchlightClient {
             event.register((state, world, pos, tintIndex) -> {
 
                 if (tintIndex == 0) {
-                    if (state.getBlock() instanceof com.csykes.searchlight.features.searchlight.SearchlightBlock searchlightBlock) {
+                    if (state.getBlock() instanceof SearchlightBlock searchlightBlock) {
                         if (searchlightBlock.getBlockColor() != null) {
                             return searchlightBlock.getBlockColor().getTextureDiffuseColor();
                         }
@@ -204,16 +208,8 @@ public class SearchlightClient {
                     return -1;
                 }
 
-                if (tintIndex == 1 && world != null && pos != null) {
-                    Direction facing = state.getValue(BlockStateProperties.FACING);
-                    BlockPos targetPos = pos.relative(facing.getOpposite());
-                    BlockState targetState = world.getBlockState(targetPos);
-
-                    int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
-                    if (color == -1) {
-                        return targetState.getMapColor(world, targetPos).col;
-                    }
-                    return color;
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
                 }
 
                 return -1;
@@ -221,87 +217,35 @@ public class SearchlightClient {
         }
     }
 
+    private static int getBackingFrameColor(BlockState state, BlockAndTintGetter world, BlockPos pos, RegisterColorHandlersEvent.Block event) {
+        if (world != null && pos != null) {
+            Direction facing = state.getValue(BlockStateProperties.FACING);
+            BlockPos targetPos = pos.relative(facing.getOpposite());
+            BlockState targetState = world.getBlockState(targetPos);
+
+            int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
+            if (color == -1) {
+                return targetState.getMapColor(world, targetPos).col;
+            }
+            return color;
+        }
+        return -1;
+    }
+
 
     @SubscribeEvent
     static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-        // 1. Handle Wall Light Item Colors
-        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.WALL_LIGHT_ITEMS.entrySet()) {
-            String colorName = entry.getKey();
+        registerColoredItemMap(event, Searchlight.WALL_LIGHT_ITEMS);
+        registerColoredItemMap(event, Searchlight.CORNER_LIGHTS_ITEMS);
+        registerColoredItemMap(event, Searchlight.COLOUR_LAMP_ITEMS);
+        registerColoredItemMap(event, Searchlight.CENTRE_LIGHTS_ITEMS);
+        registerColoredItemMap(event, Searchlight.EDGE_LIGHTS_ITEMS);
+        registerColoredItemMap(event, Searchlight.SEARCHLIGHT_ITEMS);
+        registerColoredItemMap(event, Searchlight.COLOUR_SLAB_ITEMS);
+    }
 
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0) {
-                    DyeColor color = byName(colorName, null);
-                    if (color != null) return color.getTextureDiffuseColor();
-                    if (ModList.get().isLoaded("dyenamics")) {
-                        return DyenamicHelper.getDyenamicColor(colorName);
-                    }
-                }
-                return -1;
-            }, entry.getValue().get());
-        }
-
-        // 2. Handle Corner Light Item Colors
-        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.CORNER_LIGHTS_ITEMS.entrySet()) {
-            String colorName = entry.getKey();
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0) {
-                    DyeColor color = byName(colorName, null);
-                    if (color != null) return color.getTextureDiffuseColor();
-                    if (ModList.get().isLoaded("dyenamics")) {
-                        return DyenamicHelper.getDyenamicColor(colorName);
-                    }
-                }
-                return -1;
-            }, entry.getValue().get());
-        }
-
-
-        // 2. Handle Colour Lamp Light Item Colors
-        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.COLOUR_LAMP_ITEMS.entrySet()) {
-            String colorName = entry.getKey();
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0) {
-                    DyeColor color = byName(colorName, null);
-                    if (color != null) return color.getTextureDiffuseColor();
-                    if (ModList.get().isLoaded("dyenamics")) {
-                        return DyenamicHelper.getDyenamicColor(colorName);
-                    }
-                }
-                return -1;
-            }, entry.getValue().get());
-        }
-
-
-        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.CENTRE_LIGHTS_ITEMS.entrySet()) {
-            String colorName = entry.getKey();
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0) {
-                    DyeColor color = byName(colorName, null);
-                    if (color != null) return color.getTextureDiffuseColor();
-                    if (ModList.get().isLoaded("dyenamics")) {
-                        return DyenamicHelper.getDyenamicColor(colorName);
-                    }
-                }
-                return -1;
-            }, entry.getValue().get());
-        }
-
-        // 2. Handle Edge Light Item Colors
-        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.EDGE_LIGHTS_ITEMS.entrySet()) {
-            String colorName = entry.getKey();
-            event.register((stack, tintIndex) -> {
-                if (tintIndex == 0) {
-                    DyeColor color = byName(colorName, null);
-                    if (color != null) return color.getTextureDiffuseColor();
-                    if (ModList.get().isLoaded("dyenamics")) {
-                        return DyenamicHelper.getDyenamicColor(colorName);
-                    }
-                }
-                return -1;
-            }, entry.getValue().get());
-        }
-
-        for (Entry<String, DeferredItem<? extends Item>> entry : Searchlight.SEARCHLIGHT_ITEMS.entrySet()) {
+    private static void registerColoredItemMap(RegisterColorHandlersEvent.Item event, Map<String, ? extends DeferredItem<? extends Item>> itemMap) {
+        for (Entry<String, ? extends DeferredItem<? extends Item>> entry : itemMap.entrySet()) {
             String colorName = entry.getKey();
             event.register((stack, tintIndex) -> {
                 if (tintIndex == 0) {
@@ -320,18 +264,29 @@ public class SearchlightClient {
         Minecraft.getInstance().setScreen(new LightAddressScreen(pos));
     }
 
+    public static void openLightingDirectorScreen(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new LightingDirectorScreen(pos));
+    }
+
     public static boolean displayBeams() {
         Player player = Minecraft.getInstance().player;
         if (player == null) return false;
-        if (player.isHolding(Searchlight.SEARCHLIGHT_ITEM.get())) return true;
-        for (DeferredItem<? extends Item> item : Searchlight.SEARCHLIGHT_ITEMS.values()) {
-            if (player.isHolding(item.get())) return true;
-        }
-        return false;
+        return player.isHolding(stack -> stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof SearchlightBlock);
     }
 
     @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
     public static class GameClientEvents {
+        @SubscribeEvent
+        public static void onItemTooltip(ItemTooltipEvent event) {
+            ItemStack stack = event.getItemStack();
+            if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractLightBlock) {
+                BrightnessStage brightness = SearchlightUtil.getBrightness(stack);
+                event.getToolTip().add(Component.translatable("searchlight.tooltip.brightness",
+                        Component.translatable("searchlight.brightness." + brightness.getSerializedName()),
+                        brightness.getLightLevel()).withStyle(ChatFormatting.GRAY));
+            }
+        }
+
         @SubscribeEvent
         public static void onRenderLevelStage(RenderLevelStageEvent event) {
             if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {

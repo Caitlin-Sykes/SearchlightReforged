@@ -7,14 +7,15 @@ import net.minecraft.util.StringRepresentable;
 @Getter
 @AllArgsConstructor
 public enum BrightnessStage implements StringRepresentable {
-    OFF(0, "off"),
-    LOW(1, "low"),
-    MEDIUM(2, "medium"),
-    HIGH(3, "high"),
-    ULTRA(4, "ultra");
+    OFF(0, "off", 0),
+    LOW(1, "low", 4),
+    MEDIUM(2, "medium", 8),
+    HIGH(3, "high", 12),
+    ULTRA(4, "ultra", 15);
 
     private final int id;
     private final String name;
+    private final int lightLevel;
 
     @Override
     public String getSerializedName() {

@@ -1,24 +1,26 @@
 package com.csykes.searchlight.features.wall_light;
 
+import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
     protected static final VoxelShape CEILING_X_SHAPE = Block.box(6, 14, 5, 10, 16, 11);
@@ -35,8 +37,12 @@ public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
-                .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM));
+                .setValue(LIT, true));
+    }
+
+    @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.WALL_LIGHT_BE.get();
     }
 
     @Override
@@ -48,9 +54,14 @@ public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new WallLightBlockEntity(pos, state);
+        return new WallLightBlockEntity(getBlockEntityType(), pos, state);
     }
 
+    @Override
+    public @Nullable Block getBlockForColor(String colorKey) {
+        DeferredBlock<Block> holder = Searchlight.WALL_LIGHTS.get(colorKey);
+        return holder != null ? holder.get() : null;
+    }
 
     public static final MapCodec<WallLightBlock> CODEC = simpleCodec(WallLightBlock::new);
 

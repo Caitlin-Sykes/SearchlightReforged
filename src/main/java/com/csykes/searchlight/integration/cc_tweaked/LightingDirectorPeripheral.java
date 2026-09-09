@@ -1,14 +1,9 @@
 package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.features.centre_light.CentreLightBlock;
-import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
-import com.csykes.searchlight.features.corner_light.CornerLightBlock;
-import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
-import com.csykes.searchlight.features.searchlight.SearchlightBlock;
-import com.csykes.searchlight.features.wall_light.WallLightBlock;
-import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
@@ -30,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
+
 public class LightingDirectorPeripheral implements IPeripheral {
     private final LightingDirectorBlockEntity tile;
 
@@ -50,17 +47,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     private String getLightColorName(BlockState state) {
         Block block = state.getBlock();
-        if (block instanceof CornerLightBlock cornerBlock) {
-            return cornerBlock.getBlockColor().getName();
-        }
-        if (block instanceof EdgeLightBlock edgeBlock) {
-            return edgeBlock.getBlockColor().getName();
-        }
-        if (block instanceof CentreLightBlock centreBlock) {
-            return centreBlock.getBlockColor().getName();
-        }
-        if (block instanceof ColourLampBlock colourLampBlock) {
-            return colourLampBlock.getBlockColor().getName();
+        if (block instanceof AbstractColoredLightBlock coloredBlock) {
+            if (coloredBlock.getBlockColor() != null) {
+                return coloredBlock.getBlockColor().getName();
+            }
+            if (coloredBlock.getDyenamicColor() != null) {
+                return coloredBlock.getDyenamicColor();
+            }
         }
         for (Map.Entry<String, DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {
             if (entry.getValue().get() == block) {
@@ -112,45 +105,21 @@ public class LightingDirectorPeripheral implements IPeripheral {
         String normalizedColor = colorName.toLowerCase();
 
         Block newBlock = null;
-        if (block instanceof WallLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof CornerLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof EdgeLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof CentreLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof ColourLampBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof SearchlightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
+        if (block instanceof AbstractLightBlock lightBlock) {
+            newBlock = lightBlock.getBlockForColor(normalizedColor);
         }
 
-        if (newBlock != null) {
+        if (newBlock != null && newBlock != block) {
             BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
 
             String oldAddress = "";
+            BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
+            LightRequest oldLightRequest = LightRequest.RELEASE;
             BlockEntity oldBe = world.getBlockEntity(pos);
             if (oldBe instanceof AddressableLight addressable) {
                 oldAddress = addressable.getAddress();
+                oldBrightness = addressable.getBrightness();
+                oldLightRequest = addressable.getLightRequest();
             }
 
             world.setBlockAndUpdate(pos, newState);
@@ -159,8 +128,11 @@ public class LightingDirectorPeripheral implements IPeripheral {
             BlockEntity newBe = world.getBlockEntity(pos);
             if (newBe instanceof AddressableLight addressable) {
                 addressable.setAddress(oldAddress);
+                addressable.setBrightness(oldBrightness);
+                addressable.setLightRequest(oldLightRequest);
                 newBe.setChanged();
                 world.sendBlockUpdated(pos, newState, newState, 3);
+                world.getLightEngine().checkBlock(pos);
             }
 
             return newState;
@@ -195,30 +167,28 @@ public class LightingDirectorPeripheral implements IPeripheral {
             updatedState = updateColorProperty(world, pos, updatedState, colorName);
         }
 
-        if (options.containsKey("brightness")) {
-            BrightnessStage stage = parseBrightness(options.get("brightness"));
-            if (stage != null && updatedState.hasProperty(AbstractLightBlock.BRIGHTNESS)) {
-                updatedState = updatedState.setValue(AbstractLightBlock.BRIGHTNESS, stage);
+        BlockEntity be = world.getBlockEntity(pos);
+        if (be instanceof AddressableLight light) {
+            if (options.containsKey("brightness")) {
+                BrightnessStage stage = parseBrightness(options.get("brightness"));
+                if (stage != null) {
+                    light.setBrightness(stage);
+                    be.setChanged();
+                }
             }
-        }
 
-        boolean hasLitRequest = false;
-        if (options.containsKey("lit")) {
-            LightRequest request = parseLightRequest(options.get("lit"));
-            if (updatedState.hasProperty(AbstractLightBlock.LIGHT_REQUEST)) {
-                updatedState = updatedState.setValue(AbstractLightBlock.LIGHT_REQUEST, request);
+            boolean hasLitRequest = false;
+            if (options.containsKey("lit")) {
+                LightRequest request = parseLightRequest(options.get("lit"));
+                light.setLightRequest(request);
                 hasLitRequest = true;
-            }
-        }
-
-        if (updatedState != state) {
-            world.setBlockAndUpdate(pos, updatedState);
-            world.updateNeighborsAt(pos, updatedState.getBlock());
-
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be != null) {
                 be.setChanged();
-                world.sendBlockUpdated(pos, state, updatedState, 3);
+            }
+
+            world.sendBlockUpdated(pos, updatedState, updatedState, 3);
+            world.getLightEngine().checkBlock(pos);
+            if (be instanceof SearchlightBlockEntity searchlight && searchlight.getLightSourcePos() != null) {
+                world.getLightEngine().checkBlock(searchlight.getLightSourcePos());
             }
 
             if (hasLitRequest && updatedState.getBlock() instanceof AbstractLightBlock abstractLightBlock) {
@@ -230,14 +200,9 @@ public class LightingDirectorPeripheral implements IPeripheral {
     private void processLightUpdate(Level world, BlockPos pos, Map<?, ?> options) {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
-        if (!(block instanceof AbstractLightBlock)) return;
+        if (!(block instanceof AbstractLightBlock lightBlock)) return;
 
-        List<BlockPos> targets = new ArrayList<>();
-        if (block instanceof CornerLightBlock) {
-            targets.addAll(SearchlightUtil.getConnectedCornerLights(world, pos, state));
-        } else {
-            targets.add(pos);
-        }
+        List<BlockPos> targets = lightBlock.getConnectedLights(world, pos, state);
 
         for (BlockPos targetPos : targets) {
             applyLightUpdates(world, targetPos, options);
@@ -267,20 +232,29 @@ public class LightingDirectorPeripheral implements IPeripheral {
             if (block instanceof AbstractLightBlock) {
                 lightInfo.put("active", true);
                 lightInfo.put("type", block.getClass().getSimpleName());
-                lightInfo.put("lit", state.getValue(AbstractLightBlock.LIT));
-                lightInfo.put("light_request", state.getValue(AbstractLightBlock.LIGHT_REQUEST).name().toLowerCase());
-                lightInfo.put("brightness", state.getValue(AbstractLightBlock.BRIGHTNESS).name().toLowerCase());
+                lightInfo.put("lit", state.getValue(LIT));
+
+                AddressableLight addressable = (world.getBlockEntity(pos) instanceof AddressableLight a) ? a : null;
+                String lightRequestName = addressable != null ? addressable.getLightRequest().name().toLowerCase() : "release";
+                String brightnessName = addressable != null ? addressable.getBrightness().name().toLowerCase() : "medium";
+                String address = addressable != null ? addressable.getAddress() : "";
+
+                lightInfo.put("light_request", lightRequestName);
+                lightInfo.put("brightness", brightnessName);
                 lightInfo.put("color", getLightColorName(state));
 
-                String address = "";
-                if (world.getBlockEntity(pos) instanceof AddressableLight addressable) {
-                    address = addressable.getAddress();
-                }
                 if (address.isEmpty()) {
                     address = "light_" + (i + 1);
                 }
                 lightInfo.put("address", address);
-                result.put(address, lightInfo);
+                
+                String key = address;
+                int suffix = 2;
+                while (result.containsKey(key)) {
+                    key = address + "_" + suffix;
+                    suffix++;
+                }
+                result.put(key, lightInfo);
             } else {
                 lightInfo.put("active", false);
                 lightInfo.put("type", "broken");
@@ -295,13 +269,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
         Level world = tile.getLevel();
         if (world == null) return false;
 
-        BlockPos targetPos = null;
+        List<BlockPos> targetPositions = new ArrayList<>();
 
         if (key instanceof Number numVal) {
             int index = numVal.intValue() - 1;
             List<BlockPos> positions = tile.getLinkedLights();
             if (index >= 0 && index < positions.size()) {
-                targetPos = positions.get(index);
+                targetPositions.add(positions.get(index));
             }
         } else if (key instanceof String addressVal) {
             List<BlockPos> positions = tile.getLinkedLights();
@@ -309,15 +283,17 @@ public class LightingDirectorPeripheral implements IPeripheral {
                 if (pos != null) {
                     BlockEntity be = world.getBlockEntity(pos);
                     if (be instanceof AddressableLight addressable && addressable.getAddress().equalsIgnoreCase(addressVal)) {
-                        targetPos = pos;
-                        break;
+                        targetPositions.add(pos);
                     }
                 }
             }
         }
 
-        if (targetPos == null) return false;
-        processLightUpdate(world, targetPos, options);
+        if (targetPositions.isEmpty()) return false;
+        
+        for (BlockPos targetPos : targetPositions) {
+            processLightUpdate(world, targetPos, options);
+        }
         return true;
     }
 
@@ -334,26 +310,25 @@ public class LightingDirectorPeripheral implements IPeripheral {
                 continue;
             }
 
-            BlockPos targetPos = null;
+            List<BlockPos> targetPositions = new ArrayList<>();
 
             if (key instanceof Number numVal) {
                 int index = numVal.intValue() - 1;
                 if (index >= 0 && index < positions.size()) {
-                    targetPos = positions.get(index);
+                    targetPositions.add(positions.get(index));
                 }
             } else if (key instanceof String addressVal) {
                 for (BlockPos pos : positions) {
                     if (pos != null) {
                         BlockEntity be = world.getBlockEntity(pos);
                         if (be instanceof AddressableLight addressable && addressable.getAddress().equalsIgnoreCase(addressVal)) {
-                            targetPos = pos;
-                            break;
+                            targetPositions.add(pos);
                         }
                     }
                 }
             }
 
-            if (targetPos != null) {
+            for (BlockPos targetPos : targetPositions) {
                 processLightUpdate(world, targetPos, options);
             }
         }
@@ -367,16 +342,20 @@ public class LightingDirectorPeripheral implements IPeripheral {
         } else if (key instanceof String addressVal) {
             Level world = tile.getLevel();
             if (world != null) {
+                boolean removedAny = false;
                 List<BlockPos> positions = tile.getLinkedLights();
-                for (int i = 0; i < positions.size(); i++) {
+                for (int i = positions.size() - 1; i >= 0; i--) {
                     BlockPos pos = positions.get(i);
                     if (pos != null) {
                         BlockEntity be = world.getBlockEntity(pos);
                         if (be instanceof AddressableLight addressable && addressable.getAddress().equalsIgnoreCase(addressVal)) {
-                            return tile.removeLinkedLight(i);
+                            if (tile.removeLinkedLight(i)) {
+                                removedAny = true;
+                            }
                         }
                     }
                 }
+                return removedAny;
             }
         }
         return false;

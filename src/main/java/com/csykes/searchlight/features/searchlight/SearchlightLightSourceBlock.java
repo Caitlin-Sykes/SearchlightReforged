@@ -2,7 +2,10 @@ package com.csykes.searchlight.features.searchlight;
 
 import com.csykes.searchlight.Searchlight;
 import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AddressableLight;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -14,8 +17,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
 
 public class SearchlightLightSourceBlock extends Block implements EntityBlock {
     public static final EnumProperty<DyeColor> COLOR = EnumProperty.create("color", DyeColor.class);
@@ -39,12 +45,35 @@ public class SearchlightLightSourceBlock extends Block implements EntityBlock {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        if (context instanceof EntityCollisionContext entityContext && entityContext.getEntity() instanceof LivingEntity living) {
+            if (living.isHolding(stack -> stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof SearchlightBlock)) {
+                return Shapes.block();
+            }
+        }
         return context.isHoldingItem(Searchlight.SEARCHLIGHT_ITEM.get()) ? Shapes.block() : Shapes.empty();
     }
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
+    }
+
+    @Override
+    public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+        if (level != null && pos != null) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof SearchlightLightSourceBlockEntity sourceBe && sourceBe.searchlightBlockPos != null) {
+                BlockEntity parentBe = level.getBlockEntity(sourceBe.searchlightBlockPos);
+                if (parentBe instanceof AddressableLight light) {
+                    BlockState parentState = level.getBlockState(sourceBe.searchlightBlockPos);
+                    if (parentState.hasProperty(LIT) && !parentState.getValue(LIT)) {
+                        return 0;
+                    }
+                    return light.getBrightness().getLightLevel();
+                }
+            }
+        }
+        return 15;
     }
 
     @Override

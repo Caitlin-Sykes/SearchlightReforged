@@ -39,6 +39,9 @@ public class LightingDirectorBlock extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        return InteractionResult.PASS;
+        if (level.isClientSide) {
+            com.csykes.searchlight.SearchlightClient.openLightingDirectorScreen(pos);
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }
