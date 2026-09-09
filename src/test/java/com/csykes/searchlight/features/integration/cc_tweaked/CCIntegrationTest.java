@@ -118,4 +118,55 @@ public class CCIntegrationTest {
 
         context.execute();
     }
+
+    /**
+     * Tests that the LightingDirectorBlockEntity handles multiple lights with the same address correctly.
+     */
+    @GameTest
+    public static void testLightingDirectorDuplicateAddresses(GameTestHelper helper) {
+        TestContext context = new TestContext(helper);
+
+        BlockHandle directorHandle = context.placeBlock("searchlight:lighting_director");
+        BlockHandle light1Handle = context.placeBlock("searchlight:wall_light_iron");
+        BlockHandle light2Handle = context.placeBlock("searchlight:wall_light_gold");
+
+        directorHandle.verifyBlockEntity(LightingDirectorBlockEntity.class, director -> {
+            WallLightBlockEntity light1Be = light1Handle.getBlockEntity(WallLightBlockEntity.class);
+            WallLightBlockEntity light2Be = light2Handle.getBlockEntity(WallLightBlockEntity.class);
+            context.assertThat(() -> light1Be != null && light2Be != null, "Expected WallLightBlockEntities at light positions");
+
+            if (light1Be instanceof AddressableLight addressable1) {
+                addressable1.setAddress("dup_light");
+            }
+            if (light2Be instanceof AddressableLight addressable2) {
+                addressable2.setAddress("dup_light");
+            }
+            director.toggleLinkedLight(light1Handle.getAbsolutePos(), helper.getLevel());
+            director.toggleLinkedLight(light2Handle.getAbsolutePos(), helper.getLevel());
+
+            LightingDirectorPeripheral peripheral = new LightingDirectorPeripheral(director);
+            // Verify getLinkedLights contains both addresses with suffixing
+            Map<String, Map<String, Object>> linkedLights = peripheral.getLinkedLights();
+            context.assertThat(() -> linkedLights.containsKey("dup_light") && linkedLights.containsKey("dup_light_2"), 
+                    "Expected registered duplicate light addresses to be suffixed correctly (dup_light, dup_light_2)");
+
+            // Control lights via Director peripheral using the shared address
+            peripheral.setLight("dup_light", Map.of("brightness", 4, "lit", false));
+
+            WallLightBlockEntity updatedLight1Be = light1Handle.getBlockEntity(WallLightBlockEntity.class);
+            WallLightBlockEntity updatedLight2Be = light2Handle.getBlockEntity(WallLightBlockEntity.class);
+            
+            context.assertThat(() -> updatedLight1Be != null && updatedLight1Be.getBrightness() == BrightnessStage.ULTRA,
+                    "Expected first light brightness to be updated to ULTRA");
+            context.assertThat(() -> updatedLight2Be != null && updatedLight2Be.getBrightness() == BrightnessStage.ULTRA,
+                    "Expected second light brightness to be updated to ULTRA");
+
+            context.assertThat(() -> !light1Handle.getBlockState().getValue(AbstractLightBlock.LIT),
+                    "Expected first light to be unlit");
+            context.assertThat(() -> !light2Handle.getBlockState().getValue(AbstractLightBlock.LIT),
+                    "Expected second light to be unlit");
+        });
+
+        context.execute();
+    }
 }

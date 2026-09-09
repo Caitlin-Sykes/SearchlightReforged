@@ -85,16 +85,60 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
         }
     }
 
-    private boolean isCompatibleAxis(BlockState state, Direction.Axis traversalAxis) {
-        if (state.hasProperty(BlockStateProperties.AXIS)) {
-            return state.getValue(BlockStateProperties.AXIS) == traversalAxis;
-        }
-        return traversalAxis == Direction.Axis.Y;
-    }
-
     protected boolean isMatchingConnection(LevelAccessor level, BlockPos pos, BlockState state, BlockState neighborState) {
         return false;
     }
+
+    public List<BlockPos> getConnectedLights(Level level, BlockPos pos, BlockState state) {
+        List<BlockPos> positions = new java.util.ArrayList<>();
+        positions.add(pos);
+
+        if (!state.hasProperty(CONNECTION)) {
+            return positions;
+        }
+
+        Direction.Axis axis = state.hasProperty(BlockStateProperties.AXIS) ? state.getValue(BlockStateProperties.AXIS) : Direction.Axis.Y;
+        
+        Direction positiveDir;
+        Direction negativeDir;
+        if (axis == Direction.Axis.X) {
+            positiveDir = Direction.EAST;
+            negativeDir = Direction.WEST;
+        } else if (axis == Direction.Axis.Z) {
+            positiveDir = Direction.NORTH;
+            negativeDir = Direction.SOUTH;
+        } else {
+            positiveDir = Direction.UP;
+            negativeDir = Direction.DOWN;
+        }
+
+        // Traverse positive
+        BlockPos current = pos.relative(positiveDir);
+        while (true) {
+            BlockState neighborState = level.getBlockState(current);
+            if (isMatchingConnection(level, pos, state, neighborState)) {
+                positions.add(current);
+                current = current.relative(positiveDir);
+            } else {
+                break;
+            }
+        }
+
+        // Traverse negative
+        current = pos.relative(negativeDir);
+        while (true) {
+            BlockState neighborState = level.getBlockState(current);
+            if (isMatchingConnection(level, pos, state, neighborState)) {
+                positions.add(current);
+                current = current.relative(negativeDir);
+            } else {
+                break;
+            }
+        }
+
+        return positions;
+    }
+
 
     protected LightRodConnection getConnectionState(LevelAccessor level, BlockPos pos, BlockState state, Direction.Axis axis) {
         Direction positiveDir;
@@ -126,59 +170,31 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
 
     public void updateLitState(Level world, BlockPos pos, BlockState state) {
         if (world.isClientSide) return;
-        boolean isPoweredNow = world.hasNeighborSignal(pos);
-        boolean wasLitBefore = state.getValue(LIT);
-        BlockEntity be = world.getBlockEntity(pos);
-        LightRequest requested = (be instanceof AddressableLight light) ? light.getLightRequest() : LightRequest.RELEASE;
-
-        if (state.hasProperty(CONNECTION)) {
-            Direction.Axis axis = state.hasProperty(BlockStateProperties.AXIS) ? state.getValue(BlockStateProperties.AXIS) : Direction.Axis.Y;
-            Direction upDir;
-            Direction downDir;
-            if (axis == Direction.Axis.X) {
-                upDir = Direction.WEST;
-                downDir = Direction.EAST;
-            } else if (axis == Direction.Axis.Z) {
-                upDir = Direction.SOUTH;
-                downDir = Direction.NORTH;
-            } else {
-                upDir = Direction.UP;
-                downDir = Direction.DOWN;
-            }
-
-            if (state.getValue(CONNECTION) == LightRodConnection.BOTTOM || state.getValue(CONNECTION) == LightRodConnection.MIDDLE) {
-                int distance = 1;
-                BlockState target = world.getBlockState(pos.relative(upDir, distance));
-                while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
-                    isPoweredNow |= world.hasNeighborSignal(pos.relative(upDir, distance));
-                    BlockEntity neighborBe = world.getBlockEntity(pos.relative(upDir, distance));
-                    if (neighborBe instanceof AddressableLight neighborLight && neighborLight.getLightRequest() != LightRequest.RELEASE) {
-                        requested = neighborLight.getLightRequest();
-                    }
-                    distance++;
-                    target = world.getBlockState(pos.relative(upDir, distance));
-                }
-            }
-
-            if (state.getValue(CONNECTION) == LightRodConnection.TOP || state.getValue(CONNECTION) == LightRodConnection.MIDDLE) {
-                int distance = 1;
-                BlockState target = world.getBlockState(pos.relative(downDir, distance));
-                while (target.getBlock() instanceof AbstractLightBlock && isCompatibleAxis(target, axis)) {
-                    isPoweredNow |= world.hasNeighborSignal(pos.relative(downDir, distance));
-                    distance++;
-                    target = world.getBlockState(pos.relative(downDir, distance));
-                }
+        
+        List<BlockPos> connected = getConnectedLights(world, pos, state);
+        boolean isPoweredNow = false;
+        LightRequest requested = LightRequest.RELEASE;
+        
+        for (BlockPos p : connected) {
+            isPoweredNow |= world.hasNeighborSignal(p);
+            BlockEntity be = world.getBlockEntity(p);
+            if (be instanceof AddressableLight light && light.getLightRequest() != LightRequest.RELEASE) {
+                requested = light.getLightRequest();
             }
         }
+        
         boolean shouldBeLit = !isPoweredNow;
         if (requested != LightRequest.RELEASE) {
             shouldBeLit = requested == LightRequest.ON;
         }
 
-        if (wasLitBefore != shouldBeLit) {
-            world.setBlockAndUpdate(pos, state.setValue(LIT, shouldBeLit));
-            world.getLightEngine().checkBlock(pos);
-            world.updateNeighborsAt(pos, this);
+        for (BlockPos p : connected) {
+            BlockState s = world.getBlockState(p);
+            if (s.hasProperty(LIT) && s.getValue(LIT) != shouldBeLit) {
+                world.setBlockAndUpdate(p, s.setValue(LIT, shouldBeLit));
+                world.getLightEngine().checkBlock(p);
+                world.updateNeighborsAt(p, s.getBlock());
+            }
         }
     }
 
@@ -246,38 +262,33 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
             Block newBlock = getBlockForColor(normalizedColor);
 
             if (newBlock != null && newBlock != block) {
-                BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
-                String address = "";
-                BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
-                LightRequest oldLightRequest = LightRequest.RELEASE;
-                BlockEntity oldBe = world.getBlockEntity(pos);
-                if (oldBe instanceof AddressableLight addressable) {
-                    address = addressable.getAddress();
-                    oldBrightness = addressable.getBrightness();
-                    oldLightRequest = addressable.getLightRequest();
-                }
+                List<BlockPos> connected = getConnectedLights(world, pos, state);
+                for (BlockPos connectedPos : connected) {
+                    BlockState s = world.getBlockState(connectedPos);
+                    BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
 
-                if (block instanceof CornerLightBlock) {
-                    List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
-                    for (BlockPos connectedPos : connected) {
-                        BlockState s = world.getBlockState(connectedPos);
-                        BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
-                        world.setBlockAndUpdate(connectedPos, ns);
-                        world.updateNeighborsAt(connectedPos, newBlock);
+                    String oldAddress = "";
+                    BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
+                    LightRequest oldLightRequest = LightRequest.RELEASE;
+                    BlockEntity oldBe = world.getBlockEntity(connectedPos);
+                    if (oldBe instanceof AddressableLight addressable) {
+                        oldAddress = addressable.getAddress();
+                        oldBrightness = addressable.getBrightness();
+                        oldLightRequest = addressable.getLightRequest();
                     }
-                } else {
-                    world.setBlockAndUpdate(pos, newState);
-                    world.updateNeighborsAt(pos, newBlock);
-                }
 
-                BlockEntity newBe = world.getBlockEntity(pos);
-                if (newBe instanceof AddressableLight addressable) {
-                    addressable.setAddress(address);
-                    addressable.setBrightness(oldBrightness);
-                    addressable.setLightRequest(oldLightRequest);
-                    newBe.setChanged();
-                    world.sendBlockUpdated(pos, newState, newState, 3);
-                    world.getLightEngine().checkBlock(pos);
+                    world.setBlockAndUpdate(connectedPos, ns);
+                    world.updateNeighborsAt(connectedPos, newBlock);
+
+                    BlockEntity newBe = world.getBlockEntity(connectedPos);
+                    if (newBe instanceof AddressableLight addressable) {
+                        addressable.setAddress(oldAddress);
+                        addressable.setBrightness(oldBrightness);
+                        addressable.setLightRequest(oldLightRequest);
+                        newBe.setChanged();
+                        world.sendBlockUpdated(connectedPos, ns, ns, 3);
+                        world.getLightEngine().checkBlock(connectedPos);
+                    }
                 }
 
                 if (!player.getAbilities().instabuild) {
@@ -316,29 +327,21 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 }
 
                 if (success) {
-                    if (this instanceof CornerLightBlock) {
-                        List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
-                        for (BlockPos connectedPos : connected) {
-                            BlockEntity targetBe = world.getBlockEntity(connectedPos);
-                            if (targetBe instanceof AddressableLight targetLight) {
-                                targetLight.setBrightness(next);
-                                targetBe.setChanged();
-                                BlockState targetState = world.getBlockState(connectedPos);
-                                world.sendBlockUpdated(connectedPos, targetState, targetState, 3);
-                                world.getLightEngine().checkBlock(connectedPos);
-                                world.updateNeighborsAt(connectedPos, targetState.getBlock());
+                    List<BlockPos> connected = getConnectedLights(world, pos, state);
+                    for (BlockPos connectedPos : connected) {
+                        BlockEntity targetBe = world.getBlockEntity(connectedPos);
+                        if (targetBe instanceof AddressableLight targetLight) {
+                            targetLight.setBrightness(next);
+                            targetBe.setChanged();
+                            BlockState targetState = world.getBlockState(connectedPos);
+                            world.sendBlockUpdated(connectedPos, targetState, targetState, 3);
+                            world.getLightEngine().checkBlock(connectedPos);
+                            world.updateNeighborsAt(connectedPos, targetState.getBlock());
+                            if (targetBe instanceof SearchlightBlockEntity searchlight && searchlight.getLightSourcePos() != null) {
+                                world.getLightEngine().checkBlock(searchlight.getLightSourcePos());
+                                BlockState lsState = world.getBlockState(searchlight.getLightSourcePos());
+                                world.sendBlockUpdated(searchlight.getLightSourcePos(), lsState, lsState, 3);
                             }
-                        }
-                    } else {
-                        light.setBrightness(next);
-                        be.setChanged();
-                        world.sendBlockUpdated(pos, state, state, 3);
-                        world.getLightEngine().checkBlock(pos);
-                        world.updateNeighborsAt(pos, this);
-                        if (be instanceof SearchlightBlockEntity searchlight && searchlight.getLightSourcePos() != null) {
-                            world.getLightEngine().checkBlock(searchlight.getLightSourcePos());
-                            BlockState lsState = world.getBlockState(searchlight.getLightSourcePos());
-                            world.sendBlockUpdated(searchlight.getLightSourcePos(), lsState, lsState, 3);
                         }
                     }
 

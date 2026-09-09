@@ -1,0 +1,20 @@
+{
+  "itemGroup.searchlight": "Searchlight Booty",
+  "itemGroup.searchlight.searchlight": "Searchlight Booty",
+  "block.searchlight.searchlight": "Lookout Beacon",
+  "block.searchlight.searchlight_lightsource": "Lookout Beacon Gleam",
+  "block.searchlight.lighting_director": "Wireless Lantern Helmsman",
+  "item.searchlight.lighting_linker_card": "Lantern Linkin' Charter",
+  "searchlight.message.lowest_brightness": "This beacon be at its dimmest gleam, matey!",
+  "searchlight.message.highest_brightness": "This beacon be blazin' at peak brilliance, cap'n!",
+  "searchlight.jade.color": "Tincture: %s",
+  "searchlight.jade.brightness": "Gleam: %s",
+  "searchlight.jade.mode": "Stance: %s",
+  "config.jade.plugin_searchlight.light_data_component": "Lookout Lantern Lore",
+  "searchlight.tooltip.brightness": "Gleam: %s (%s)",
+  "searchlight.brightness.off": "Doused",
+  "searchlight.brightness.low": "Faint Gleam",
+  "searchlight.brightness.medium": "Fair Gleam",
+  "searchlight.brightness.high": "Blazin'",
+  "searchlight.brightness.ultra": "Blisterin' Glare"
+}

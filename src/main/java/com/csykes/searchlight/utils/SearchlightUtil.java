@@ -150,39 +150,11 @@ public final class SearchlightUtil {
     }
 
     public static List<BlockPos> getConnectedCornerLights(Level level, BlockPos startPos, BlockState startState) {
-        List<BlockPos> positions = new ArrayList<>();
-        if (!(startState.getBlock() instanceof CornerLightBlock)) {
-            positions.add(startPos);
-            return positions;
+        if (startState.getBlock() instanceof AbstractLightBlock alb) {
+            return alb.getConnectedLights(level, startPos, startState);
         }
-
-        CornerLightStage targetCorner = startState.getValue(CornerLightBlock.CORNER);
-        positions.add(startPos);
-
-        // Traverse UP
-        BlockPos current = startPos.above();
-        while (true) {
-            BlockState state = level.getBlockState(current);
-            if (state.getBlock() instanceof CornerLightBlock && state.getValue(CornerLightBlock.CORNER) == targetCorner) {
-                positions.add(current);
-                current = current.above();
-            } else {
-                break;
-            }
-        }
-
-        // Traverse DOWN
-        current = startPos.below();
-        while (true) {
-            BlockState state = level.getBlockState(current);
-            if (state.getBlock() instanceof CornerLightBlock && state.getValue(CornerLightBlock.CORNER) == targetCorner) {
-                positions.add(current);
-                current = current.below();
-            } else {
-                break;
-            }
-        }
-
-        return positions;
+        List<BlockPos> list = new ArrayList<>();
+        list.add(startPos);
+        return list;
     }
 }

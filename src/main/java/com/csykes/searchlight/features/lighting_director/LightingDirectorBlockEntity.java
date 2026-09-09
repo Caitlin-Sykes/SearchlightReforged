@@ -1,8 +1,7 @@
 package com.csykes.searchlight.features.lighting_director;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.features.corner_light.CornerLightBlock;
-import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -32,8 +31,8 @@ public class LightingDirectorBlockEntity extends BlockEntity {
         int existingSlot = -1;
         List<BlockPos> connected = new ArrayList<>();
         BlockState state = level.getBlockState(pos);
-        if (state.getBlock() instanceof CornerLightBlock) {
-            connected.addAll(SearchlightUtil.getConnectedCornerLights(level, pos, state));
+        if (state.getBlock() instanceof AbstractLightBlock alb) {
+            connected.addAll(alb.getConnectedLights(level, pos, state));
         } else {
             connected.add(pos);
         }

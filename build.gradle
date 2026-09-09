@@ -158,6 +158,7 @@ dependencies {
     localRuntime "maven.modrinth:jade:${jade_version}"
     localRuntime "maven.modrinth:sodium:mc1.21.1-0.6.13-neoforge"
     localRuntime "maven.modrinth:iris:1.8.8+1.21.1-neoforge"
+    localRuntime "curse.maven:construction-sticks-1156098:8763707"
 
     compileOnly "curse.maven:dyenamics-509276:6504540"
     localRuntime "curse.maven:dyenamics-509276:6504540"
@@ -165,6 +166,7 @@ dependencies {
     testImplementation "maven.modrinth:cc-tweaked:1.120.0-neoforge"
     testImplementation "maven.modrinth:jade:${jade_version}"
     testImplementation "curse.maven:dyenamics-509276:6504540"
+    testImplementation "curse.maven:construction-sticks-1156098:8763707"
     testImplementation project(':mat')
     localRuntime project(':mat')
 
@@ -216,7 +218,7 @@ var generateColorResources = tasks.register("generateColorResources") {
 
     var templatesDir = file("src/main/templates/color_resources")
     inputs.dir(templatesDir)
-    var supportedLocales = ["en_us", "fr_fr", "pt_br", "ru_ru"]
+    var supportedLocales = ["en_us", "en_pt", "fr_fr", "pt_br", "ru_ru"]
     var langInputDir = file("src/main/resources/assets/searchlight/lang")
     supportedLocales.each { loc ->
         inputs.file(new File(langInputDir, "${loc}.json"))
@@ -337,6 +339,36 @@ var generateColorResources = tasks.register("generateColorResources") {
                 return "${enWallMaterials[key]} Wall Light".toString()
             }
             return "${enColorNames[key]} ${enFamilySuffixes[family]}".toString()
+        }
+
+        // --- en_pt ---
+        var ptColorNames = [
+                "white": "Bone-White", "orange": "Tangerine", "magenta": "Shockin' Pink", "light_blue": "Sky-Blue",
+                "yellow": "Gold-Yellow", "lime": "Sour Green", "pink": "Rosy", "gray": "Ash-Grey",
+                "light_gray": "Sea-Foam Grey", "cyan": "Teal", "purple": "Royal Purple", "blue": "Deep-Sea Blue",
+                "brown": "Muddy Brown", "green": "Seaweed Green", "red": "Blood-Red", "black": "Pitch-Black",
+                "peach": "Peach", "aquamarine": "Aquamarine", "fluorescent": "Glowin'",
+                "mint": "Mint", "light_mint": "Pale Mint", "maroon": "Maroon", "bubblegum": "Bubblegum",
+                "lavender": "Lavender", "persimmon": "Persimmon", "cherenkov": "Cherenkov Gleam",
+                "amber": "Amber", "honey": "Golden Honey", "ultramarine": "High-Seas Blue",
+                "spring_green": "Spring-Green", "rose": "Wild Rose", "navy": "Admiralty Navy",
+                "icy_blue": "Glacier Blue", "wine": "Grog Wine", "conifer": "Pine Needle"
+        ]
+        var ptPirateWallMaterials = ["iron": "Iron", "copper": "Copper", "prismarine": "Prismarine"]
+        var ptFamilySuffixes = [
+                "wall_light": "Bulwark Lantern",
+                "colour_lamp_slab": "Tinctured Lamp Slab",
+                "colour_lamp": "Tinctured Lamp",
+                "corner_light": "Nook Lantern",
+                "centre_light": "Midship Lantern",
+                "edge_light": "Plank Lantern",
+                "searchlight": "Lookout Beacon"
+        ]
+        localeGenerators["en_pt"] = { String family, String key ->
+            if (family == "wall_light" && ptPirateWallMaterials.containsKey(key)) {
+                return "${ptPirateWallMaterials[key]} Bulwark Lantern".toString()
+            }
+            return "${ptColorNames[key]} ${ptFamilySuffixes[family]}".toString()
         }
 
         // --- fr_fr ---

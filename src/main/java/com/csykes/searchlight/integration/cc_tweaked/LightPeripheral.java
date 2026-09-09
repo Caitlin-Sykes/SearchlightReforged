@@ -59,8 +59,8 @@ public class LightPeripheral implements IPeripheral {
         Block block = state.getBlock();
         BrightnessStage stage = BrightnessStage.fromId(Math.clamp(level, 0, 4));
 
-        if (block instanceof CornerLightBlock) {
-            for (BlockPos connectedPos : SearchlightUtil.getConnectedCornerLights(world, pos, state)) {
+        if (block instanceof AbstractLightBlock alb) {
+            for (BlockPos connectedPos : alb.getConnectedLights(world, pos, state)) {
                 BlockEntity be = world.getBlockEntity(connectedPos);
                 if (be instanceof AddressableLight light) {
                     light.setBrightness(stage);
@@ -100,23 +100,16 @@ public class LightPeripheral implements IPeripheral {
         BlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
 
-        if (block instanceof CornerLightBlock cornerBlock) {
-            for (BlockPos connectedPos : SearchlightUtil.getConnectedCornerLights(world, pos, state)) {
+        if (block instanceof AbstractLightBlock abstractLightBlock) {
+            for (BlockPos connectedPos : abstractLightBlock.getConnectedLights(world, pos, state)) {
                 BlockEntity be = world.getBlockEntity(connectedPos);
                 if (be instanceof AddressableLight light) {
                     light.setLightRequest(lit);
                     be.setChanged();
                     BlockState s = world.getBlockState(connectedPos);
                     world.sendBlockUpdated(connectedPos, s, s, 3);
-                    cornerBlock.updateLitState(world, connectedPos, s);
+                    abstractLightBlock.updateLitState(world, connectedPos, s);
                 }
-            }
-        } else if (block instanceof AbstractLightBlock abstractLightBlock) {
-            if (tile instanceof AddressableLight light) {
-                light.setLightRequest(lit);
-                tile.setChanged();
-                world.sendBlockUpdated(pos, state, state, 3);
-                abstractLightBlock.updateLitState(world, pos, state);
             }
         }
     }
@@ -156,18 +149,13 @@ public class LightPeripheral implements IPeripheral {
                 oldLightRequest = addressable.getLightRequest();
             }
 
-            if (block instanceof CornerLightBlock) {
-                List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
-                for (BlockPos connectedPos : connected) {
-                    BlockState s = world.getBlockState(connectedPos);
-                    BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
-                    world.setBlockAndUpdate(connectedPos, ns);
-                    world.updateNeighborsAt(connectedPos, newBlock);
-                }
-            } else {
-                BlockState ns = copyMatchingProperties(state, newBlock.defaultBlockState());
-                world.setBlockAndUpdate(pos, ns);
-                world.updateNeighborsAt(pos, newBlock);
+            AbstractLightBlock alb = (AbstractLightBlock) block;
+            List<BlockPos> connected = alb.getConnectedLights(world, pos, state);
+            for (BlockPos connectedPos : connected) {
+                BlockState s = world.getBlockState(connectedPos);
+                BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
+                world.setBlockAndUpdate(connectedPos, ns);
+                world.updateNeighborsAt(connectedPos, newBlock);
             }
 
             BlockEntity newBe = world.getBlockEntity(pos);
