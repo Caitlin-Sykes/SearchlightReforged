@@ -29,7 +29,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 
@@ -74,6 +78,29 @@ public class EdgeLightBlock extends AbstractColoredLightBlock implements EntityB
     public @Nullable Block getBlockForColor(String colorKey) {
         DeferredBlock<Block> holder = Searchlight.EDGE_LIGHTS.get(colorKey);
         return holder != null ? holder.get() : null;
+    }
+
+    @Override
+    public boolean isConnectingLight(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsPixelMode(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public List<BlockPos> getConnectedLights(Level level, BlockPos pos, BlockState state) {
+        List<EdgeLightChainHelper.PixelTarget> chain = EdgeLightChainHelper.getChain(level, pos);
+        Set<BlockPos> positions = new LinkedHashSet<>();
+        for (EdgeLightChainHelper.PixelTarget target : chain) {
+            positions.add(target.pos());
+        }
+        if (positions.isEmpty()) {
+            positions.add(pos);
+        }
+        return new ArrayList<>(positions);
     }
 
     @Override

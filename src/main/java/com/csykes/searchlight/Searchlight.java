@@ -311,7 +311,7 @@ public class Searchlight {
                         if (be instanceof AddressableLight addressable) {
                             LightMode mode = LightMode.fromString(payload.mode());
                             BlockState state = level.getBlockState(pos);
-                            if (state.getBlock() instanceof AbstractLightBlock alb && state.hasProperty(AbstractLightBlock.CONNECTION)) {
+                            if (state.getBlock() instanceof AbstractLightBlock alb && alb.isConnectingLight(state)) {
                                 List<BlockPos> connected = alb.getConnectedLights(level, pos, state);
                                 if (mode == LightMode.SEPARATE) {
                                     int base = 0;
@@ -334,7 +334,7 @@ public class Searchlight {
                                         BlockEntity targetBe = level.getBlockEntity(p);
                                         if (targetBe instanceof AddressableLight targetLight) {
                                             targetLight.setAddress(payload.address());
-                                            targetLight.setLightMode(LightMode.FIXTURE);
+                                            targetLight.setLightMode(mode);
                                             targetBe.setChanged();
                                             level.sendBlockUpdated(p, targetBe.getBlockState(), targetBe.getBlockState(), 3);
                                         }

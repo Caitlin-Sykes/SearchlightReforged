@@ -8,6 +8,17 @@ import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRequest;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightChainHelper;
+import com.csykes.searchlight.features.edge_light.EdgeLightChainHelper.PixelTarget;
+import com.csykes.searchlight.features.edge_light.EdgeLightData;
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.rod_light.RodLightChainHelper;
+import com.csykes.searchlight.features.rod_light.RodLightChainHelper.RodPixelTarget;
+import com.csykes.searchlight.features.rod_light.RodLightData;
+import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
+import com.csykes.searchlight.utils.lighting.LightMode;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
@@ -22,8 +33,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
 
@@ -115,11 +129,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
             String oldAddress = "";
             BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
             LightRequest oldLightRequest = LightRequest.RELEASE;
+            LightMode oldLightMode = LightMode.FIXTURE;
             BlockEntity oldBe = world.getBlockEntity(pos);
             if (oldBe instanceof AddressableLight addressable) {
                 oldAddress = addressable.getAddress();
                 oldBrightness = addressable.getBrightness();
                 oldLightRequest = addressable.getLightRequest();
+                oldLightMode = addressable.getLightMode();
             }
 
             world.setBlockAndUpdate(pos, newState);
@@ -130,6 +146,7 @@ public class LightingDirectorPeripheral implements IPeripheral {
                 addressable.setAddress(oldAddress);
                 addressable.setBrightness(oldBrightness);
                 addressable.setLightRequest(oldLightRequest);
+                addressable.setLightMode(oldLightMode);
                 newBe.setChanged();
                 world.sendBlockUpdated(pos, newState, newState, 3);
                 world.getLightEngine().checkBlock(pos);
@@ -202,10 +219,303 @@ public class LightingDirectorPeripheral implements IPeripheral {
         Block block = state.getBlock();
         if (!(block instanceof AbstractLightBlock lightBlock)) return;
 
-        List<BlockPos> targets = lightBlock.getConnectedLights(world, pos, state);
+        BlockEntity be = world.getBlockEntity(pos);
+        LightMode mode = (be instanceof AddressableLight al) ? al.getLightMode() : LightMode.FIXTURE;
+
+        List<BlockPos> targets = (mode == LightMode.SEPARATE) ? List.of(pos) : lightBlock.getConnectedLights(world, pos, state);
+
+        if (mode == LightMode.PIXEL && block instanceof EdgeLightBlock && options.containsKey("pixels") && options.get("pixels") instanceof Map<?, ?> pixelsTable) {
+            applyPixelsToFixture(pos, pixelsTable);
+        } else if (mode == LightMode.PIXEL && (block instanceof CornerLightBlock || block instanceof CentreLightBlock) && options.containsKey("pixels") && options.get("pixels") instanceof Map<?, ?> pixelsTable) {
+            applyPixelsToRodFixture(pos, pixelsTable);
+        }
 
         for (BlockPos targetPos : targets) {
             applyLightUpdates(world, targetPos, options);
+        }
+    }
+
+    private List<BlockPos> resolvePositions(Object key) {
+        Level world = tile.getLevel();
+        List<BlockPos> targetPositions = new ArrayList<>();
+        if (world == null) return targetPositions;
+
+        if (key instanceof Number numVal) {
+            int index = numVal.intValue() - 1;
+            List<BlockPos> positions = tile.getLinkedLights();
+            if (index >= 0 && index < positions.size()) {
+                BlockPos pos = positions.get(index);
+                if (pos != null) {
+                    targetPositions.add(pos);
+                }
+            }
+        } else if (key instanceof String addressVal) {
+            List<BlockPos> positions = tile.getLinkedLights();
+            Set<BlockPos> checked = new HashSet<>();
+            for (BlockPos pos : positions) {
+                if (pos != null) {
+                    BlockEntity be = world.getBlockEntity(pos);
+                    if (be instanceof AddressableLight addressable) {
+                        if (addressable.getAddress().equalsIgnoreCase(addressVal)) {
+                            targetPositions.add(pos);
+                        }
+                        // If fixture is in SEPARATE mode, search its connected blocks for individual addresses
+                        if (addressable.getLightMode() == LightMode.SEPARATE) {
+                            BlockState state = world.getBlockState(pos);
+                            if (state.getBlock() instanceof AbstractLightBlock alb) {
+                                for (BlockPos connPos : alb.getConnectedLights(world, pos, state)) {
+                                    if (checked.add(connPos) && !connPos.equals(pos)) {
+                                        BlockEntity connBe = world.getBlockEntity(connPos);
+                                        if (connBe instanceof AddressableLight connAddr && connAddr.getAddress().equalsIgnoreCase(addressVal)) {
+                                            targetPositions.add(connPos);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return targetPositions;
+    }
+
+    private static int parseIndex(Object key) {
+        if (key instanceof Number n) {
+            return n.intValue() - 1;
+        }
+        if (key != null) {
+            try {
+                return Integer.parseInt(key.toString().trim()) - 1;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return -1;
+    }
+
+    private boolean applyPixelsToRodFixture(BlockPos anchorPos, Map<?, ?> pixelsTable) {
+        Level world = tile.getLevel();
+        if (world == null) return false;
+
+        BlockState anchorState = world.getBlockState(anchorPos);
+        if (!(anchorState.getBlock() instanceof CornerLightBlock || anchorState.getBlock() instanceof CentreLightBlock)) {
+            return false;
+        }
+
+        BlockEntity anchorBe = world.getBlockEntity(anchorPos);
+        if (anchorBe instanceof AddressableLight al && al.getLightMode() != LightMode.PIXEL) {
+            return false;
+        }
+
+        List<RodPixelTarget> chain = RodLightChainHelper.getChain(world, anchorPos);
+        if (chain.isEmpty()) return false;
+
+        Set<BlockPos> affectedPositions = new HashSet<>();
+
+        for (Map.Entry<?, ?> entry : pixelsTable.entrySet()) {
+            int targetIndex = parseIndex(entry.getKey());
+            if (targetIndex >= 0 && targetIndex < chain.size()) {
+                RodPixelTarget target = chain.get(targetIndex);
+                BlockEntity be = world.getBlockEntity(target.pos());
+                if (be instanceof WallLightBlockEntity wbe) {
+                    Object val = entry.getValue();
+                    String color = null;
+                    boolean lit = true;
+
+                    if (val instanceof String s) {
+                        color = s;
+                    } else if (val instanceof Map<?, ?> map) {
+                        if (map.containsKey("color")) {
+                            color = map.get("color").toString();
+                        }
+                        if (map.containsKey("lit") && map.get("lit") instanceof Boolean b) {
+                            lit = b;
+                        }
+                    } else if (val instanceof Boolean b) {
+                        lit = b;
+                    }
+
+                    if (color != null) {
+                        wbe.getRodLightData().setSubPixel(target.subPixelIndex(), color, lit);
+                    } else {
+                        String curColor = wbe.getRodLightData().getSubPixelColor(target.subPixelIndex());
+                        wbe.getRodLightData().setSubPixel(target.subPixelIndex(), curColor, lit);
+                    }
+                    wbe.setChanged();
+                    affectedPositions.add(target.pos());
+                }
+            }
+        }
+
+        for (BlockPos affectedPos : affectedPositions) {
+            updateRodBlockAverageVariant(world, affectedPos);
+        }
+
+        return true;
+    }
+
+    private void updateRodBlockAverageVariant(Level world, BlockPos pos) {
+        BlockState state = world.getBlockState(pos);
+        if (!(state.getBlock() instanceof AbstractLightBlock currentBlock)) return;
+
+        BlockEntity be = world.getBlockEntity(pos);
+        if (!(be instanceof WallLightBlockEntity wbe)) return;
+
+        RodLightData data = wbe.getRodLightData();
+        boolean hasLit = data.hasAnyLitSubPixel();
+        String avgColor = data.getAverageColor(state);
+        if (avgColor == null) {
+            avgColor = "white";
+        }
+
+        Block newBlock = currentBlock.getBlockForColor(avgColor);
+        if (newBlock != null && newBlock != currentBlock) {
+            BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
+            if (newState.hasProperty(AbstractLightBlock.LIT)) {
+                newState = newState.setValue(AbstractLightBlock.LIT, hasLit);
+            }
+
+            String oldAddress = wbe.getAddress();
+            BrightnessStage oldBrightness = wbe.getBrightness();
+            LightRequest oldLightRequest = wbe.getLightRequest();
+            LightMode oldLightMode = wbe.getLightMode();
+            RodLightData oldData = new RodLightData(data);
+
+            world.setBlockAndUpdate(pos, newState);
+            world.updateNeighborsAt(pos, newBlock);
+
+            BlockEntity newBe = world.getBlockEntity(pos);
+            if (newBe instanceof WallLightBlockEntity newWbe) {
+                newWbe.setAddress(oldAddress);
+                newWbe.setBrightness(oldBrightness);
+                newWbe.setLightRequest(oldLightRequest);
+                newWbe.setLightMode(oldLightMode);
+                newWbe.setRodLightData(oldData);
+                newBe.setChanged();
+                world.sendBlockUpdated(pos, newState, newState, 3);
+                world.getLightEngine().checkBlock(pos);
+            }
+        } else {
+            if (state.hasProperty(AbstractLightBlock.LIT) && state.getValue(AbstractLightBlock.LIT) != hasLit) {
+                BlockState newState = state.setValue(AbstractLightBlock.LIT, hasLit);
+                world.setBlockAndUpdate(pos, newState);
+            }
+            wbe.setChanged();
+            world.sendBlockUpdated(pos, state, state, 3);
+            world.getLightEngine().checkBlock(pos);
+        }
+    }
+
+    private boolean applyPixelsToFixture(BlockPos anchorPos, Map<?, ?> pixelsTable) {
+        Level world = tile.getLevel();
+        if (world == null) return false;
+
+        BlockState anchorState = world.getBlockState(anchorPos);
+        if (!(anchorState.getBlock() instanceof EdgeLightBlock)) {
+            return false;
+        }
+
+        BlockEntity anchorBe = world.getBlockEntity(anchorPos);
+        if (anchorBe instanceof AddressableLight al && al.getLightMode() != LightMode.PIXEL) {
+            return false;
+        }
+
+        List<PixelTarget> chain = EdgeLightChainHelper.getChain(world, anchorPos);
+        if (chain.isEmpty()) return false;
+
+        Set<BlockPos> affectedPositions = new HashSet<>();
+
+        for (Map.Entry<?, ?> entry : pixelsTable.entrySet()) {
+            int targetIndex = parseIndex(entry.getKey());
+            if (targetIndex >= 0 && targetIndex < chain.size()) {
+                PixelTarget target = chain.get(targetIndex);
+                BlockEntity be = world.getBlockEntity(target.pos());
+                if (be instanceof WallLightBlockEntity wbe) {
+                    Object val = entry.getValue();
+                    String color = null;
+                    boolean lit = true;
+
+                    if (val instanceof String s) {
+                        color = s;
+                    } else if (val instanceof Map<?, ?> map) {
+                        if (map.containsKey("color")) {
+                            color = map.get("color").toString();
+                        }
+                        if (map.containsKey("lit") && map.get("lit") instanceof Boolean b) {
+                            lit = b;
+                        }
+                    } else if (val instanceof Boolean b) {
+                        lit = b;
+                    }
+
+                    if (color != null) {
+                        wbe.getEdgeLightData().setSubPixel(target.edge(), target.subPixelIndex(), color, lit);
+                    } else {
+                        String curColor = wbe.getEdgeLightData().getSubPixelColor(target.edge(), target.subPixelIndex());
+                        wbe.getEdgeLightData().setSubPixel(target.edge(), target.subPixelIndex(), curColor, lit);
+                    }
+                    wbe.setChanged();
+                    affectedPositions.add(target.pos());
+                }
+            }
+        }
+
+        for (BlockPos affectedPos : affectedPositions) {
+            updateEdgeBlockAverageVariant(world, affectedPos);
+        }
+
+        return true;
+    }
+
+    private void updateEdgeBlockAverageVariant(Level world, BlockPos pos) {
+        BlockState state = world.getBlockState(pos);
+        if (!(state.getBlock() instanceof EdgeLightBlock currentBlock)) return;
+
+        BlockEntity be = world.getBlockEntity(pos);
+        if (!(be instanceof WallLightBlockEntity wbe)) return;
+
+        EdgeLightData data = wbe.getEdgeLightData();
+        boolean hasLit = data.hasAnyLitEdge(state);
+        String avgColor = data.getAverageColor(state);
+        if (avgColor == null) {
+            avgColor = "white";
+        }
+
+        Block newBlock = currentBlock.getBlockForColor(avgColor);
+        if (newBlock != null && newBlock != currentBlock) {
+            BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
+            if (newState.hasProperty(AbstractLightBlock.LIT)) {
+                newState = newState.setValue(AbstractLightBlock.LIT, hasLit);
+            }
+
+            String oldAddress = wbe.getAddress();
+            BrightnessStage oldBrightness = wbe.getBrightness();
+            LightRequest oldLightRequest = wbe.getLightRequest();
+            LightMode oldLightMode = wbe.getLightMode();
+            EdgeLightData oldData = new EdgeLightData(data);
+
+            world.setBlockAndUpdate(pos, newState);
+            world.updateNeighborsAt(pos, newBlock);
+
+            BlockEntity newBe = world.getBlockEntity(pos);
+            if (newBe instanceof WallLightBlockEntity newWbe) {
+                newWbe.setAddress(oldAddress);
+                newWbe.setBrightness(oldBrightness);
+                newWbe.setLightRequest(oldLightRequest);
+                newWbe.setLightMode(oldLightMode);
+                newWbe.setEdgeLightData(oldData);
+                newBe.setChanged();
+                world.sendBlockUpdated(pos, newState, newState, 3);
+                world.getLightEngine().checkBlock(pos);
+            }
+        } else {
+            if (state.hasProperty(AbstractLightBlock.LIT) && state.getValue(AbstractLightBlock.LIT) != hasLit) {
+                BlockState newState = state.setValue(AbstractLightBlock.LIT, hasLit);
+                world.setBlockAndUpdate(pos, newState);
+            }
+            wbe.setChanged();
+            world.sendBlockUpdated(pos, state, state, 3);
+            world.getLightEngine().checkBlock(pos);
         }
     }
 
@@ -229,7 +539,7 @@ public class LightingDirectorPeripheral implements IPeripheral {
             lightInfo.put("y", pos.getY());
             lightInfo.put("z", pos.getZ());
 
-            if (block instanceof AbstractLightBlock) {
+            if (block instanceof AbstractLightBlock alb) {
                 lightInfo.put("active", true);
                 lightInfo.put("type", block.getClass().getSimpleName());
                 lightInfo.put("lit", state.getValue(LIT));
@@ -238,10 +548,22 @@ public class LightingDirectorPeripheral implements IPeripheral {
                 String lightRequestName = addressable != null ? addressable.getLightRequest().name().toLowerCase() : "release";
                 String brightnessName = addressable != null ? addressable.getBrightness().name().toLowerCase() : "medium";
                 String address = addressable != null ? addressable.getAddress() : "";
+                String modeName = addressable != null ? addressable.getLightMode().name().toLowerCase() : "fixture";
 
                 lightInfo.put("light_request", lightRequestName);
                 lightInfo.put("brightness", brightnessName);
                 lightInfo.put("color", getLightColorName(state));
+                lightInfo.put("mode", modeName);
+                lightInfo.put("connected_blocks", alb.getConnectedLights(world, pos, state).size());
+                if (addressable != null && addressable.getLightMode() == LightMode.PIXEL && block instanceof EdgeLightBlock) {
+                    lightInfo.put("pixel_count", EdgeLightChainHelper.getChain(world, pos).size());
+                } else if (addressable != null && addressable.getLightMode() == LightMode.PIXEL && (block instanceof CornerLightBlock || block instanceof CentreLightBlock)) {
+                    lightInfo.put("pixel_count", RodLightChainHelper.getChain(world, pos).size());
+                } else if (addressable != null && addressable.getLightMode() == LightMode.SEPARATE) {
+                    lightInfo.put("pixel_count", alb.getConnectedLights(world, pos, state).size());
+                } else {
+                    lightInfo.put("pixel_count", 1);
+                }
 
                 if (address.isEmpty()) {
                     address = "light_" + (i + 1);
@@ -265,30 +587,134 @@ public class LightingDirectorPeripheral implements IPeripheral {
     }
 
     @LuaFunction(mainThread = true)
-    public final boolean setLight(Object key, Map<?, ?> options) {
+    public final int getPixelCount(Object key) {
         Level world = tile.getLevel();
-        if (world == null) return false;
+        if (world == null) return 0;
+        List<BlockPos> positions = resolvePositions(key);
+        if (positions.isEmpty()) return 0;
+        BlockPos pos = positions.get(0);
+        BlockState state = world.getBlockState(pos);
+        BlockEntity be = world.getBlockEntity(pos);
+        LightMode mode = (be instanceof AddressableLight al) ? al.getLightMode() : LightMode.FIXTURE;
 
-        List<BlockPos> targetPositions = new ArrayList<>();
+        if (mode == LightMode.PIXEL && state.getBlock() instanceof EdgeLightBlock) {
+            return EdgeLightChainHelper.getChain(world, pos).size();
+        } else if (mode == LightMode.PIXEL && (state.getBlock() instanceof CornerLightBlock || state.getBlock() instanceof CentreLightBlock)) {
+            return RodLightChainHelper.getChain(world, pos).size();
+        } else if (mode == LightMode.SEPARATE && state.getBlock() instanceof AbstractLightBlock alb) {
+            return alb.getConnectedLights(world, pos, state).size();
+        }
+        return 1;
+    }
 
-        if (key instanceof Number numVal) {
-            int index = numVal.intValue() - 1;
-            List<BlockPos> positions = tile.getLinkedLights();
-            if (index >= 0 && index < positions.size()) {
-                targetPositions.add(positions.get(index));
+    @LuaFunction(mainThread = true)
+    public final List<Map<String, Object>> getPixels(Object key) {
+        Level world = tile.getLevel();
+        List<Map<String, Object>> result = new ArrayList<>();
+        if (world == null) return result;
+        List<BlockPos> positions = resolvePositions(key);
+        if (positions.isEmpty()) return result;
+        BlockPos pos = positions.get(0);
+        BlockState state = world.getBlockState(pos);
+        BlockEntity be = world.getBlockEntity(pos);
+        LightMode mode = (be instanceof AddressableLight al) ? al.getLightMode() : LightMode.FIXTURE;
+
+        if (mode == LightMode.PIXEL && state.getBlock() instanceof EdgeLightBlock) {
+            List<PixelTarget> chain = EdgeLightChainHelper.getChain(world, pos);
+            for (int i = 0; i < chain.size(); i++) {
+                PixelTarget target = chain.get(i);
+                Map<String, Object> map = new HashMap<>();
+                map.put("index", i + 1);
+                map.put("x", target.pos().getX());
+                map.put("y", target.pos().getY());
+                map.put("z", target.pos().getZ());
+                map.put("edge", target.edge().getName());
+                map.put("sub_pixel", target.subPixelIndex() + 1);
+                BlockEntity targetBe = world.getBlockEntity(target.pos());
+                if (targetBe instanceof WallLightBlockEntity wbe) {
+                    map.put("color", wbe.getEdgeLightData().getSubPixelColor(target.edge(), target.subPixelIndex()));
+                    map.put("lit", wbe.getEdgeLightData().isSubPixelLit(target.edge(), target.subPixelIndex()));
+                } else {
+                    map.put("color", "white");
+                    map.put("lit", true);
+                }
+                result.add(map);
             }
-        } else if (key instanceof String addressVal) {
-            List<BlockPos> positions = tile.getLinkedLights();
-            for (BlockPos pos : positions) {
-                if (pos != null) {
-                    BlockEntity be = world.getBlockEntity(pos);
-                    if (be instanceof AddressableLight addressable && addressable.getAddress().equalsIgnoreCase(addressVal)) {
-                        targetPositions.add(pos);
+        } else if (mode == LightMode.PIXEL && (state.getBlock() instanceof CornerLightBlock || state.getBlock() instanceof CentreLightBlock)) {
+            List<RodPixelTarget> chain = RodLightChainHelper.getChain(world, pos);
+            for (int i = 0; i < chain.size(); i++) {
+                RodPixelTarget target = chain.get(i);
+                Map<String, Object> map = new HashMap<>();
+                map.put("index", i + 1);
+                map.put("x", target.pos().getX());
+                map.put("y", target.pos().getY());
+                map.put("z", target.pos().getZ());
+                map.put("sub_pixel", target.subPixelIndex() + 1);
+                BlockEntity targetBe = world.getBlockEntity(target.pos());
+                if (targetBe instanceof WallLightBlockEntity wbe) {
+                    map.put("color", wbe.getRodLightData().getSubPixelColor(target.subPixelIndex()));
+                    map.put("lit", wbe.getRodLightData().isSubPixelLit(target.subPixelIndex()));
+                } else {
+                    map.put("color", "white");
+                    map.put("lit", true);
+                }
+                result.add(map);
+            }
+        }
+        return result;
+    }
+
+    @LuaFunction(mainThread = true)
+    public final boolean setPixel(Object key, int pixelIndex, String color, Optional<Boolean> litOpt) {
+        List<BlockPos> positions = resolvePositions(key);
+        if (positions.isEmpty()) return false;
+        Map<Integer, Object> map = new HashMap<>();
+        map.put(pixelIndex, Map.of("color", color, "lit", litOpt.orElse(true)));
+        boolean anyUpdated = false;
+        for (BlockPos pos : positions) {
+            if (applyPixelsToFixture(pos, map) || applyPixelsToRodFixture(pos, map)) {
+                anyUpdated = true;
+            }
+        }
+        return anyUpdated;
+    }
+
+    @LuaFunction(mainThread = true)
+    public final boolean setPixels(Object key, Map<?, ?> pixelsTable) {
+        List<BlockPos> positions = resolvePositions(key);
+        if (positions.isEmpty()) return false;
+        boolean anyUpdated = false;
+        for (BlockPos pos : positions) {
+            if (applyPixelsToFixture(pos, pixelsTable) || applyPixelsToRodFixture(pos, pixelsTable)) {
+                anyUpdated = true;
+            }
+        }
+        return anyUpdated;
+    }
+
+    @LuaFunction(mainThread = true)
+    public final boolean setPixelBatch(Map<?, ?> batchTable) {
+        boolean anyUpdated = false;
+        for (Map.Entry<?, ?> entry : batchTable.entrySet()) {
+            Object fixtureKey = entry.getKey();
+            if (entry.getValue() instanceof Map<?, ?> pixelsTable) {
+                List<BlockPos> positions = resolvePositions(fixtureKey);
+                for (BlockPos pos : positions) {
+                    if (applyPixelsToFixture(pos, pixelsTable) || applyPixelsToRodFixture(pos, pixelsTable)) {
+                        anyUpdated = true;
                     }
                 }
             }
         }
+        return anyUpdated;
+    }
 
+    @LuaFunction(mainThread = true)
+    public final boolean setLight(Object key, Map<?, ?> options) {
+        Level world = tile.getLevel();
+        if (world == null) return false;
+
+        List<BlockPos> targetPositions = resolvePositions(key);
         if (targetPositions.isEmpty()) return false;
         
         for (BlockPos targetPos : targetPositions) {
@@ -302,32 +728,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
         Level world = tile.getLevel();
         if (world == null) return false;
 
-        List<BlockPos> positions = tile.getLinkedLights();
-
         for (Map.Entry<?, ?> entry : bulkOptions.entrySet()) {
             Object key = entry.getKey();
             if (!(entry.getValue() instanceof Map<?, ?> options)) {
                 continue;
             }
 
-            List<BlockPos> targetPositions = new ArrayList<>();
-
-            if (key instanceof Number numVal) {
-                int index = numVal.intValue() - 1;
-                if (index >= 0 && index < positions.size()) {
-                    targetPositions.add(positions.get(index));
-                }
-            } else if (key instanceof String addressVal) {
-                for (BlockPos pos : positions) {
-                    if (pos != null) {
-                        BlockEntity be = world.getBlockEntity(pos);
-                        if (be instanceof AddressableLight addressable && addressable.getAddress().equalsIgnoreCase(addressVal)) {
-                            targetPositions.add(pos);
-                        }
-                    }
-                }
-            }
-
+            List<BlockPos> targetPositions = resolvePositions(key);
             for (BlockPos targetPos : targetPositions) {
                 processLightUpdate(world, targetPos, options);
             }
