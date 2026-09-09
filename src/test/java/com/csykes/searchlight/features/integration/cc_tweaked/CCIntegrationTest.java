@@ -128,7 +128,7 @@ public class CCIntegrationTest {
 
         BlockHandle directorHandle = context.placeBlock("searchlight:lighting_director");
         BlockHandle light1Handle = context.placeBlock("searchlight:wall_light_iron");
-        BlockHandle light2Handle = context.placeBlock("searchlight:wall_light_gold");
+        BlockHandle light2Handle = context.placeBlock("searchlight:wall_light_copper");
 
         directorHandle.verifyBlockEntity(LightingDirectorBlockEntity.class, director -> {
             WallLightBlockEntity light1Be = light1Handle.getBlockEntity(WallLightBlockEntity.class);

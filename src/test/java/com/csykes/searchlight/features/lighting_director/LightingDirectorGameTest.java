@@ -27,7 +27,8 @@ public class LightingDirectorGameTest {
     public static void testLightingDirectorEntries(GameTestHelper helper) {
         TestContext context = new TestContext(helper);
 
-        BlockHandle directorHandle = context.placeBlock("searchlight:lighting_director");
+        BlockPos directorPos = new BlockPos(2, 1, 1);
+        BlockHandle directorHandle = context.placeBlock(directorPos, "searchlight:lighting_director");
 
         BlockPos light1Pos = new BlockPos(1, 1, 1);
         BlockPos light2Pos = new BlockPos(1, 2, 1);
