@@ -59,7 +59,7 @@ public class ColourLampSlabGameTest {
      * Tests placing adjacent slabs of the same half and verifying connection properties.
      */
     @GameTest
-    public static void testSlabAdjacencyConnections(GameTestHelper helper) {
+    public static void testSlabAdjacencyConnectionsDifferentColour(GameTestHelper helper) {
         TestContext context = new TestContext(helper);
 
         BlockPos pos1 = new BlockPos(1, 1, 1);
@@ -67,6 +67,32 @@ public class ColourLampSlabGameTest {
 
         BlockHandle slab1 = context.placeBlock(pos1, "searchlight:colour_lamp_slab_white");
         BlockHandle slab2 = context.placeBlock(pos2, "searchlight:colour_lamp_slab_red");
+
+        context.assertThat(
+                () -> !slab1.getBlockState().getValue(ColourLampSlabBlock.SOUTH),
+                "Expected first slab to be not connected SOUTH to adjacent slab of same half"
+        );
+
+        context.assertThat(
+                () -> !slab2.getBlockState().getValue(ColourLampSlabBlock.NORTH),
+                "Expected second slab to be not connected NORTH to adjacent slab of same half"
+        );
+
+        context.execute();
+    }
+
+    /**
+     * Tests placing adjacent slabs of the same half and verifying connection properties.
+     */
+    @GameTest
+    public static void testSlabAdjacencyConnections(GameTestHelper helper) {
+        TestContext context = new TestContext(helper);
+
+        BlockPos pos1 = new BlockPos(1, 1, 1);
+        BlockPos pos2 = new BlockPos(1, 1, 2);
+
+        BlockHandle slab1 = context.placeBlock(pos1, "searchlight:colour_lamp_slab_white");
+        BlockHandle slab2 = context.placeBlock(pos2, "searchlight:colour_lamp_slab_white");
 
         context.assertThat(
                 () -> slab1.getBlockState().getValue(ColourLampSlabBlock.SOUTH),
