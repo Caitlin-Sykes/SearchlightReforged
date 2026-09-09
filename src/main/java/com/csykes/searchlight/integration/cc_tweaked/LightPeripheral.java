@@ -9,6 +9,7 @@ import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
 import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
@@ -140,40 +141,21 @@ public class LightPeripheral implements IPeripheral {
         String normalizedColor = colorName.toLowerCase();
 
         Block newBlock = null;
-
-        if (block instanceof WallLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof CornerLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof EdgeLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof CentreLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof ColourLampBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof SearchlightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
-            if (newBlockHolder != null) {
-                newBlock = newBlockHolder.get();
-            }
+        if (block instanceof AbstractLightBlock lightBlock) {
+            newBlock = lightBlock.getBlockForColor(normalizedColor);
         }
 
-        if (newBlock != null) {
+        if (newBlock != null && newBlock != block) {
+            String address = "";
+            BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
+            LightRequest oldLightRequest = LightRequest.RELEASE;
+            BlockEntity oldBe = world.getBlockEntity(pos);
+            if (oldBe instanceof AddressableLight addressable) {
+                address = addressable.getAddress();
+                oldBrightness = addressable.getBrightness();
+                oldLightRequest = addressable.getLightRequest();
+            }
+
             if (block instanceof CornerLightBlock) {
                 List<BlockPos> connected = SearchlightUtil.getConnectedCornerLights(world, pos, state);
                 for (BlockPos connectedPos : connected) {
@@ -186,6 +168,16 @@ public class LightPeripheral implements IPeripheral {
                 BlockState ns = copyMatchingProperties(state, newBlock.defaultBlockState());
                 world.setBlockAndUpdate(pos, ns);
                 world.updateNeighborsAt(pos, newBlock);
+            }
+
+            BlockEntity newBe = world.getBlockEntity(pos);
+            if (newBe instanceof AddressableLight addressable) {
+                addressable.setAddress(address);
+                addressable.setBrightness(oldBrightness);
+                addressable.setLightRequest(oldLightRequest);
+                newBe.setChanged();
+                world.sendBlockUpdated(pos, newBe.getBlockState(), newBe.getBlockState(), 3);
+                world.getLightEngine().checkBlock(pos);
             }
             return true;
         }
@@ -204,17 +196,13 @@ public class LightPeripheral implements IPeripheral {
             }
         }
 
-        if (block instanceof CornerLightBlock cornerBlock) {
-            return cornerBlock.getBlockColor().getName();
-        }
-        if (block instanceof EdgeLightBlock edgeBlock) {
-            return edgeBlock.getBlockColor().getName();
-        }
-        if (block instanceof CentreLightBlock centreBlock) {
-            return centreBlock.getBlockColor().getName();
-        }
-        if (block instanceof ColourLampBlock colourLampBlock) {
-            return colourLampBlock.getBlockColor().getName();
+        if (block instanceof AbstractColoredLightBlock coloredBlock) {
+            if (coloredBlock.getBlockColor() != null) {
+                return coloredBlock.getBlockColor().getName();
+            }
+            if (coloredBlock.getDyenamicColor() != null) {
+                return coloredBlock.getDyenamicColor();
+            }
         }
 
         for (Map.Entry<String, DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {

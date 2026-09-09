@@ -1,15 +1,11 @@
 package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.features.centre_light.CentreLightBlock;
-import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
-import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
-import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
-import com.csykes.searchlight.features.wall_light.WallLightBlock;
 import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
 import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
@@ -51,17 +47,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     private String getLightColorName(BlockState state) {
         Block block = state.getBlock();
-        if (block instanceof CornerLightBlock cornerBlock) {
-            return cornerBlock.getBlockColor().getName();
-        }
-        if (block instanceof EdgeLightBlock edgeBlock) {
-            return edgeBlock.getBlockColor().getName();
-        }
-        if (block instanceof CentreLightBlock centreBlock) {
-            return centreBlock.getBlockColor().getName();
-        }
-        if (block instanceof ColourLampBlock colourLampBlock) {
-            return colourLampBlock.getBlockColor().getName();
+        if (block instanceof AbstractColoredLightBlock coloredBlock) {
+            if (coloredBlock.getBlockColor() != null) {
+                return coloredBlock.getBlockColor().getName();
+            }
+            if (coloredBlock.getDyenamicColor() != null) {
+                return coloredBlock.getDyenamicColor();
+            }
         }
         for (Map.Entry<String, DeferredBlock<Block>> entry : Searchlight.WALL_LIGHTS.entrySet()) {
             if (entry.getValue().get() == block) {
@@ -113,45 +105,21 @@ public class LightingDirectorPeripheral implements IPeripheral {
         String normalizedColor = colorName.toLowerCase();
 
         Block newBlock = null;
-        if (block instanceof WallLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.WALL_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof CornerLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CORNER_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof EdgeLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.EDGE_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof CentreLightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.CENTRE_LIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof ColourLampBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.COLOUR_LAMPS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
-        } else if (block instanceof SearchlightBlock) {
-            DeferredBlock<Block> newBlockHolder = Searchlight.SEARCHLIGHTS.get(normalizedColor);
-            if (newBlockHolder != null && newBlockHolder.get() != block) {
-                newBlock = newBlockHolder.get();
-            }
+        if (block instanceof AbstractLightBlock lightBlock) {
+            newBlock = lightBlock.getBlockForColor(normalizedColor);
         }
 
-        if (newBlock != null) {
+        if (newBlock != null && newBlock != block) {
             BlockState newState = copyMatchingProperties(state, newBlock.defaultBlockState());
 
             String oldAddress = "";
+            BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
+            LightRequest oldLightRequest = LightRequest.RELEASE;
             BlockEntity oldBe = world.getBlockEntity(pos);
             if (oldBe instanceof AddressableLight addressable) {
                 oldAddress = addressable.getAddress();
+                oldBrightness = addressable.getBrightness();
+                oldLightRequest = addressable.getLightRequest();
             }
 
             world.setBlockAndUpdate(pos, newState);
@@ -160,8 +128,11 @@ public class LightingDirectorPeripheral implements IPeripheral {
             BlockEntity newBe = world.getBlockEntity(pos);
             if (newBe instanceof AddressableLight addressable) {
                 addressable.setAddress(oldAddress);
+                addressable.setBrightness(oldBrightness);
+                addressable.setLightRequest(oldLightRequest);
                 newBe.setChanged();
                 world.sendBlockUpdated(pos, newState, newState, 3);
+                world.getLightEngine().checkBlock(pos);
             }
 
             return newState;

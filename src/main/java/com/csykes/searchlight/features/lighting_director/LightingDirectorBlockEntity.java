@@ -8,9 +8,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -138,6 +143,34 @@ public class LightingDirectorBlockEntity extends BlockEntity {
                     linkedLights.set(slot, new BlockPos(posTag.getInt("x"), posTag.getInt("y"), posTag.getInt("z")));
                 }
             }
+        }
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.Provider provider) {
+        CompoundTag tag = super.getUpdateTag(provider);
+        saveAdditional(tag, provider);
+        return tag;
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+        super.onDataPacket(net, pkt, lookupProvider);
+        if (level != null && level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        super.handleUpdateTag(tag, lookupProvider);
+        if (level != null && level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 }
