@@ -1,7 +1,6 @@
 package com.csykes.searchlight.features.wall_light;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mat.api.BlockHandle;
 import com.mat.api.TestContext;
