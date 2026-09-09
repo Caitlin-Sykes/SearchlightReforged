@@ -262,7 +262,11 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
             Block newBlock = getBlockForColor(normalizedColor);
 
             if (newBlock != null && newBlock != block) {
-                List<BlockPos> connected = getConnectedLights(world, pos, state);
+                BlockEntity clickedBe = world.getBlockEntity(pos);
+                List<BlockPos> connected = (clickedBe instanceof AddressableLight al && al.getLightMode() == LightMode.SEPARATE)
+                        ? List.of(pos)
+                        : getConnectedLights(world, pos, state);
+
                 for (BlockPos connectedPos : connected) {
                     BlockState s = world.getBlockState(connectedPos);
                     BlockState ns = copyMatchingProperties(s, newBlock.defaultBlockState());
@@ -270,11 +274,13 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                     String oldAddress = "";
                     BrightnessStage oldBrightness = BrightnessStage.MEDIUM;
                     LightRequest oldLightRequest = LightRequest.RELEASE;
+                    LightMode oldLightMode = LightMode.FIXTURE;
                     BlockEntity oldBe = world.getBlockEntity(connectedPos);
                     if (oldBe instanceof AddressableLight addressable) {
                         oldAddress = addressable.getAddress();
                         oldBrightness = addressable.getBrightness();
                         oldLightRequest = addressable.getLightRequest();
+                        oldLightMode = addressable.getLightMode();
                     }
 
                     world.setBlockAndUpdate(connectedPos, ns);
@@ -285,6 +291,7 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                         addressable.setAddress(oldAddress);
                         addressable.setBrightness(oldBrightness);
                         addressable.setLightRequest(oldLightRequest);
+                        addressable.setLightMode(oldLightMode);
                         newBe.setChanged();
                         world.sendBlockUpdated(connectedPos, ns, ns, 3);
                         world.getLightEngine().checkBlock(connectedPos);
@@ -327,7 +334,9 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
                 }
 
                 if (success) {
-                    List<BlockPos> connected = getConnectedLights(world, pos, state);
+                    List<BlockPos> connected = (light.getLightMode() == LightMode.SEPARATE)
+                            ? List.of(pos)
+                            : getConnectedLights(world, pos, state);
                     for (BlockPos connectedPos : connected) {
                         BlockEntity targetBe = world.getBlockEntity(connectedPos);
                         if (targetBe instanceof AddressableLight targetLight) {

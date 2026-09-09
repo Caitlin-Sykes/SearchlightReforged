@@ -6,6 +6,7 @@ import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
+import com.csykes.searchlight.features.lighting_director.LightingDirectorScreen;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockRenderer;
@@ -261,6 +262,10 @@ public class SearchlightClient {
 
     public static void openLightAddressScreen(BlockPos pos) {
         Minecraft.getInstance().setScreen(new LightAddressScreen(pos));
+    }
+
+    public static void openLightingDirectorScreen(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new LightingDirectorScreen(pos));
     }
 
     public static boolean displayBeams() {

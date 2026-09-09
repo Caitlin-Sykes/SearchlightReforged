@@ -17,11 +17,15 @@ import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
 import com.csykes.searchlight.integration.dyenamics.DyenamicsIntegration;
 import com.csykes.searchlight.network.SetLightAddressPayload;
+import com.csykes.searchlight.network.UnlinkDirectorLightPayload;
 import com.csykes.searchlight.recipe.LampBrightnessRecipe;
 import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
+import com.csykes.searchlight.utils.lighting.LightMode;
 import com.mojang.logging.LogUtils;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -39,6 +43,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
@@ -304,9 +309,58 @@ public class Searchlight {
                         BlockPos pos = payload.pos();
                         BlockEntity be = level.getBlockEntity(pos);
                         if (be instanceof AddressableLight addressable) {
-                            addressable.setAddress(payload.address());
-                            be.setChanged();
-                            level.sendBlockUpdated(pos, be.getBlockState(), be.getBlockState(), 3);
+                            LightMode mode = LightMode.fromString(payload.mode());
+                            BlockState state = level.getBlockState(pos);
+                            if (state.getBlock() instanceof AbstractLightBlock alb && state.hasProperty(AbstractLightBlock.CONNECTION)) {
+                                List<BlockPos> connected = alb.getConnectedLights(level, pos, state);
+                                if (mode == LightMode.SEPARATE) {
+                                    int base = 0;
+                                    try {
+                                        base = Integer.parseInt(payload.address());
+                                    } catch (NumberFormatException ignored) {}
+                                    for (int i = 0; i < connected.size(); i++) {
+                                        BlockPos p = connected.get(i);
+                                        BlockEntity targetBe = level.getBlockEntity(p);
+                                        if (targetBe instanceof AddressableLight targetLight) {
+                                            String assignedAddress = String.format("%03d", (base + i) % 1000);
+                                            targetLight.setAddress(assignedAddress);
+                                            targetLight.setLightMode(LightMode.SEPARATE);
+                                            targetBe.setChanged();
+                                            level.sendBlockUpdated(p, targetBe.getBlockState(), targetBe.getBlockState(), 3);
+                                        }
+                                    }
+                                } else {
+                                    for (BlockPos p : connected) {
+                                        BlockEntity targetBe = level.getBlockEntity(p);
+                                        if (targetBe instanceof AddressableLight targetLight) {
+                                            targetLight.setAddress(payload.address());
+                                            targetLight.setLightMode(LightMode.FIXTURE);
+                                            targetBe.setChanged();
+                                            level.sendBlockUpdated(p, targetBe.getBlockState(), targetBe.getBlockState(), 3);
+                                        }
+                                    }
+                                }
+                            } else {
+                                addressable.setAddress(payload.address());
+                                addressable.setLightMode(mode);
+                                be.setChanged();
+                                level.sendBlockUpdated(pos, be.getBlockState(), be.getBlockState(), 3);
+                            }
+                        }
+                    });
+                }
+        );
+        registrar.playToServer(
+                UnlinkDirectorLightPayload.TYPE,
+                UnlinkDirectorLightPayload.STREAM_CODEC,
+                (payload, context) -> {
+                    context.enqueueWork(() -> {
+                        Player player = context.player();
+                        Level level = player.level();
+                        BlockPos pos = payload.directorPos();
+                        BlockEntity be = level.getBlockEntity(pos);
+                        if (be instanceof LightingDirectorBlockEntity director) {
+                            director.removeLinkedLight(payload.slot());
                         }
                     });
                 }

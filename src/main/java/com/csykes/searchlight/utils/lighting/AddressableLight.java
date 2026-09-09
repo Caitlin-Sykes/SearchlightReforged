@@ -9,4 +9,10 @@ public interface AddressableLight {
 
     LightRequest getLightRequest();
     void setLightRequest(LightRequest request);
+
+    default LightMode getLightMode() {
+        return LightMode.FIXTURE;
+    }
+
+    default void setLightMode(LightMode mode) {}
 }

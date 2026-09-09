@@ -18,10 +18,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LightingDirectorBlockEntity extends BlockEntity {
+    public record LinkedLightEntry(int slot, BlockPos pos, String lightType, String address, String mode, int connectedCount) {}
+
     private final List<BlockPos> linkedLights = new ArrayList<>(Collections.nCopies(64, (BlockPos) null));
+    private final Map<Integer, LinkedLightEntry> cachedEntries = new HashMap<>();
 
     public LightingDirectorBlockEntity(BlockPos pos, BlockState state) {
         super(Searchlight.LIGHTING_DIRECTOR_BE.get(), pos, state);
@@ -60,7 +65,7 @@ public class LightingDirectorBlockEntity extends BlockEntity {
                     BlockEntity targetBe = level.getBlockEntity(pos);
                     if (targetBe instanceof AddressableLight addressable) {
                         if (addressable.getAddress() == null || addressable.getAddress().trim().isEmpty()) {
-                            addressable.setAddress("light_" + (i + 1));
+                            addressable.setAddress(String.format("%03d", i + 1));
                             targetBe.setChanged();
                             level.sendBlockUpdated(pos, targetBe.getBlockState(), targetBe.getBlockState(), 3);
                         }
@@ -81,6 +86,7 @@ public class LightingDirectorBlockEntity extends BlockEntity {
         if (index >= 0 && index < linkedLights.size()) {
             if (linkedLights.get(index) != null) {
                 linkedLights.set(index, null);
+                cachedEntries.remove(index);
                 setChanged();
                 if (level != null && !level.isClientSide) {
                     level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
@@ -99,6 +105,7 @@ public class LightingDirectorBlockEntity extends BlockEntity {
                 changed = true;
             }
         }
+        cachedEntries.clear();
         if (changed) {
             setChanged();
             if (level != null && !level.isClientSide) {
@@ -109,6 +116,41 @@ public class LightingDirectorBlockEntity extends BlockEntity {
 
     public List<BlockPos> getLinkedLights() {
         return linkedLights;
+    }
+
+    public List<LinkedLightEntry> getLinkedLightEntries() {
+        List<LinkedLightEntry> entries = new ArrayList<>();
+        for (int i = 0; i < linkedLights.size(); i++) {
+            BlockPos p = linkedLights.get(i);
+            if (p != null) {
+                String name = "Light";
+                String address = "";
+                String mode = "Fixture";
+                int count = 1;
+
+                if (level != null && level.isLoaded(p)) {
+                    BlockState st = level.getBlockState(p);
+                    name = st.getBlock().getName().getString();
+                    BlockEntity be = level.getBlockEntity(p);
+                    if (be instanceof AddressableLight al) {
+                        address = al.getAddress();
+                        mode = al.getLightMode().getDisplayName();
+                    }
+                    if (st.getBlock() instanceof AbstractLightBlock alb) {
+                        count = alb.getConnectedLights(level, p, st).size();
+                    }
+                } else if (cachedEntries.containsKey(i)) {
+                    LinkedLightEntry cached = cachedEntries.get(i);
+                    name = cached.lightType();
+                    address = cached.address();
+                    mode = cached.mode();
+                    count = cached.connectedCount();
+                }
+
+                entries.add(new LinkedLightEntry(i + 1, p, name, address, mode, count));
+            }
+        }
+        return entries;
     }
 
     @Override
@@ -123,6 +165,36 @@ public class LightingDirectorBlockEntity extends BlockEntity {
                 posTag.putInt("x", pos.getX());
                 posTag.putInt("y", pos.getY());
                 posTag.putInt("z", pos.getZ());
+
+                String name = "Light";
+                String address = "";
+                String mode = "Fixture";
+                int count = 1;
+
+                if (level != null && level.isLoaded(pos)) {
+                    BlockState st = level.getBlockState(pos);
+                    name = st.getBlock().getName().getString();
+                    BlockEntity be = level.getBlockEntity(pos);
+                    if (be instanceof AddressableLight al) {
+                        address = al.getAddress();
+                        mode = al.getLightMode().getDisplayName();
+                    }
+                    if (st.getBlock() instanceof AbstractLightBlock alb) {
+                        count = alb.getConnectedLights(level, pos, st).size();
+                    }
+                } else if (cachedEntries.containsKey(i)) {
+                    LinkedLightEntry cached = cachedEntries.get(i);
+                    name = cached.lightType();
+                    address = cached.address();
+                    mode = cached.mode();
+                    count = cached.connectedCount();
+                }
+
+                posTag.putString("name", name);
+                posTag.putString("address", address);
+                posTag.putString("mode", mode);
+                posTag.putInt("count", count);
+
                 list.add(posTag);
             }
         }
@@ -133,13 +205,20 @@ public class LightingDirectorBlockEntity extends BlockEntity {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
         Collections.fill(linkedLights, null);
+        cachedEntries.clear();
         if (tag.contains("linked_lights", 9)) {
             ListTag list = tag.getList("linked_lights", 10);
             for (int i = 0; i < list.size(); i++) {
                 CompoundTag posTag = list.getCompound(i);
                 int slot = posTag.getInt("slot");
                 if (slot >= 0 && slot < linkedLights.size()) {
-                    linkedLights.set(slot, new BlockPos(posTag.getInt("x"), posTag.getInt("y"), posTag.getInt("z")));
+                    BlockPos p = new BlockPos(posTag.getInt("x"), posTag.getInt("y"), posTag.getInt("z"));
+                    linkedLights.set(slot, p);
+                    String name = posTag.contains("name") ? posTag.getString("name") : "Light";
+                    String address = posTag.contains("address") ? posTag.getString("address") : "";
+                    String mode = posTag.contains("mode") ? posTag.getString("mode") : "Fixture";
+                    int count = posTag.contains("count") ? posTag.getInt("count") : 1;
+                    cachedEntries.put(slot, new LinkedLightEntry(slot + 1, p, name, address, mode, count));
                 }
             }
         }

@@ -20,6 +20,7 @@ import com.csykes.searchlight.MutableVector3d;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRequest;
+import com.csykes.searchlight.utils.lighting.LightMode;
 import net.minecraft.world.item.DyeColor;
 
 public class SearchlightBlockEntity extends BlockEntity implements AddressableLight {
@@ -27,6 +28,7 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
     private String address = "";
     private BrightnessStage brightness = BrightnessStage.MEDIUM;
     private LightRequest lightRequest = LightRequest.RELEASE;
+    private LightMode lightMode = LightMode.FIXTURE;
 
     public SearchlightBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(Searchlight.SEARCHLIGHT_BE.get(), blockPos, blockState);
@@ -111,11 +113,26 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
     }
 
     @Override
+    public LightMode getLightMode() {
+        return lightMode != null ? lightMode : LightMode.FIXTURE;
+    }
+
+    @Override
+    public void setLightMode(LightMode lightMode) {
+        this.lightMode = lightMode != null ? lightMode : LightMode.FIXTURE;
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         tag.putString("address", address);
         tag.putString("brightness", brightness.name());
         tag.putString("light_request", lightRequest.name());
+        tag.putString("light_mode", getLightMode().name());
         if (lightSourcePos != null) {
             tag.putInt("light_source_x", lightSourcePos.getX());
             tag.putInt("light_source_y", lightSourcePos.getY());
@@ -144,6 +161,11 @@ public class SearchlightBlockEntity extends BlockEntity implements AddressableLi
             }
         } else {
             this.lightRequest = LightRequest.RELEASE;
+        }
+        if (tag.contains("light_mode")) {
+            this.lightMode = LightMode.fromString(tag.getString("light_mode"));
+        } else {
+            this.lightMode = LightMode.FIXTURE;
         }
         if (tag.contains("light_source_x") && tag.contains("light_source_y") && tag.contains("light_source_z")) {
             lightSourcePos = new BlockPos(tag.getInt("light_source_x"), tag.getInt("light_source_y"), tag.getInt("light_source_z"));

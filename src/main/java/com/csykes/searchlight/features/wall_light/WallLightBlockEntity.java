@@ -17,6 +17,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import com.csykes.searchlight.utils.lighting.LightMode;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,7 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     private String address = "";
     private BrightnessStage brightness = BrightnessStage.MEDIUM;
     private LightRequest lightRequest = LightRequest.RELEASE;
+    private LightMode lightMode = LightMode.FIXTURE;
 
     public WallLightBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -80,11 +82,26 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     }
 
     @Override
+    public LightMode getLightMode() {
+        return lightMode != null ? lightMode : LightMode.FIXTURE;
+    }
+
+    @Override
+    public void setLightMode(LightMode lightMode) {
+        this.lightMode = lightMode != null ? lightMode : LightMode.FIXTURE;
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.saveAdditional(tag, provider);
         tag.putString("address", address);
         tag.putString("brightness", brightness.name());
         tag.putString("light_request", lightRequest.name());
+        tag.putString("light_mode", getLightMode().name());
     }
 
     @Override
@@ -108,6 +125,11 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
             }
         } else {
             this.lightRequest = LightRequest.RELEASE;
+        }
+        if (tag.contains("light_mode")) {
+            this.lightMode = LightMode.fromString(tag.getString("light_mode"));
+        } else {
+            this.lightMode = LightMode.FIXTURE;
         }
     }
 
