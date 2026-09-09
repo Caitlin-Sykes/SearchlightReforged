@@ -45,3 +45,4 @@ repo/
 **/.vitepress/.temp
 **/.vitepress/cache
 /docs/.vitepress/dist/
+/.gradle_home/

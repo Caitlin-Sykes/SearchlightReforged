@@ -10,5 +10,11 @@
   "searchlight.jade.color": "Color: %s",
   "searchlight.jade.brightness": "Brightness: %s",
   "searchlight.jade.mode": "Mode: %s",
-  "config.jade.plugin_searchlight.light_data_component": "Search Light Data"
+  "config.jade.plugin_searchlight.light_data_component": "Search Light Data",
+  "searchlight.tooltip.brightness": "Brightness: %s (%s)",
+  "searchlight.brightness.off": "Off",
+  "searchlight.brightness.low": "Low",
+  "searchlight.brightness.medium": "Medium",
+  "searchlight.brightness.high": "High",
+  "searchlight.brightness.ultra": "Ultra"
 }

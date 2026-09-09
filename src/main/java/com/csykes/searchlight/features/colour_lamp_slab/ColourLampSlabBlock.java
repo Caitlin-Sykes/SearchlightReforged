@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,8 +39,13 @@ public class ColourLampSlabBlock extends AbstractConnectedLampBlock implements E
     }
 
     @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.COLOUR_LAMPS_SLAB_BE.get();
+    }
+
+    @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return new WallLightBlockEntity(Searchlight.COLOUR_LAMPS_SLAB_BE.get(), pos, state);
+        return new WallLightBlockEntity(getBlockEntityType(), pos, state);
     }
 
     public ColourLampSlabBlock(Properties properties, DyeColor blockColor) {

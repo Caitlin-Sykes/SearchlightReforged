@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
@@ -47,7 +48,7 @@ public class SearchlightBlock extends AbstractColoredLightBlock implements Entit
         this(properties, null, dyenamicColor);
     }
 
-    public SearchlightBlock(@NotNull Properties properties, DyeColor blockColor, String dyenamicColor) {
+    private SearchlightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
         super(properties, blockColor, dyenamicColor);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
@@ -58,6 +59,11 @@ public class SearchlightBlock extends AbstractColoredLightBlock implements Entit
 
     public SearchlightBlock(@NotNull Properties properties) {
         this(properties, DyeColor.WHITE, null);
+    }
+
+    @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.SEARCHLIGHT_BE.get();
     }
 
     @Override

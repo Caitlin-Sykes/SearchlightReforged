@@ -17,7 +17,10 @@ import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
 import com.csykes.searchlight.integration.cc_tweaked.CCIntegration;
 import com.csykes.searchlight.integration.dyenamics.DyenamicsIntegration;
 import com.csykes.searchlight.network.SetLightAddressPayload;
+import com.csykes.searchlight.recipe.LampBrightnessRecipe;
+import com.csykes.searchlight.utils.SearchlightUtil;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -29,6 +32,8 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -68,6 +73,10 @@ public class Searchlight {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
+    public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, MODID);
+
+    public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<LampBrightnessRecipe>> LAMP_BRIGHTNESS_RECIPE_SERIALIZER =
+            RECIPE_SERIALIZERS.register("lamp_brightness", () -> new SimpleCraftingRecipeSerializer<>(LampBrightnessRecipe::new));
 
     public static final Map<String, DeferredBlock<Block>> WALL_LIGHTS = new LinkedHashMap<>();
     public static final Map<String, DeferredBlock<Block>> CORNER_LIGHTS = new LinkedHashMap<>();
@@ -252,7 +261,7 @@ public class Searchlight {
             : null;
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_MODE_TABS.register("searchlight_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.searchlight"))
-            .icon(() -> new ItemStack(SEARCHLIGHT_ITEMS.get("white").get()))
+            .icon(() -> SearchlightUtil.createCreativeTabStack(SEARCHLIGHT_ITEMS.get("white").get(), BrightnessStage.ULTRA))
             .displayItems((parameters, output) -> {
 
                 if (LIGHTING_DIRECTOR_ITEM != null) {
@@ -261,13 +270,13 @@ public class Searchlight {
                 if (LIGHTING_LINKER_CARD != null) {
                     output.accept(LIGHTING_LINKER_CARD.get());
                 }
-                WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
-                CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
-                CENTRE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
-                EDGE_LIGHTS_ITEMS.values().forEach(item -> output.accept(item.get()));
-                COLOUR_LAMP_ITEMS.values().forEach(item -> output.accept(item.get()));
-                COLOUR_SLAB_ITEMS.values().forEach(item -> output.accept(item.get()));
-                SEARCHLIGHT_ITEMS.values().forEach(item -> output.accept(item.get()));
+                WALL_LIGHT_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
+                CORNER_LIGHTS_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
+                CENTRE_LIGHTS_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
+                EDGE_LIGHTS_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
+                COLOUR_LAMP_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
+                COLOUR_SLAB_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
+                SEARCHLIGHT_ITEMS.values().forEach(item -> output.accept(SearchlightUtil.createCreativeTabStack(item.get(), BrightnessStage.ULTRA)));
             }).build());
 
     public Searchlight(IEventBus modEventBus) {
@@ -280,6 +289,7 @@ public class Searchlight {
         ITEMS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
+        RECIPE_SERIALIZERS.register(modEventBus);
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {

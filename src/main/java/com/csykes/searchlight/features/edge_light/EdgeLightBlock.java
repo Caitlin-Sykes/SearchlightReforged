@@ -25,6 +25,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,8 +41,13 @@ public class EdgeLightBlock extends AbstractColoredLightBlock implements EntityB
     public static final BooleanProperty WEST = BooleanProperty.create("west");
 
     @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.EDGE_LIGHT_BE.get();
+    }
+
+    @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return new WallLightBlockEntity(Searchlight.EDGE_LIGHT_BE.get(), pos, state);
+        return new WallLightBlockEntity(getBlockEntityType(), pos, state);
     }
 
     public EdgeLightBlock(Properties properties, DyeColor blockColor) {

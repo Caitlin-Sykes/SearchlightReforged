@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,8 +27,13 @@ import static com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec;
 public class ColourLampBlock extends AbstractConnectedLampBlock implements EntityBlock {
 
     @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.COLOUR_LAMPS_BE.get();
+    }
+
+    @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return new WallLightBlockEntity(Searchlight.COLOUR_LAMPS_BE.get(), pos, state);
+        return new WallLightBlockEntity(getBlockEntityType(), pos, state);
     }
 
     public ColourLampBlock(Properties properties, DyeColor blockColor) {

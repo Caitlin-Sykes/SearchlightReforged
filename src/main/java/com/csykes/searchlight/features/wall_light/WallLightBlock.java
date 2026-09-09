@@ -20,6 +20,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.world.level.block.entity.BlockEntityType;
+
 public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
     protected static final VoxelShape CEILING_X_SHAPE = Block.box(6, 14, 5, 10, 16, 11);
     protected static final VoxelShape CEILING_Z_SHAPE = Block.box(5, 14, 6, 11, 16, 10);
@@ -39,6 +41,11 @@ public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
     }
 
     @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.WALL_LIGHT_BE.get();
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACE);
@@ -47,7 +54,7 @@ public class WallLightBlock extends AbstractLightBlock implements EntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new WallLightBlockEntity(Searchlight.WALL_LIGHT_BE.get(), pos, state);
+        return new WallLightBlockEntity(getBlockEntityType(), pos, state);
     }
 
     @Override
