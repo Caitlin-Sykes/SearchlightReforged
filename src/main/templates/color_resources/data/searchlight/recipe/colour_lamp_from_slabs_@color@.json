@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "colour_lamp",
+  "category": "building",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "item": "searchlight:colour_lamp_slab_@color@"
+    }
+  },
+  "result": {
+    "id": "searchlight:colour_lamp_@color@",
+    "count": 1
+  }
+}

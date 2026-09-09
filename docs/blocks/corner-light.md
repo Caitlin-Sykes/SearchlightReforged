@@ -1,6 +1,6 @@
 # Corner Light
 
-![Corner Light - a rod-like light that is placed in the corners of a block](/images/blocks/block/corner_light.png "Corner Light")
+![Corner Light - a rod-like light that is placed in the corners of a block](/images/blocks/corner_light.png "Corner Light")
 
 ## Description
 
@@ -14,7 +14,7 @@ the [Light Blocks index](./index).
 
 ## Recipe
 
-![A crafting recipe for a corner light](/images/blocks/recipes/corner_light_recipe.png "Corner Light Recipe")
+![A crafting recipe for a corner light](/images/recipes/corner_light_recipe.png "Corner Light Recipe")
 
 ## Model Source File
 

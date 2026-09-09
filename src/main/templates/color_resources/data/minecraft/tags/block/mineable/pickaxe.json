@@ -1,0 +1,6 @@
+{
+  "replace": false,
+  "values": [
+    @list:all_blocks@
+  ]
+}

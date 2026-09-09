@@ -2,6 +2,9 @@
 
 Searchlight Reforged has integrations with several mods, extending its functionality and usability.
 
+It should be noted that if these mods are not installed, Searchlight Reforged will still function normally, but some
+features may be unavailable.
+
 ## CC: Tweaked
 
 Full peripheral support for advanced automation.

@@ -1,6 +1,6 @@
 # Searchlight (& Wall Lights) (Unofficial NeoForge Port)
 
-![Version](https://img.shields.io/badge/version-v1.0.0A-blue) ![NeoForge](https://img.shields.io/badge/NeoForge-21.1.65-orange)
+![Version](https://img.shields.io/badge/version-v1.0.0A-blue) ![NeoForge](https://img.shields.io/badge/NeoForge-21.1.115-orange)
 
 ## DISCLAIMER
 
@@ -42,15 +42,7 @@ original [SearchLight Repository](https://github.com/Lizard-Of-Oz/Searchlight).
 - Automated E2E Testing with MAT (Minecraft Automated Testing) framework:
     - Full GameTest coverage running headlessly via CI (`./gradlew test` / `./gradlew runGameTestServer`)
     - Zero-dependency dynamic structure generation with `StructureBuilder`
-- Added french translation
-
-### Todo List:
-
-- [x] Dyeable searchlights
-- [x] DYENAMICS SUPPORT
-- [x] CC: Tweaked Integration
-- [x] Jade Integration
-- [x] Automated E2E Testing Pipeline (MAT)
+- Added French and Pirate-Speak translation
 
 ### Running Automated Tests
 

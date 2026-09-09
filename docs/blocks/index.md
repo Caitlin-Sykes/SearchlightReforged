@@ -43,3 +43,5 @@ When a computer provides instructions, they take priority over the default redst
 - [Colour Lamp](./colour-lamp)
 - [Searchlight](./searchlight)
 - [Wall Light](./wall-light)
+- [Colour Lamp Slab](./colour-lamp-slab)
+

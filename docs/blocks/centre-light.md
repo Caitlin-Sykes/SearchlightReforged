@@ -1,6 +1,6 @@
 # Centre Light
 
-![Centre Light - a rod-like light that is placed in the middle of a block](/images/blocks/block/centre_light.png "Centre Light")
+![Centre Light - a rod-like light that is placed in the middle of a block](/images/blocks/centre_light.png "Centre Light")
 
 ## Description
 
@@ -11,7 +11,7 @@ the [Light Blocks index](./index).
 
 ## Recipe
 
-![A crafting recipe for a centre light](/images/blocks/recipes/centre_light_recipe.png "Centre Light Recipe")
+![A crafting recipe for a centre light](/images/recipes/centre_light_recipe.png "Centre Light Recipe")
 
 ## Model Source File
 

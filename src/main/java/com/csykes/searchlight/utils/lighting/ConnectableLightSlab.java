@@ -112,10 +112,10 @@ public interface ConnectableLightSlab {
     }
 
     /**
-     * Checks whether a neighbor slab connects to this slab (same block type and same top/bottom half).
+     * Checks whether a neighbor slab connects to this slab (connectable light slab and same top/bottom half).
      */
     static boolean isSlabConnected(BlockState state, BlockState neighborState, BooleanProperty topHalfProperty) {
-        return neighborState.is(state.getBlock())
+        return neighborState.getBlock() instanceof ConnectableLightSlab
                 && neighborState.hasProperty(topHalfProperty)
                 && Objects.equals(neighborState.getValue(topHalfProperty), state.getValue(topHalfProperty));
     }

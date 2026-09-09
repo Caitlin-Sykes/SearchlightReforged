@@ -1,6 +1,6 @@
 # Edge Light
 
-![Edge Light - a rod-like light that is placed alongside the edges of a block](/images/blocks/block/edge_light.png "Edge Light")
+![Edge Light - a rod-like light that is placed alongside the edges of a block](/images/blocks/edge_light.png "Edge Light")
 
 ## Description
 
@@ -11,7 +11,7 @@ the [Light Blocks index](./index).
 
 ## Recipe
 
-![A crafting recipe for a corner light](/images/blocks/recipes/edge_light_recipe.png "Edge Light Recipe")
+![A crafting recipe for a corner light](/images/recipes/edge_light_recipe.png "Edge Light Recipe")
 
 ## Model Source File
 

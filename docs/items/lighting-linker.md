@@ -1,31 +1,22 @@
-# Wireless Lighting Director
+# Lighting Linker
 
-![Lighting Director](/images/blocks/lighting-director.png)
+![Lighting Linker Item - an item used to link different lighting blocks together](/images/items/lighting_linker.png "Lighting Linker")
 
-The central hub for wireless light management.
+## Description
 
-## Functionality
+An item used to link different lighting blocks together.
 
-Manages up to 64 linked lights wirelessly.
+### Usage Instructions
 
-## Linker Card
+#### To Link New Lights
 
-Used to pair lights to the director.
+1. Shift + Right Click on your director block to set it as the target.
+2. Right click on your target block to link it to the director block.
 
-1. Right-click **Director** with a card to pair.
-2. Right-click **Light Blocks** with the paired card to add/remove them.
+#### To Manage Existing Links
 
-## Redstone
-
-Can be used to trigger global states (if implemented via ComputerCraft).
-
-## Recipe
-
-![A crafting recipe for a corner light](/images/recipes/lighting_director_recipe.png "Lighting Director Recipe")
-
-## ComputerCraft Support
-
-Acts as a peripheral to allow programmatic control over all linked lights.
+1. Right Click on your Director Block![Lighting Director GUI](/images/gui/blocks/lighting_director_gui.png)
+2. If you wish to unlink a light, you can press the unlink button
 
 ### Methods
 
@@ -47,3 +38,11 @@ Acts as a peripheral to allow programmatic control over all linked lights.
 - `setLights(bulkOptions)`: Updates multiple lights simultaneously using a table where keys are slot indices or addresses and values are `options` tables. Returns `true`.
 - `removeLight(target)`: Unlinks and removes a light by its 1-based slot index (`number`) or address (`string`). Returns `true` if removed.
 - `clearLights()`: Removes all linked lights from the director.
+
+## Recipe
+
+![A crafting recipe for a lighting linker](/images/recipes/lighting_linker_recipe.png "Lighting Linker Recipe")
+
+## Credits
+
+- [amathieson](https://github.com/amathieson) for the model, texture and coding implementation.

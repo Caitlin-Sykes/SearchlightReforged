@@ -1,6 +1,6 @@
 # Searchlight
 
-![Searchlight](/images/blocks/block/searchlight.png)
+![Searchlight](/images/blocks/searchlight.png)
 
 ## Description
 
@@ -20,7 +20,7 @@ mentioned in the [Light Blocks index](./index).
 
 ## Recipe
 
-![A crafting recipe for a searchlight](/images/blocks/recipes/searchlight_recipe.png "Searchlight Recipe")
+![A crafting recipe for a searchlight](/images/recipes/searchlight_recipe.png "Searchlight Recipe")
 
 ## Credits
 
