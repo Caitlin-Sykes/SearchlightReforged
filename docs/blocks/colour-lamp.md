@@ -15,7 +15,7 @@ the [Light Blocks index](./index).
 
 ## Model Source File
 
-[Links to the models used](../../assets/colour_lamp/)
+[Links to the models used](https://github.com/Caitlin-Sykes/SearchlightReforged/tree/master/assets/colour_lamp)
 
 ## Credits
 

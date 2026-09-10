@@ -15,7 +15,7 @@ the [Light Blocks index](./index).
 
 ## Model Source File
 
-[Links to the models used](../../assets/edge_light/)
+[Links to the models used](https://github.com/Caitlin-Sykes/SearchlightReforged/tree/master/assets/edge_light)
 
 ## Credits
 
