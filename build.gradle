@@ -165,13 +165,15 @@ neoForge {
 // "optional", meaning it will not be pulled by dependents of this mod.
 configurations {
     runtimeClasspath.extendsFrom localRuntime
+    testCompileClasspath.extendsFrom localRuntime
+    testRuntimeClasspath.extendsFrom localRuntime
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
-    testCompileOnly 'org.projectlombok:lombok:1.18.34'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    compileOnly "org.projectlombok:lombok:${lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+    testCompileOnly "org.projectlombok:lombok:${lombok_version}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
 
     compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
     localRuntime "mezz.jei:jei-1.21.1-neoforge:${jei_version}"
@@ -179,39 +181,35 @@ dependencies {
     localRuntime "maven.modrinth:cc-tweaked:${cct_version}-neoforge"
     compileOnly "maven.modrinth:jade:${jade_version}"
     localRuntime "maven.modrinth:jade:${jade_version}"
-    localRuntime "maven.modrinth:sodium:mc1.21.1-0.6.13-neoforge"
-    localRuntime "maven.modrinth:iris:1.8.8+1.21.1-neoforge"
-    localRuntime "curse.maven:construction-sticks-1156098:8763707"
+    localRuntime "maven.modrinth:sodium:${sodium_version}"
+    localRuntime "maven.modrinth:iris:${iris_version}"
+    localRuntime "curse.maven:construction-sticks-1156098:${construction_sticks_version}"
 
-    compileOnly "curse.maven:dyenamics-509276:6504540"
-    localRuntime "curse.maven:dyenamics-509276:6504540"
+    compileOnly "curse.maven:dyenamics-509276:${dyenamics_version}"
+    localRuntime "curse.maven:dyenamics-509276:${dyenamics_version}"
 
-    testImplementation "maven.modrinth:cc-tweaked:${cct_version}-neoforge"
-    testImplementation "maven.modrinth:jade:${jade_version}"
-    testImplementation "curse.maven:dyenamics-509276:6504540"
-    testImplementation "curse.maven:construction-sticks-1156098:8763707"
     testImplementation project(':mat')
     localRuntime project(':mat')
 
-    textureGeneratorCompileOnly 'org.projectlombok:lombok:1.18.34'
-    textureGeneratorAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
-    textureGeneratorImplementation "curse.maven:dyenamics-509276:6504540"
+    textureGeneratorCompileOnly "org.projectlombok:lombok:${lombok_version}"
+    textureGeneratorAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
+    textureGeneratorImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
 
-    textureGeneratorTestCompileOnly 'org.projectlombok:lombok:1.18.34'
-    textureGeneratorTestAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    textureGeneratorTestCompileOnly "org.projectlombok:lombok:${lombok_version}"
+    textureGeneratorTestAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
     textureGeneratorTestImplementation sourceSets.textureGenerator.output
-    textureGeneratorTestImplementation "curse.maven:dyenamics-509276:6504540"
-    textureGeneratorTestImplementation platform('org.junit:junit-bom:5.10.1')
+    textureGeneratorTestImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
+    textureGeneratorTestImplementation platform("org.junit:junit-bom:${junit_bom_version}")
     textureGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
     textureGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    docsGeneratorCompileOnly 'org.projectlombok:lombok:1.18.34'
-    docsGeneratorAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    docsGeneratorCompileOnly "org.projectlombok:lombok:${lombok_version}"
+    docsGeneratorAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
 
-    docsGeneratorTestCompileOnly 'org.projectlombok:lombok:1.18.34'
-    docsGeneratorTestAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    docsGeneratorTestCompileOnly "org.projectlombok:lombok:${lombok_version}"
+    docsGeneratorTestAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
     docsGeneratorTestImplementation sourceSets.docsGenerator.output
-    docsGeneratorTestImplementation platform('org.junit:junit-bom:5.10.1')
+    docsGeneratorTestImplementation platform("org.junit:junit-bom:${junit_bom_version}")
     docsGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
     docsGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
