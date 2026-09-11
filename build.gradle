@@ -21,6 +21,16 @@ sourceSets {
         compileClasspath += sourceSets.textureGenerator.output
         runtimeClasspath += sourceSets.textureGenerator.output
     }
+    docsGenerator {
+        java.srcDirs = ['docsGenerator/src/main/java']
+        resources.srcDirs = ['docsGenerator/src/main/resources']
+    }
+    docsGeneratorTest {
+        java.srcDirs = ['docsGenerator/src/test/java']
+        resources.srcDirs = ['docsGenerator/src/test/resources']
+        compileClasspath += sourceSets.docsGenerator.output
+        runtimeClasspath += sourceSets.docsGenerator.output
+    }
 }
 sourceSets.main.resources {
 
@@ -194,6 +204,16 @@ dependencies {
     textureGeneratorTestImplementation platform('org.junit:junit-bom:5.10.1')
     textureGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
     textureGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    docsGeneratorCompileOnly 'org.projectlombok:lombok:1.18.34'
+    docsGeneratorAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+
+    docsGeneratorTestCompileOnly 'org.projectlombok:lombok:1.18.34'
+    docsGeneratorTestAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    docsGeneratorTestImplementation sourceSets.docsGenerator.output
+    docsGeneratorTestImplementation platform('org.junit:junit-bom:5.10.1')
+    docsGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
+    docsGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
