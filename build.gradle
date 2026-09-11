@@ -193,18 +193,9 @@ dependencies {
     textureGeneratorTestAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     textureGeneratorTestImplementation sourceSets.textureGenerator.output
     textureGeneratorTestImplementation "curse.maven:dyenamics-509276:6504540"
-    textureGeneratorTestImplementation files(
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-api/5.10.1/eb90c7d8bfaae8fdc97b225733fcb595ddd72843/junit-jupiter-api-5.10.1.jar',
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-params/5.10.1/c8f15d4e99940c4564098af78c10809c00fdca06/junit-jupiter-params-5.10.1.jar',
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-commons/1.10.1/2bfcd4a4e38b10c671b6916d7e543c20afe25579/junit-platform-commons-1.10.1.jar',
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.apiguardian/apiguardian-api/1.1.2/a231e0d844d2721b0fa1b238006d15c6ded6842a/apiguardian-api-1.1.2.jar',
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.opentest4j/opentest4j/1.3.0/152ea56b3a72f655d4fd677fc0ef2596c3dd5e6e/opentest4j-1.3.0.jar'
-    )
-    textureGeneratorTestRuntimeOnly files(
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-engine/5.10.1/6c9ff773f9aa842b91d1f2fe4658973252ce2428/junit-jupiter-engine-5.10.1.jar',
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-engine/1.10.1/f32ae4af74fde68414b8a3d2b7cf1fb43824a83a/junit-platform-engine-1.10.1.jar',
-        'C:/Users/AdamM/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-launcher/1.10.1/ce85bf5e38bee0989ded9bd468dd4ff78dc0cfa8/junit-platform-launcher-1.10.1.jar'
-    )
+    textureGeneratorTestImplementation platform('org.junit:junit-bom:5.10.1')
+    textureGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
+    textureGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository

@@ -79,9 +79,6 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
 
     public WallLightBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        if (state.getBlock() instanceof EdgeLightBlock || state.getBlock() instanceof CornerLightBlock || state.getBlock() instanceof CentreLightBlock) {
-            this.lightMode = LightMode.PIXEL;
-        }
     }
 
     public WallLightBlockEntity(BlockPos pos, BlockState state) {
@@ -94,9 +91,6 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
                                                         Searchlight.WALL_LIGHT_BE.get()),
                 pos, state
         );
-        if (state.getBlock() instanceof EdgeLightBlock || state.getBlock() instanceof CornerLightBlock || state.getBlock() instanceof CentreLightBlock) {
-            this.lightMode = LightMode.PIXEL;
-        }
     }
 
     @Override
@@ -196,7 +190,7 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
         if (tag.contains("light_mode")) {
             this.lightMode = LightMode.fromString(tag.getString("light_mode"));
         } else {
-            this.lightMode = (getBlockState().getBlock() instanceof EdgeLightBlock || getBlockState().getBlock() instanceof CornerLightBlock || getBlockState().getBlock() instanceof CentreLightBlock) ? LightMode.PIXEL : LightMode.FIXTURE;
+            this.lightMode = LightMode.FIXTURE;
         }
     }
 
