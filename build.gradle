@@ -89,6 +89,8 @@ neoForge {
     addModdingDependenciesTo sourceSets.test
     addModdingDependenciesTo sourceSets.textureGenerator
     addModdingDependenciesTo sourceSets.textureGeneratorTest
+    addModdingDependenciesTo sourceSets.docsGenerator
+    addModdingDependenciesTo sourceSets.docsGeneratorTest
 
     // This line is optional. Access Transformers are automatically detected
     // accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
@@ -1076,9 +1078,33 @@ def textureGeneratorTest = tasks.register("textureGeneratorTest", Test) {
     classpath = sourceSets.textureGeneratorTest.runtimeClasspath
     useJUnitPlatform()
 }
+def generatedDocsDir = layout.projectDirectory.dir("docs/generated")
+
+def generateDocs = tasks.register("generateDocs", JavaExec) {
+    classpath = sourceSets.docsGenerator.runtimeClasspath
+    mainClass = "com.csykes.searchlight.docsGenerator.DocsGenerator"
+
+    args generatedDocsDir.asFile.absolutePath
+
+    outputs.dir(generatedDocsDir)
+}
+
+tasks.named("processResources") {
+    dependsOn(generateDocs)
+}
+
+neoForge.ideSyncTask generatePngs
+
+def generateDocsTest = tasks.register("docsGeneratorTest", Test) {
+    description = "Runs unit tests for the docs generator"
+    group = "verification"
+    testClassesDirs = sourceSets.docsGeneratorTest.output.classesDirs
+    classpath = sourceSets.docsGeneratorTest.runtimeClasspath
+    useJUnitPlatform()
+}
 
 tasks.named("check") {
-    dependsOn(textureGeneratorTest)
+    dependsOn(generateDocsTest)
 }
 
 
