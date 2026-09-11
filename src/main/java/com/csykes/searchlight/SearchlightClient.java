@@ -5,6 +5,7 @@ import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlockRenderer;
 import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
 import com.csykes.searchlight.features.lighting_director.LightingDirectorScreen;
 import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
@@ -67,6 +68,9 @@ public class SearchlightClient {
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Searchlight.SEARCHLIGHT_BE.get(), SearchlightBlockRenderer::new);
+        event.registerBlockEntityRenderer(Searchlight.EDGE_LIGHT_BE.get(), EdgeLightBlockRenderer::new);
+        event.registerBlockEntityRenderer(Searchlight.CORNER_LIGHT_BE.get(), com.csykes.searchlight.features.rod_light.RodLightBlockRenderer::new);
+        event.registerBlockEntityRenderer(Searchlight.CENTRE_LIGHT_BE.get(), com.csykes.searchlight.features.rod_light.RodLightBlockRenderer::new);
     }
 
     @SubscribeEvent
@@ -95,6 +99,12 @@ public class SearchlightClient {
             event.register((state, world, pos, tintIndex) -> {
 
                 if (tintIndex == 0) {
+                    if (world != null && pos != null && world.getBlockEntity(pos) instanceof com.csykes.searchlight.features.wall_light.WallLightBlockEntity wbe && wbe.hasRodLightData()) {
+                        String avgColor = wbe.getRodLightData().getAverageColor(state);
+                        if (avgColor != null) {
+                            return com.csykes.searchlight.utils.lighting.ColorAveragingHelper.getRgbForColor(avgColor);
+                        }
+                    }
                     // Read directly from the block instance cast
                     if (state.getBlock() instanceof CornerLightBlock cornerBlock) {
                         if (cornerBlock.getBlockColor() != null) {
@@ -118,6 +128,12 @@ public class SearchlightClient {
             event.register((state, world, pos, tintIndex) -> {
 
                 if (tintIndex == 0) {
+                    if (world != null && pos != null && world.getBlockEntity(pos) instanceof com.csykes.searchlight.features.wall_light.WallLightBlockEntity wbe && wbe.hasRodLightData()) {
+                        String avgColor = wbe.getRodLightData().getAverageColor(state);
+                        if (avgColor != null) {
+                            return com.csykes.searchlight.utils.lighting.ColorAveragingHelper.getRgbForColor(avgColor);
+                        }
+                    }
                     // Read directly from the block instance cast
                     if (state.getBlock() instanceof CentreLightBlock centreLightBlock) {
                         if (centreLightBlock.getBlockColor() != null) {
@@ -173,6 +189,12 @@ public class SearchlightClient {
             event.register((state, world, pos, tintIndex) -> {
 
                 if (tintIndex == 0) {
+                    if (world != null && pos != null && world.getBlockEntity(pos) instanceof com.csykes.searchlight.features.wall_light.WallLightBlockEntity wbe && wbe.hasEdgeLightData()) {
+                        String avgColor = wbe.getEdgeLightData().getAverageColor(state);
+                        if (avgColor != null) {
+                            return com.csykes.searchlight.utils.lighting.ColorAveragingHelper.getRgbForColor(avgColor);
+                        }
+                    }
                     // Read directly from the block instance cast
                     if (state.getBlock() instanceof EdgeLightBlock edgeLightBlock) {
                         if (edgeLightBlock.getBlockColor() != null) {

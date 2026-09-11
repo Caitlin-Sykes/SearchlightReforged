@@ -1,10 +1,8 @@
 package com.csykes.searchlight.utils.lighting;
 
 import com.csykes.searchlight.SearchlightClient;
-import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
-import com.csykes.searchlight.utils.SearchlightUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -86,6 +84,14 @@ public abstract class AbstractLightBlock extends FaceAttachedHorizontalDirection
     }
 
     protected boolean isMatchingConnection(LevelAccessor level, BlockPos pos, BlockState state, BlockState neighborState) {
+        return false;
+    }
+
+    public boolean isConnectingLight(BlockState state) {
+        return state.hasProperty(CONNECTION);
+    }
+
+    public boolean supportsPixelMode(BlockState state) {
         return false;
     }
 

@@ -13,13 +13,17 @@ import com.csykes.searchlight.utils.lighting.LightRequest;
 import com.mat.api.BlockHandle;
 import com.mat.api.TestContext;
 import dan200.computercraft.api.peripheral.IPeripheral;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 
+import java.util.List;
 import java.util.Map;
 
 @GameTestHolder(Searchlight.MODID)
@@ -165,6 +169,66 @@ public class CCIntegrationTest {
                     "Expected first light to be unlit");
             context.assertThat(() -> !light2Handle.getBlockState().getValue(AbstractLightBlock.LIT),
                     "Expected second light to be unlit");
+        });
+
+        context.execute();
+    }
+
+    /**
+     * Tests that the LightingDirectorPeripheral can pixel-map connected Edge Lights,
+     * batch updates across pixels, and automatically swap the physical block to the
+     * average color variant for shaders.
+     */
+    @GameTest
+    public static void testDirectorEdgeLightPixelMapping(GameTestHelper helper) {
+        TestContext context = new TestContext(helper);
+
+        BlockPos directorPos = new BlockPos(3, 1, 1);
+        BlockPos edgeLightPos = new BlockPos(1, 1, 1);
+
+        BlockHandle directorHandle = context.placeBlock(directorPos, "searchlight:lighting_director");
+        BlockHandle edgeLightHandle = context.placeBlock(edgeLightPos, "searchlight:edge_light_white");
+
+        directorHandle.verifyBlockEntity(LightingDirectorBlockEntity.class, director -> {
+            int slot = director.toggleLinkedLight(edgeLightHandle.getAbsolutePos(), helper.getLevel());
+            context.assertThat(() -> slot == 1, "Expected edge light to be linked to slot 1");
+
+            LightingDirectorPeripheral peripheral = new LightingDirectorPeripheral(director);
+
+            // Query pixel count (should have 28 2x2 voxel pixels for a standalone square edge light: 8 + 7 + 7 + 6 = 28)
+            int pixelCount = peripheral.getPixelCount(1);
+            context.assertThat(() -> pixelCount == 28, "Expected standalone edge light to have 28 addressable 2x2 sub-pixels, got " + pixelCount);
+
+            // Verify getPixels returns 28 pixels with sub_pixel index
+            List<Map<String, Object>> pixels = peripheral.getPixels(1);
+            context.assertThat(() -> pixels.size() == 28, "Expected getPixels to return 28 pixels");
+            context.assertThat(() -> pixels.get(0).containsKey("sub_pixel"), "Expected pixels to contain sub_pixel index");
+
+            // Set first 14 sub-pixels to red and remaining 14 to yellow (average color = orange)
+            java.util.Map<Integer, String> halfAndHalf = new java.util.HashMap<>();
+            for (int p = 1; p <= 14; p++) halfAndHalf.put(p, "red");
+            for (int p = 15; p <= 28; p++) halfAndHalf.put(p, "yellow");
+            peripheral.setPixels(1, halfAndHalf);
+
+            // Verify the physical block was automatically replaced with edge_light_orange for shaders!
+            BlockState updatedState = helper.getLevel().getBlockState(edgeLightHandle.getAbsolutePos());
+            String updatedBlockId = BuiltInRegistries.BLOCK.getKey(updatedState.getBlock()).toString();
+            context.assertThat(() -> "searchlight:edge_light_orange".equals(updatedBlockId),
+                    "Expected block to be replaced with average color variant 'searchlight:edge_light_orange', but was: " + updatedBlockId);
+
+            // Verify block entity retained its data
+            WallLightBlockEntity updatedBe = (WallLightBlockEntity) helper.getLevel().getBlockEntity(edgeLightHandle.getAbsolutePos());
+            context.assertThat(() -> updatedBe != null && updatedBe.hasEdgeLightData(), "Expected WallLightBlockEntity with EdgeLightData");
+
+            // Test batching: set all 28 sub-pixels to blue via setPixelBatch
+            java.util.Map<Integer, String> allBlue = new java.util.HashMap<>();
+            for (int p = 1; p <= 28; p++) allBlue.put(p, "blue");
+            peripheral.setPixelBatch(Map.of(1, allBlue));
+
+            BlockState batchUpdatedState = helper.getLevel().getBlockState(edgeLightHandle.getAbsolutePos());
+            String batchBlockId = BuiltInRegistries.BLOCK.getKey(batchUpdatedState.getBlock()).toString();
+            context.assertThat(() -> "searchlight:edge_light_blue".equals(batchBlockId),
+                    "Expected block to be replaced with 'searchlight:edge_light_blue', but was: " + batchBlockId);
         });
 
         context.execute();

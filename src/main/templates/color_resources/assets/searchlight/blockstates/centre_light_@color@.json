@@ -264,7 +264,37 @@
 
     {
       "when": {
+        "connection": "top",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base",
+        "x": 90
+      }
+    },
+    {
+      "when": {
         "connection": "bottom",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base",
+        "x": -90
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
+        "axis": "z"
+      },
+      "apply": {
+        "model": "searchlight:block/centre_light_base",
+        "x": -90
+      }
+    },
+    {
+      "when": {
+        "connection": "single",
         "axis": "z"
       },
       "apply": {
@@ -275,36 +305,6 @@
     {
       "when": {
         "connection": "top",
-        "axis": "z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base",
-        "x": -90
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base",
-        "x": -90
-      }
-    },
-    {
-      "when": {
-        "connection": "single",
-        "axis": "z"
-      },
-      "apply": {
-        "model": "searchlight:block/centre_light_base",
-        "x": 90
-      }
-    },
-    {
-      "when": {
-        "connection": "bottom",
         "axis": "z",
         "lit": "false"
       },
@@ -315,7 +315,7 @@
     },
     {
       "when": {
-        "connection": "bottom",
+        "connection": "top",
         "axis": "z",
         "lit": "true"
       },
@@ -326,7 +326,7 @@
     },
     {
       "when": {
-        "connection": "top",
+        "connection": "bottom",
         "axis": "z",
         "lit": "false"
       },
@@ -337,7 +337,7 @@
     },
     {
       "when": {
-        "connection": "top",
+        "connection": "bottom",
         "axis": "z",
         "lit": "true"
       },

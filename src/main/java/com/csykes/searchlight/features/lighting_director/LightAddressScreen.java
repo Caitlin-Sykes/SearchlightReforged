@@ -15,6 +15,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LightAddressScreen extends Screen {
     private final BlockPos lightPos;
     private int digit0 = 0; // Hundreds
@@ -24,6 +27,7 @@ public class LightAddressScreen extends Screen {
     private LightMode selectedMode = LightMode.FIXTURE;
     private boolean isConnectingLight = false;
     private boolean isDropdownOpen = false;
+    private final List<LightMode> availableModes = new ArrayList<>();
 
     private Button modeDropdownButton;
 
@@ -50,16 +54,31 @@ public class LightAddressScreen extends Screen {
     protected void init() {
         super.init();
 
+        availableModes.clear();
         // Read current address and mode from block entity if available
         if (this.minecraft != null && this.minecraft.level != null) {
             BlockEntity be = this.minecraft.level.getBlockEntity(lightPos);
             BlockState state = this.minecraft.level.getBlockState(lightPos);
-            this.isConnectingLight = state.getBlock() instanceof AbstractLightBlock && state.hasProperty(AbstractLightBlock.CONNECTION);
+
+            if (state.getBlock() instanceof AbstractLightBlock alb && alb.isConnectingLight(state)) {
+                this.isConnectingLight = true;
+                availableModes.add(LightMode.FIXTURE);
+                availableModes.add(LightMode.SEPARATE);
+                if (alb.supportsPixelMode(state)) {
+                    availableModes.add(LightMode.PIXEL);
+                }
+            } else {
+                this.isConnectingLight = false;
+                availableModes.add(LightMode.FIXTURE);
+            }
 
             if (be instanceof AddressableLight addressable) {
                 String currentAddress = addressable.getAddress();
                 parseAddressDigits(currentAddress);
                 this.selectedMode = addressable.getLightMode();
+                if (!availableModes.contains(this.selectedMode)) {
+                    this.selectedMode = availableModes.get(0);
+                }
             }
         }
 
@@ -68,7 +87,7 @@ public class LightAddressScreen extends Screen {
 
         int panelW = 122;
         int panelX = centerX - panelW / 2;
-        int panelY = centerY - 40;
+        int panelY = centerY - 48;
 
         int digitW = 22;
         int spacing = 14;
@@ -114,8 +133,8 @@ public class LightAddressScreen extends Screen {
         }
         this.addRenderableWidget(modeDropdownButton);
 
-        // Save & Cancel buttons
-        int actionBtnY = dropdownY + 66;
+        // Save & Cancel buttons positioned cleanly below dropdown menu options
+        int actionBtnY = dropdownY + 88;
         this.addRenderableWidget(Button.builder(Component.translatable("gui.searchlight.button.save"), btn -> {
             String newAddress = String.format("%d%d%d", digit0, digit1, digit2);
             PacketDistributor.sendToServer(new SetLightAddressPayload(lightPos, newAddress, selectedMode.name()));
@@ -174,13 +193,13 @@ public class LightAddressScreen extends Screen {
         int centerX = this.width / 2;
         int centerY = this.height / 2;
 
-        graphics.drawCenteredString(this.font, this.title, centerX, centerY - 75, 0xFFFFFFFF);
+        graphics.drawCenteredString(this.font, this.title, centerX, centerY - 82, 0xFFFFFFFF);
 
         // Render 7-segment display bezel and panel
         int panelW = 122;
         int panelH = 54;
         int panelX = centerX - panelW / 2;
-        int panelY = centerY - 40;
+        int panelY = centerY - 48;
 
         // Outer border
         graphics.fill(panelX - 2, panelY - 2, panelX + panelW + 2, panelY + panelH + 2, 0xFF444444);
@@ -201,31 +220,31 @@ public class LightAddressScreen extends Screen {
         draw7SegmentDigit(graphics, d2X, digitY, digit2);
 
         // Render Dropdown options popup overlay if open
-        if (isDropdownOpen && modeDropdownButton != null) {
+        if (isDropdownOpen && modeDropdownButton != null && !availableModes.isEmpty()) {
             graphics.pose().pushPose();
             graphics.pose().translate(0.0f, 0.0f, 400.0f);
 
             int optW = modeDropdownButton.getWidth();
             int optX = modeDropdownButton.getX();
             int optH = 20;
-            int opt1Y = modeDropdownButton.getY() + 21;
-            int opt2Y = opt1Y + optH;
+            int optStartY = modeDropdownButton.getY() + 21;
+            int totalH = availableModes.size() * optH;
 
             // Background & border for dropdown menu
-            graphics.fill(optX - 1, opt1Y - 1, optX + optW + 1, opt2Y + optH + 1, 0xFF555555);
-            graphics.fill(optX, opt1Y, optX + optW, opt2Y + optH, 0xF0181818);
+            graphics.fill(optX - 1, optStartY - 1, optX + optW + 1, optStartY + totalH + 1, 0xFF555555);
+            graphics.fill(optX, optStartY, optX + optW, optStartY + totalH, 0xF0181818);
 
-            boolean hover1 = mouseX >= optX && mouseX <= optX + optW && mouseY >= opt1Y && mouseY < opt1Y + optH;
-            boolean hover2 = mouseX >= optX && mouseX <= optX + optW && mouseY >= opt2Y && mouseY < opt2Y + optH;
-
-            if (hover1) graphics.fill(optX, opt1Y, optX + optW, opt1Y + optH, 0x80444466);
-            if (hover2) graphics.fill(optX, opt2Y, optX + optW, opt2Y + optH, 0x80444466);
-
-            int col1 = (selectedMode == LightMode.FIXTURE) ? 0xFFFFFF55 : 0xFFDDDDDD;
-            int col2 = (selectedMode == LightMode.SEPARATE) ? 0xFFFFFF55 : 0xFFDDDDDD;
-
-            graphics.drawString(this.font, Component.translatable("gui.searchlight.mode.fixture"), optX + 8, opt1Y + 6, col1);
-            graphics.drawString(this.font, Component.translatable("gui.searchlight.mode.separate"), optX + 8, opt2Y + 6, col2);
+            for (int i = 0; i < availableModes.size(); i++) {
+                LightMode mode = availableModes.get(i);
+                int optY = optStartY + (i * optH);
+                boolean hover = mouseX >= optX && mouseX <= optX + optW && mouseY >= optY && mouseY < optY + optH;
+                if (hover) {
+                    graphics.fill(optX, optY, optX + optW, optY + optH, 0x80444466);
+                }
+                int col = (selectedMode == mode) ? 0xFFFFFF55 : 0xFFDDDDDD;
+                Component label = Component.translatable("gui.searchlight.mode." + mode.name().toLowerCase());
+                graphics.drawString(this.font, label, optX + 8, optY + 6, col);
+            }
 
             graphics.pose().popPose();
         }
@@ -259,21 +278,17 @@ public class LightAddressScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isDropdownOpen && modeDropdownButton != null) {
+        if (isDropdownOpen && modeDropdownButton != null && !availableModes.isEmpty()) {
             int optW = modeDropdownButton.getWidth();
             int optX = modeDropdownButton.getX();
             int optH = 20;
-            int opt1Y = modeDropdownButton.getY() + 21;
-            int opt2Y = opt1Y + optH;
+            int optStartY = modeDropdownButton.getY() + 21;
+            int totalH = availableModes.size() * optH;
 
-            if (mouseX >= optX && mouseX <= optX + optW) {
-                if (mouseY >= opt1Y && mouseY < opt1Y + optH) {
-                    selectedMode = LightMode.FIXTURE;
-                    isDropdownOpen = false;
-                    modeDropdownButton.setMessage(getModeButtonText());
-                    return true;
-                } else if (mouseY >= opt2Y && mouseY < opt2Y + optH) {
-                    selectedMode = LightMode.SEPARATE;
+            if (mouseX >= optX && mouseX <= optX + optW && mouseY >= optStartY && mouseY < optStartY + totalH) {
+                int index = (int) ((mouseY - optStartY) / optH);
+                if (index >= 0 && index < availableModes.size()) {
+                    selectedMode = availableModes.get(index);
                     isDropdownOpen = false;
                     modeDropdownButton.setMessage(getModeButtonText());
                     return true;

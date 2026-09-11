@@ -2,7 +2,8 @@ package com.csykes.searchlight.utils.lighting;
 
 public enum LightMode {
     FIXTURE("Fixture"),
-    SEPARATE("Separate");
+    SEPARATE("Separate"),
+    PIXEL("Pixel");
 
     private final String displayName;
 

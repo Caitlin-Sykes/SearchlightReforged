@@ -46,3 +46,4 @@ repo/
 **/.vitepress/cache
 /docs/.vitepress/dist/
 /.gradle_home/
+/logs/

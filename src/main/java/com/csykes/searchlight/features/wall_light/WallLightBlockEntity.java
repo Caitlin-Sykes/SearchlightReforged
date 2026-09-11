@@ -6,6 +6,7 @@ import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
 import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightData;
 import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightRequest;
@@ -27,6 +28,54 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     private BrightnessStage brightness = BrightnessStage.MEDIUM;
     private LightRequest lightRequest = LightRequest.RELEASE;
     private LightMode lightMode = LightMode.FIXTURE;
+    private EdgeLightData edgeLightData = null;
+    private com.csykes.searchlight.features.rod_light.RodLightData rodLightData = null;
+
+    public EdgeLightData getEdgeLightData() {
+        if (edgeLightData == null) {
+            edgeLightData = new EdgeLightData();
+            if (getBlockState().getBlock() instanceof com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock colored) {
+                String c = colored.getBlockColor() != null ? colored.getBlockColor().getName() : colored.getDyenamicColor();
+                if (c != null && !c.isBlank()) {
+                    for (net.minecraft.core.Direction dir : EdgeLightData.HORIZONTALS) {
+                        edgeLightData.setEdge(dir, c, true);
+                    }
+                }
+            }
+        }
+        return edgeLightData;
+    }
+
+    public void setEdgeLightData(EdgeLightData edgeLightData) {
+        this.edgeLightData = edgeLightData;
+        setChanged();
+    }
+
+    public boolean hasEdgeLightData() {
+        return edgeLightData != null;
+    }
+
+    public com.csykes.searchlight.features.rod_light.RodLightData getRodLightData() {
+        if (rodLightData == null) {
+            rodLightData = new com.csykes.searchlight.features.rod_light.RodLightData();
+            if (getBlockState().getBlock() instanceof com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock colored) {
+                String c = colored.getBlockColor() != null ? colored.getBlockColor().getName() : colored.getDyenamicColor();
+                if (c != null && !c.isBlank()) {
+                    rodLightData.set(c, true);
+                }
+            }
+        }
+        return rodLightData;
+    }
+
+    public void setRodLightData(com.csykes.searchlight.features.rod_light.RodLightData rodLightData) {
+        this.rodLightData = rodLightData;
+        setChanged();
+    }
+
+    public boolean hasRodLightData() {
+        return rodLightData != null;
+    }
 
     public WallLightBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -102,12 +151,24 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
         tag.putString("brightness", brightness.name());
         tag.putString("light_request", lightRequest.name());
         tag.putString("light_mode", getLightMode().name());
+        if (edgeLightData != null) {
+            tag.put("edge_light_data", edgeLightData.save());
+        }
+        if (rodLightData != null) {
+            tag.put("rod_light_data", rodLightData.save());
+        }
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider provider) {
         super.loadAdditional(tag, provider);
         this.address = tag.getString("address");
+        if (tag.contains("edge_light_data")) {
+            getEdgeLightData().load(tag.getCompound("edge_light_data"));
+        }
+        if (tag.contains("rod_light_data")) {
+            getRodLightData().load(tag.getCompound("rod_light_data"));
+        }
         if (tag.contains("brightness")) {
             try {
                 this.brightness = BrightnessStage.valueOf(tag.getString("brightness"));
@@ -148,15 +209,14 @@ public class WallLightBlockEntity extends BlockEntity implements AddressableLigh
     @Override
     public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
         super.onDataPacket(net, pkt, lookupProvider);
-        if (level != null && level.isClientSide) {
-            level.getLightEngine().checkBlock(worldPosition);
-            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
+        CompoundTag tag = pkt.getTag();
+        handleUpdateTag(tag, lookupProvider);
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
         super.handleUpdateTag(tag, lookupProvider);
+        loadAdditional(tag, lookupProvider);
         if (level != null && level.isClientSide) {
             level.getLightEngine().checkBlock(worldPosition);
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);

@@ -69,6 +69,11 @@ public class CentreLightBlock extends AbstractColoredLightBlock implements Entit
     }
 
     @Override
+    public boolean supportsPixelMode(BlockState state) {
+        return true;
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(FACE);
