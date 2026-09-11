@@ -1035,7 +1035,7 @@ tasks.named("processResources") {
 
 neoForge.ideSyncTask generatePngs
 
-def testTextureGenerator = tasks.register("testTextureGenerator", Test) {
+def textureGeneratorTest = tasks.register("textureGeneratorTest", Test) {
     description = "Runs unit tests for the texture generator"
     group = "verification"
     testClassesDirs = sourceSets.textureGeneratorTest.output.classesDirs
@@ -1044,7 +1044,7 @@ def testTextureGenerator = tasks.register("testTextureGenerator", Test) {
 }
 
 tasks.named("check") {
-    dependsOn(testTextureGenerator)
+    dependsOn(textureGeneratorTest)
 }
 
 
