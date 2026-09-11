@@ -266,7 +266,7 @@ public class RodLightBlockRenderer implements BlockEntityRenderer<WallLightBlock
                         int color, float nx, float ny, float nz) {
         consumer.addVertex(pose, x, y, z)
                 .setColor(color)
-                .setUv(u, v)
+                .setUv(1.0f - u, 1.0f - v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(FULL_BRIGHT)
                 .setNormal(pose, nx, ny, nz);
