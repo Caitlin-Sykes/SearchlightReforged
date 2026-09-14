@@ -1,4 +1,37 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {defineConfig} from 'vitepress'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const generatedDir = path.resolve(__dirname, '../generated')
+
+function getCCTweakedGeneratedItems() {
+    if (!fs.existsSync(generatedDir)) {
+        return []
+    }
+
+    return fs
+        .readdirSync(generatedDir)
+        .filter(file => file.endsWith('.md'))
+        .map(file => {
+            const filePath = path.join(generatedDir, file)
+            let title = file.replace(/\.java\.md$/, '').replace(/\.md$/, '')
+
+            try {
+                const content = fs.readFileSync(filePath, 'utf-8')
+                const match = content.match(/^#\s+(.+)$/m)
+                if (match) {
+                    title = match[1].replace(/\s*-\s*CC:Tweaked API.*$/, '').trim()
+                }
+            } catch {}
+
+            return {
+                text: title,
+                link: `/generated/${file}`
+            }
+        })
+}
 
 export default defineConfig({
     title: "Searchlight Reforged",
@@ -17,8 +50,18 @@ export default defineConfig({
         sidebar: [
             {
                 items: [
-                    {text: 'Home', link: '/'},
-                    {text: 'Integrations', link: '/integrations/'}
+                    {text: 'Home', link: '/'}
+                ]
+            },
+            {
+                text: 'Integrations',
+                collapsed: false,
+                items: [
+                    {text: 'Overview', link: '/integrations/'},
+                    {
+                        text: 'CC: Tweaked',
+                        items: getCCTweakedGeneratedItems()
+                    }
                 ]
             },
             {

@@ -759,12 +759,10 @@ public class LightingDirectorPeripheral implements IPeripheral {
     /**
      * Updates settings for a single linked light fixture or group matching the provided key.
      * Supported options in the options table:
-     * <ul>
-     *   <li>{@code "color"}: Color name string (e.g. "red", "cyan", "copper").</li>
-     *   <li>{@code "brightness"}: Brightness number (0 to 4) or stage name ("off", "very_low", "low", "medium", "high").</li>
-     *   <li>{@code "lit"}: Light request override: boolean (true/false) or string ("on", "off", "release").</li>
-     *   <li>{@code "pixels"}: Sub-pixel table mapping pixel indices for PIXEL mode fixtures.</li>
-     * </ul>
+     *  - {@code "color"}: Color name string (e.g. "red", "cyan", "copper").
+     *  - {@code "brightness"}: Brightness number (0 to 4) or stage name ("off", "very_low", "low", "medium", "high").
+     *  - {@code "lit"}: Light request override: boolean (true/false) or string ("on", "off", "release").
+     *  - {@code "pixels"}: Sub-pixel table mapping pixel indices for PIXEL mode fixtures.
      *
      * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture(s).
      * @param options A table of options to apply to the light fixture.

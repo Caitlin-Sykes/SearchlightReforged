@@ -24,7 +24,7 @@ public class DocsGenerator {
             peripheralBEs.forEach(peripheral -> {
                 MarkdownService markdownService = new MarkdownService(peripheral, peripheralMethods.get(peripheral.getPeripheralClass()));
                 try {
-                    FileWriter fw = new FileWriter("docs/generated/" + peripheral.getPeripheralClass().getFileName() + ".md");
+                    FileWriter fw = new FileWriter("docs/generated/" + peripheral.getPeripheralClass().getFileName().toString().replaceFirst("[.][^.]+$", "") + ".md");
                     fw.write(markdownService.buildPage());
                     fw.close();
                 } catch (IOException e) {
