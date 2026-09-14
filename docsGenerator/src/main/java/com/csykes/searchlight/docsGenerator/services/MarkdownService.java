@@ -1,7 +1,7 @@
 package com.csykes.searchlight.docsGenerator.services;
 
-import com.csykes.searchlight.docsGenerator.entities.BlockPeripheralPair;
 import com.csykes.searchlight.docsGenerator.entities.LuaMethod;
+import com.csykes.searchlight.docsGenerator.entities.PeripheralDocRecord;
 import com.csykes.searchlight.docsGenerator.entities.PeripheralDocumentation;
 import lombok.AllArgsConstructor;
 
@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public class MarkdownService {
-    private BlockPeripheralPair peripheral;
+    private PeripheralDocRecord peripheral;
     private PeripheralDocumentation peripheralDocumentation;
 
     public String buildPage() {
@@ -25,13 +25,14 @@ public class MarkdownService {
                 %s
                 ---
                 %s
-                """.formatted(this.peripheral.getPeripheralClass().getFileName().toString().replaceFirst("[.][^.]+$", ""), buildItemBadges(), this.peripheralDocumentation.description());
+                """.formatted(this.peripheral.peripheralClass().getFileName().toString().replaceFirst("[.][^.]+$", ""), buildItemBadges(), this.peripheralDocumentation.description());
     }
 
     private String buildItemBadges() {
-        return """
-                @[%s]
-                """.formatted(this.peripheral.getBlocks().stream().map(block -> String.format("%s", block)).collect(Collectors.joining(",")));
+        return this.peripheral.blockEntitiesToBlocks().values().stream()
+                .filter(blocks -> blocks != null && !blocks.isEmpty())
+                .map(blocks -> "@[%s]".formatted(String.join(",", blocks)))
+                .collect(Collectors.joining("\n"));
     }
 
     private String buildMethods() {

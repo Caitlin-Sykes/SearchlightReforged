@@ -21,10 +21,27 @@ public class DocsGenerator {
             var blockEnitites = parser.parseBEBlocks();
             var peripheralBEs = parser.parseBEs(blockEnitites);
             var peripheralMethods = parser.parseMethods(peripheralBEs);
-            peripheralBEs.forEach(peripheral -> {
-                MarkdownService markdownService = new MarkdownService(peripheral, peripheralMethods.get(peripheral.getPeripheralClass()));
+
+            // Group Block Entities and their blocks by Peripheral class
+            var peripherals = peripheralBEs.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            com.csykes.searchlight.docsGenerator.entities.BlockPeripheralPair::getPeripheralClass,
+                            java.util.LinkedHashMap::new,
+                            java.util.stream.Collectors.toMap(
+                                    com.csykes.searchlight.docsGenerator.entities.BlockPeripheralPair::getBlockId,
+                                    pair -> pair.getBlocks() != null ? pair.getBlocks() : java.util.List.<String>of(),
+                                    (existing, replacement) -> existing,
+                                    java.util.LinkedHashMap::new
+                            )
+                    ))
+                    .entrySet().stream()
+                    .map(entry -> new com.csykes.searchlight.docsGenerator.entities.PeripheralDocRecord(entry.getKey(), entry.getValue()))
+                    .toList();
+
+            peripherals.forEach(peripheral -> {
+                MarkdownService markdownService = new MarkdownService(peripheral, peripheralMethods.get(peripheral.peripheralClass()));
                 try {
-                    FileWriter fw = new FileWriter("docs/generated/" + peripheral.getPeripheralClass().getFileName().toString().replaceFirst("[.][^.]+$", "") + ".md");
+                    FileWriter fw = new FileWriter("docs/generated/" + peripheral.peripheralClass().getFileName().toString().replaceFirst("[.][^.]+$", "") + ".md");
                     fw.write(markdownService.buildPage());
                     fw.close();
                 } catch (IOException e) {
