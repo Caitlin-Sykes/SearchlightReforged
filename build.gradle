@@ -214,6 +214,10 @@ dependencies {
     docsGeneratorTestImplementation platform("org.junit:junit-bom:${junit_bom_version}")
     docsGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
     docsGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    docsGeneratorImplementation "com.github.javaparser:javaparser-symbol-solver-core:3.24.10"
+    docsGeneratorTestImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
+    docsGeneratorImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
+
 
 
     // Example mod dependency using a mod jar from ./libs with a flat dir repository

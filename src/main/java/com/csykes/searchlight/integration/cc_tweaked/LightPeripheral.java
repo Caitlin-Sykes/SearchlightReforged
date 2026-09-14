@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Light Block Peripheral - Allows for remote control of individual lighting blocks.
+ */
 public class LightPeripheral implements IPeripheral {
     private final BlockEntity tile;
     private final String type;
@@ -56,6 +59,13 @@ public class LightPeripheral implements IPeripheral {
         return this == other || (other instanceof LightPeripheral o && o.tile == tile);
     }
 
+    /**
+     * Sets the brightness level of the light fixture.
+     * If this block is part of a connected light fixture structure, all connected lights in the fixture
+     * are updated accordingly.
+     *
+     * @param level The brightness level to set, clamped between 0 (very dim) and 4 (maximum brightness).
+     */
     @LuaFunction(mainThread = true)
     public final void setBrightness(int level) {
         Level world = tile.getLevel();
@@ -90,6 +100,11 @@ public class LightPeripheral implements IPeripheral {
         }
     }
 
+    /**
+     * Gets the current brightness level of the light.
+     *
+     * @return The brightness level identifier (0 to 4), or 0 if unaddressable.
+     */
     @LuaFunction(mainThread = true)
     public final int getBrightness() {
         if (tile instanceof AddressableLight light) {
@@ -98,6 +113,12 @@ public class LightPeripheral implements IPeripheral {
         return 0;
     }
 
+    /**
+     * Sets the lit override state for this light fixture.
+     * Updates the requested state on this light and all connected blocks in the fixture.
+     *
+     * @param lit The light state request: {@code ON} (force lit), {@code OFF} (force unlit), or {@code RELEASE} (revert to redstone/default control).
+     */
     @LuaFunction(mainThread = true)
     public final void setLit(LightRequest lit) {
         Level world = tile.getLevel();
@@ -121,6 +142,11 @@ public class LightPeripheral implements IPeripheral {
         }
     }
 
+    /**
+     * Checks whether the light block is currently emitting light.
+     *
+     * @return {@code true} if the block's lit blockstate property is true, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean isLit() {
         BlockState state = tile.getBlockState();
@@ -130,6 +156,14 @@ public class LightPeripheral implements IPeripheral {
         return false;
     }
 
+    /**
+     * Changes the color of the light fixture to the specified color.
+     * Depending on the fixture mode (FIXTURE vs SEPARATE), this will recolor either the entire
+     * connected fixture or only this individual block while preserving addresses and settings.
+     *
+     * @param colorName The name of the color to change to (e.g. "white", "red", "cyan", or Dyenamics color names like "aquamarine").
+     * @return {@code true} if the color change was successful, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setColor(String colorName) {
         Level world = tile.getLevel();
@@ -186,6 +220,11 @@ public class LightPeripheral implements IPeripheral {
         return false;
     }
 
+    /**
+     * Gets the current color name of this light block.
+     *
+     * @return The color name (e.g. "white", "red", "aquamarine", or wall material like "iron"), or "unknown" if undetermined.
+     */
     @LuaFunction(mainThread = true)
     public final String getColor() {
         BlockState state = tile.getBlockState();
@@ -471,6 +510,12 @@ public class LightPeripheral implements IPeripheral {
         return true;
     }
 
+    /**
+     * Gets the total number of addressable sub-pixels available in this fixture when in PIXEL mode.
+     * For edge lights each block segment has multiple sub-pixels along each edge; rod fixtures have sub-pixels along the rod.
+     *
+     * @return The number of controllable sub-pixels in the fixture chain, or 1 if not in PIXEL mode.
+     */
     @LuaFunction(mainThread = true)
     public final int getPixelCount() {
         Level world = tile.getLevel();
@@ -485,6 +530,13 @@ public class LightPeripheral implements IPeripheral {
         return 1;
     }
 
+    /**
+     * Retrieves information for all sub-pixels in this fixture chain when in PIXEL mode.
+     *
+     * @return A list of tables describing each pixel with properties:
+     *         {@code index} (1-based), {@code x}, {@code y}, {@code z}, optional {@code edge},
+     *         {@code sub_pixel}, {@code color}, and {@code lit}. Returns empty list if not in PIXEL mode.
+     */
     @LuaFunction(mainThread = true)
     public final List<Map<String, Object>> getPixels() {
         Level world = tile.getLevel();
@@ -537,6 +589,14 @@ public class LightPeripheral implements IPeripheral {
         return result;
     }
 
+    /**
+     * Sets the color and lit state of a single sub-pixel by index in a PIXEL-mode fixture.
+     *
+     * @param pixelIndex The 1-based index of the pixel in the fixture chain.
+     * @param color The color name to apply to the pixel (e.g. "white", "blue", "red").
+     * @param litOpt Optional boolean indicating whether the pixel is lit (defaults to true if omitted).
+     * @return {@code true} if the pixel was successfully set, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setPixel(int pixelIndex, String color, Optional<Boolean> litOpt) {
         BlockPos pos = tile.getBlockPos();
@@ -545,12 +605,26 @@ public class LightPeripheral implements IPeripheral {
         return applyPixelsToFixture(pos, map) || applyPixelsToRodFixture(pos, map);
     }
 
+    /**
+     * Updates multiple sub-pixels in bulk for a PIXEL-mode fixture.
+     *
+     * @param pixelsTable A table mapping 1-based pixel indices to color strings, booleans, or tables with {@code color} and {@code lit}.
+     * @return {@code true} if pixels were successfully updated, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setPixels(Map<?, ?> pixelsTable) {
         BlockPos pos = tile.getBlockPos();
         return applyPixelsToFixture(pos, pixelsTable) || applyPixelsToRodFixture(pos, pixelsTable);
     }
 
+    /**
+     * Sets the color and lit state of an entire edge on an edge light block.
+     *
+     * @param edgeName The horizontal direction of the edge ("north", "south", "east", or "west").
+     * @param color The color name to apply to the edge.
+     * @param litOpt Optional boolean indicating whether the edge is lit (defaults to true if omitted).
+     * @return {@code true} if the edge was updated, {@code false} if invalid direction or not an edge light block.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setEdge(String edgeName, String color, Optional<Boolean> litOpt) {
         Level world = tile.getLevel();
@@ -568,6 +642,12 @@ public class LightPeripheral implements IPeripheral {
         return true;
     }
 
+    /**
+     * Retrieves the color and lit state of a specific edge on an edge light block.
+     *
+     * @param edgeName The horizontal direction of the edge ("north", "south", "east", or "west").
+     * @return A table with {@code color} and {@code lit} properties, or an empty table if invalid direction or not an edge light block.
+     */
     @LuaFunction(mainThread = true)
     public final Map<String, Object> getEdge(String edgeName) {
         Level world = tile.getLevel();

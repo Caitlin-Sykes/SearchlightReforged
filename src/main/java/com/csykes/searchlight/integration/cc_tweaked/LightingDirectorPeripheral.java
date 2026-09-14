@@ -41,6 +41,9 @@ import java.util.Set;
 
 import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
 
+/**
+ * Lighting Director Block Peripheral - Allows for remote control of many lighting blocks simultaneously.
+ */
 public class LightingDirectorPeripheral implements IPeripheral {
     private final LightingDirectorBlockEntity tile;
 
@@ -519,6 +522,14 @@ public class LightingDirectorPeripheral implements IPeripheral {
         }
     }
 
+    /**
+     * Retrieves a table of all lights linked to this Lighting Director.
+     * Each entry is keyed by its address (or auto-generated index name) and provides detailed
+     * status information including coordinates, active state, block type, lit state, light request,
+     * brightness, color, mode, connected block count, pixel count, and 1-based link index.
+     *
+     * @return A map of light address/name to a table of light metadata and current states.
+     */
     @LuaFunction(mainThread = true)
     public final Map<String, Map<String, Object>> getLinkedLights() {
         Level world = tile.getLevel();
@@ -586,6 +597,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return result;
     }
 
+    /**
+     * Gets the total number of addressable sub-pixels for a targeted linked light fixture.
+     * Applicable when the light is configured in PIXEL or SEPARATE mode.
+     *
+     * @param key The 1-based link index (integer) or assigned address (string) of the target light.
+     * @return The number of controllable sub-pixels or connected blocks, or 1 for standard fixtures (0 if target not found).
+     */
     @LuaFunction(mainThread = true)
     public final int getPixelCount(Object key) {
         Level world = tile.getLevel();
@@ -607,6 +625,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return 1;
     }
 
+    /**
+     * Retrieves pixel detail for each sub-pixel in a linked light fixture configured in PIXEL mode.
+     *
+     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture.
+     * @return A list of tables containing pixel details: {@code index}, {@code x}, {@code y}, {@code z},
+     *         optional {@code edge}, {@code sub_pixel}, {@code color}, and {@code lit}. Empty list if light not found or not in PIXEL mode.
+     */
     @LuaFunction(mainThread = true)
     public final List<Map<String, Object>> getPixels(Object key) {
         Level world = tile.getLevel();
@@ -664,6 +689,15 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return result;
     }
 
+    /**
+     * Sets the color and lit state of a single sub-pixel on a targeted PIXEL-mode linked fixture.
+     *
+     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture.
+     * @param pixelIndex The 1-based index of the sub-pixel in the fixture chain.
+     * @param color The color name to apply to the pixel (e.g. "white", "blue", "red").
+     * @param litOpt Optional boolean indicating whether the pixel is lit (defaults to true if omitted).
+     * @return {@code true} if any target pixel was updated, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setPixel(Object key, int pixelIndex, String color, Optional<Boolean> litOpt) {
         List<BlockPos> positions = resolvePositions(key);
@@ -679,6 +713,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return anyUpdated;
     }
 
+    /**
+     * Sets multiple sub-pixels in bulk on a targeted PIXEL-mode linked fixture.
+     *
+     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture.
+     * @param pixelsTable A table mapping 1-based pixel indices to colors (string), booleans, or tables with {@code color} and {@code lit}.
+     * @return {@code true} if any target pixel was updated, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setPixels(Object key, Map<?, ?> pixelsTable) {
         List<BlockPos> positions = resolvePositions(key);
@@ -692,6 +733,12 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return anyUpdated;
     }
 
+    /**
+     * Updates sub-pixels across multiple PIXEL-mode fixtures simultaneously in a single call.
+     *
+     * @param batchTable A table mapping fixture keys (index or address) to pixel tables mapping pixel index to pixel settings.
+     * @return {@code true} if any pixels were updated across the batch, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setPixelBatch(Map<?, ?> batchTable) {
         boolean anyUpdated = false;
@@ -709,6 +756,20 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return anyUpdated;
     }
 
+    /**
+     * Updates settings for a single linked light fixture or group matching the provided key.
+     * Supported options in the options table:
+     * <ul>
+     *   <li>{@code "color"}: Color name string (e.g. "red", "cyan", "copper").</li>
+     *   <li>{@code "brightness"}: Brightness number (0 to 4) or stage name ("off", "very_low", "low", "medium", "high").</li>
+     *   <li>{@code "lit"}: Light request override: boolean (true/false) or string ("on", "off", "release").</li>
+     *   <li>{@code "pixels"}: Sub-pixel table mapping pixel indices for PIXEL mode fixtures.</li>
+     * </ul>
+     *
+     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture(s).
+     * @param options A table of options to apply to the light fixture.
+     * @return {@code true} if matching lights were found and updated, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setLight(Object key, Map<?, ?> options) {
         Level world = tile.getLevel();
@@ -723,6 +784,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return true;
     }
 
+    /**
+     * Updates settings for multiple linked light fixtures in a single bulk operation.
+     *
+     * @param bulkOptions A table mapping light keys (index or address) to their respective options table
+     *                    (supporting {@code color}, {@code brightness}, {@code lit}, and {@code pixels}).
+     * @return {@code true} if executed, {@code false} if world is unavailable.
+     */
     @LuaFunction(mainThread = true)
     public final boolean setLights(Map<?, ?> bulkOptions) {
         Level world = tile.getLevel();
@@ -742,6 +810,12 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return true;
     }
 
+    /**
+     * Unlinks a light from this Lighting Director by its 1-based index or address.
+     *
+     * @param key The 1-based link index (integer) or assigned address (string) of the light to remove.
+     * @return {@code true} if a light was successfully removed, {@code false} otherwise.
+     */
     @LuaFunction(mainThread = true)
     public final boolean removeLight(Object key) {
         if (key instanceof Number numVal) {
@@ -768,6 +842,9 @@ public class LightingDirectorPeripheral implements IPeripheral {
         return false;
     }
 
+    /**
+     * Unlinks all currently connected lights from this Lighting Director.
+     */
     @LuaFunction(mainThread = true)
     public final void clearLights() {
         tile.clearLinkedLights();

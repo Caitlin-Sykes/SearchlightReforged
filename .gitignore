@@ -47,3 +47,4 @@ repo/
 /docs/.vitepress/dist/
 /.gradle_home/
 /logs/
+/docs/generated/
