@@ -2,6 +2,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {defineConfig} from 'vitepress'
+import blockIds from './plugins/blockIds.mjs'
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const generatedDir = path.resolve(__dirname, '../generated')
@@ -37,6 +39,11 @@ export default defineConfig({
     title: "Searchlight Reforged",
     description: "Lighting for Minecraft",
     lastUpdated: true,
+    markdown: {
+        config(md) {
+            md.use(blockIds)
+        }
+    },
     themeConfig: {
         search: {
             provider: 'local'

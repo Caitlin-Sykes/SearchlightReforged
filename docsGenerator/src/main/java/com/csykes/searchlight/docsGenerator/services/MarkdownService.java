@@ -22,7 +22,9 @@ public class MarkdownService {
     private String buildHeader() {
         return """
                 # %s - CC:Tweaked API
-                %s
+                
+                Supported: %s
+                
                 ---
                 %s
                 """.formatted(this.peripheral.peripheralClass().getFileName().toString().replaceFirst("[.][^.]+$", ""), buildItemBadges(), this.peripheralDocumentation.description());
