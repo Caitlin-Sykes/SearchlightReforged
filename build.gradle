@@ -110,6 +110,7 @@ neoForge {
         renderItemIcons {
             client()
             jvmArgument "-Xmx1256M"
+            jvmArgument "-Dorg.lwjgl.openal.libname="
             systemProperty 'searchlight.renderIcons', 'true'
             systemProperty 'searchlight.renderOutputDir', file('build/rendered_icons').absolutePath
         }

@@ -364,42 +364,62 @@ public class SearchlightClient {
             }
 
             if (event.getScreen() instanceof TitleScreen) {
-                renderedIcons = true;
-                Minecraft mc = Minecraft.getInstance();
-                mc.tell(() -> {
-                    try {
-                        String outDirPath = System.getProperty("searchlight.renderOutputDir", "build/rendered_icons");
-                        File outDir = new File(outDirPath);
-                        outDir.mkdirs();
+                triggerItemIconRendering();
+            }
+        }
 
-                        Searchlight.LOGGER.info("Starting automated item icon rendering to {}", outDir.getAbsolutePath());
+        @SubscribeEvent
+        public static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+            if (!"true".equals(System.getProperty("searchlight.renderIcons")) || renderedIcons) {
+                return;
+            }
 
-                        int renderedCount = 0;
-                        for (var entry : BuiltInRegistries.ITEM.entrySet()) {
-                            ResourceLocation itemId = entry.getKey().location();
-                            var item = entry.getValue();
-                            if (!itemId.getNamespace().equals(Searchlight.MODID) || item == AIR) {
-                                continue;
-                            }
+            Minecraft mc = Minecraft.getInstance();
+            // If the loading overlay is gone or a screen is active, initial reload is finished
+            if (mc.getOverlay() == null && (mc.screen != null || mc.level != null)) {
+                triggerItemIconRendering();
+            }
+        }
 
-                            try {
-                                File outFile = new File(outDir, itemId.getPath() + ".png");
-                                BlockItemRendererUtil.renderItemToPng(itemId, outFile, 64, 64);
-                                renderedCount++;
-                                Searchlight.LOGGER.info("Rendered icon ({}/{}): {}", renderedCount, itemId, outFile.getName());
-                            } catch (Exception itemEx) {
-                                Searchlight.LOGGER.error("Failed to render icon for item {}", itemId, itemEx);
-                            }
+        private static synchronized void triggerItemIconRendering() {
+            if (renderedIcons) {
+                return;
+            }
+            renderedIcons = true;
+            Minecraft mc = Minecraft.getInstance();
+            mc.tell(() -> {
+                try {
+                    String outDirPath = System.getProperty("searchlight.renderOutputDir", "build/rendered_icons");
+                    File outDir = new File(outDirPath);
+                    outDir.mkdirs();
+
+                    Searchlight.LOGGER.info("Starting automated item icon rendering to {}", outDir.getAbsolutePath());
+
+                    int renderedCount = 0;
+                    for (var entry : BuiltInRegistries.ITEM.entrySet()) {
+                        ResourceLocation itemId = entry.getKey().location();
+                        var item = entry.getValue();
+                        if (!itemId.getNamespace().equals(Searchlight.MODID) || item == AIR) {
+                            continue;
                         }
 
-                        Searchlight.LOGGER.info("Finished rendering {} item icons to {}", renderedCount, outDir.getAbsolutePath());
-                    } catch (Exception e) {
-                        Searchlight.LOGGER.error("Failed to render item icons", e);
-                    } finally {
-                        mc.stop();
+                        try {
+                            File outFile = new File(outDir, itemId.getPath() + ".png");
+                            BlockItemRendererUtil.renderItemToPng(itemId, outFile, 64, 64);
+                            renderedCount++;
+                            Searchlight.LOGGER.info("Rendered icon ({}/{}): {}", renderedCount, itemId, outFile.getName());
+                        } catch (Exception itemEx) {
+                            Searchlight.LOGGER.error("Failed to render icon for item {}", itemId, itemEx);
+                        }
                     }
-                });
-            }
+
+                    Searchlight.LOGGER.info("Finished rendering {} item icons to {}", renderedCount, outDir.getAbsolutePath());
+                } catch (Exception e) {
+                    Searchlight.LOGGER.error("Failed to render item icons", e);
+                } finally {
+                    mc.stop();
+                }
+            });
         }
 
         private static void renderDirectorHighlight(RenderLevelStageEvent event, BlockPos pos) {

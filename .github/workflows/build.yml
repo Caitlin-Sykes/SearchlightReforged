@@ -62,14 +62,16 @@ jobs:
       - name: Install Headless Display & Software OpenGL (Xvfb & Mesa)
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgl1-mesa-dri libosmesa6 mesa-utils
+          sudo apt-get install -y xvfb libgl1-mesa-dri libosmesa6 mesa-utils alsa-utils libasound2-dev
 
       - name: Build Docs
         run: xvfb-run --auto-servernum --server-args="-screen 0 320x240x24" ./gradlew generateDocs
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
-          MALLIUM_DRIVER: "llvmpipe"
+          GALLIUM_DRIVER: "llvmpipe"
           MESA_LOADER_DRIVER_OVERRIDE: "llvmpipe"
+          ALSA_CARD: "Dummy"
+          AUDIODRIVER: "dummy"
 
       - name: Upload Docs Artifact
         uses: actions/upload-pages-artifact@v3.0.1
