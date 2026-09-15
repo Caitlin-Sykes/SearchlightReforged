@@ -62,7 +62,7 @@ jobs:
       - name: Install Headless Display & Software OpenGL (Xvfb & Mesa)
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgl1-mesa-dri libgl1-mesa-glx libosmesa6 mesa-utils
+          sudo apt-get install -y xvfb libgl1-mesa-dri libosmesa6 mesa-utils
 
       - name: Build Docs
         run: xvfb-run --auto-servernum --server-args="-screen 0 320x240x24" ./gradlew generateDocs
