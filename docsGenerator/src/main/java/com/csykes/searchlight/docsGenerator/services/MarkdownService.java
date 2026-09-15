@@ -23,7 +23,7 @@ public class MarkdownService {
         return """
                 # %s - CC:Tweaked API
                 
-                Supported: %s
+                %s
                 
                 ---
                 %s

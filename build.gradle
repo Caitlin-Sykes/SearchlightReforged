@@ -107,6 +107,13 @@ neoForge {
             client()
         }
 
+        renderItemIcons {
+            client()
+            jvmArgument "-Xmx1256M"
+            systemProperty 'searchlight.renderIcons', 'true'
+            systemProperty 'searchlight.renderOutputDir', file('build/rendered_icons').absolutePath
+        }
+
         server {
             server()
             programArgument '--nogui'
@@ -1083,21 +1090,64 @@ def textureGeneratorTest = tasks.register("textureGeneratorTest", Test) {
     useJUnitPlatform()
 }
 def generatedDocsDir = layout.projectDirectory.dir("docs/generated")
+def renderedIconsDir = layout.buildDirectory.dir("rendered_icons")
+def generatedEnUsFile = layout.buildDirectory.file("generated/sources/colorResources/assets/searchlight/lang/en_us.json")
+def staticEnUsFile = layout.projectDirectory.file("src/main/resources/assets/searchlight/lang/en_us.json")
 
 def generateDocs = tasks.register("generateDocs", JavaExec) {
+    dependsOn(generateColorResources)
+    dependsOn("runRenderItemIcons")
+
     classpath = sourceSets.docsGenerator.runtimeClasspath
     mainClass = "com.csykes.searchlight.docsGenerator.DocsGenerator"
 
     args generatedDocsDir.asFile.absolutePath
 
     outputs.dir(generatedDocsDir)
+
+    var fs = project.services.get(FileSystemOperations)
+    var exec = project.services.get(ExecOperations)
+    var projectDir = layout.projectDirectory.asFile
+
+    doLast {
+        def targetDocsDir = generatedDocsDir.asFile
+        targetDocsDir.mkdirs()
+
+        // Copy rendered icons if they exist
+        def iconsDirFile = renderedIconsDir.get().asFile
+        if (iconsDirFile.exists()) {
+            fs.copy {
+                from iconsDirFile
+                into targetDocsDir
+                include "*.png"
+            }
+        }
+
+        // Copy generated english locale file
+        def genEnUs = generatedEnUsFile.get().asFile
+        def staticEnUs = staticEnUsFile.asFile
+        if (genEnUs.exists()) {
+            fs.copy {
+                from genEnUs
+                into targetDocsDir
+            }
+        } else if (staticEnUs.exists()) {
+            fs.copy {
+                from staticEnUs
+                into targetDocsDir
+            }
+        }
+
+        // Execute npm run docs:build
+        def isWindows = org.gradle.internal.os.OperatingSystem.current().isWindows()
+        def npmCmd = isWindows ? "npm.cmd" : "npm"
+        exec.exec {
+            workingDir = projectDir
+            commandLine npmCmd, "run", "docs:build"
+        }
+    }
 }
 
-tasks.named("processResources") {
-    dependsOn(generateDocs)
-}
-
-neoForge.ideSyncTask generatePngs
 
 def generateDocsTest = tasks.register("docsGeneratorTest", Test) {
     description = "Runs unit tests for the docs generator"

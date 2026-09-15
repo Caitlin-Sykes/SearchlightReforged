@@ -60,7 +60,7 @@ jobs:
         run: ./gradlew build
 
       - name: Build Docs
-        run: npm run docs:build
+        run: ./gradlew generateDocs
 
       - name: Upload Docs Artifact
         uses: actions/upload-pages-artifact@v3.0.1

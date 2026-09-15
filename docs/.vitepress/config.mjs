@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {defineConfig} from 'vitepress'
 import blockIds from './plugins/blockIds.mjs'
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -39,6 +40,16 @@ export default defineConfig({
     title: "Searchlight Reforged",
     description: "Lighting for Minecraft",
     lastUpdated: true,
+    vite: {
+        plugins: [
+            ViteImageOptimizer({})
+        ],
+        resolve: {
+            alias: {
+                '@generated': generatedDir
+            }
+        }
+    },
     markdown: {
         config(md) {
             md.use(blockIds)

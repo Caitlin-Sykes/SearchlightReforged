@@ -19,13 +19,16 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -46,6 +49,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent.Opening;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -56,6 +60,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static net.minecraft.world.item.DyeColor.byName;
+import static net.minecraft.world.item.Items.AIR;
+
+import com.csykes.searchlight.utils.BlockItemRendererUtil;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+
+import java.io.File;
 
 @Mod(value = Searchlight.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -64,6 +74,8 @@ public class SearchlightClient {
     public SearchlightClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
+
+
 
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -340,6 +352,53 @@ public class SearchlightClient {
                         }
                     }
                 }
+            }
+        }
+
+        private static boolean renderedIcons = false;
+
+        @SubscribeEvent
+        public static void onScreenOpening(Opening event) {
+            if (!"true".equals(System.getProperty("searchlight.renderIcons")) || renderedIcons) {
+                return;
+            }
+
+            if (event.getScreen() instanceof TitleScreen) {
+                renderedIcons = true;
+                Minecraft mc = Minecraft.getInstance();
+                mc.tell(() -> {
+                    try {
+                        String outDirPath = System.getProperty("searchlight.renderOutputDir", "build/rendered_icons");
+                        File outDir = new File(outDirPath);
+                        outDir.mkdirs();
+
+                        Searchlight.LOGGER.info("Starting automated item icon rendering to {}", outDir.getAbsolutePath());
+
+                        int renderedCount = 0;
+                        for (var entry : BuiltInRegistries.ITEM.entrySet()) {
+                            ResourceLocation itemId = entry.getKey().location();
+                            var item = entry.getValue();
+                            if (!itemId.getNamespace().equals(Searchlight.MODID) || item == AIR) {
+                                continue;
+                            }
+
+                            try {
+                                File outFile = new File(outDir, itemId.getPath() + ".png");
+                                BlockItemRendererUtil.renderItemToPng(itemId, outFile, 64, 64);
+                                renderedCount++;
+                                Searchlight.LOGGER.info("Rendered icon ({}/{}): {}", renderedCount, itemId, outFile.getName());
+                            } catch (Exception itemEx) {
+                                Searchlight.LOGGER.error("Failed to render icon for item {}", itemId, itemEx);
+                            }
+                        }
+
+                        Searchlight.LOGGER.info("Finished rendering {} item icons to {}", renderedCount, outDir.getAbsolutePath());
+                    } catch (Exception e) {
+                        Searchlight.LOGGER.error("Failed to render item icons", e);
+                    } finally {
+                        mc.stop();
+                    }
+                });
             }
         }
 
