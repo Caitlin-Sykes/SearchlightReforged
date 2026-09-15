@@ -128,6 +128,14 @@ public class BlockItemRendererUtil {
             MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
             net.minecraft.client.gui.GuiGraphics graphics = new net.minecraft.client.gui.GuiGraphics(mc, bufferSource);
 
+            // Set up diffuse lighting matching in-game GUI item rendering
+            net.minecraft.client.resources.model.BakedModel model = mc.getItemRenderer().getModel(stack, null, null, 0);
+            if (model != null && model.usesBlockLight()) {
+                Lighting.setupFor3DItems();
+            } else {
+                Lighting.setupForFlatItems();
+            }
+
             // Scale 16x16 standard GUI item size up to fill width x height
             float scale = (float) width / 16.0f;
             graphics.pose().pushPose();
@@ -137,6 +145,9 @@ public class BlockItemRendererUtil {
 
             graphics.flush();
             bufferSource.endBatch();
+
+            // Restore standard flat lighting
+            Lighting.setupForFlatItems();
 
             modelViewStack.popMatrix();
             RenderSystem.applyModelViewMatrix();

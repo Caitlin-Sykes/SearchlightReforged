@@ -117,17 +117,14 @@ onUnmounted(() => {
   width: 32px;
   height: 32px;
   object-fit: contain;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
   flex-shrink: 0;
   margin: 0;
 }
 
 /* Tooltip bubble styling */
 .block-name {
-  display: none;
   position: absolute;
-  bottom: calc(-100% - 8px);
+  bottom: -75%;
   left: 50%;
   transform: translateX(-50%);
 
@@ -145,10 +142,12 @@ onUnmounted(() => {
   background: var(--vp-c-bg-elv);
   border: 1px solid var(--vp-c-divider);
   box-shadow: var(--vp-shadow-3);
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
 }
 
 /* Show tooltip when hovering over the active badge */
 .block-id.active:hover .block-name {
-  display: block;
+  opacity: 1;
 }
 </style>

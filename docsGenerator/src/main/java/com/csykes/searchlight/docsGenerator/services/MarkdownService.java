@@ -1,6 +1,7 @@
 package com.csykes.searchlight.docsGenerator.services;
 
 import com.csykes.searchlight.docsGenerator.entities.LuaMethod;
+import com.csykes.searchlight.docsGenerator.entities.LuaParameter;
 import com.csykes.searchlight.docsGenerator.entities.PeripheralDocRecord;
 import com.csykes.searchlight.docsGenerator.entities.PeripheralDocumentation;
 import lombok.AllArgsConstructor;
@@ -48,9 +49,9 @@ public class MarkdownService {
         String parameters = method.getParameters().stream().map(parameter -> "| %s | %s | %s |".formatted(escapeMarkdown(parameter.getName()), escapeMarkdown(parameter.getType()), escapeMarkdown(parameter.getDescription()).replace("\n", " "))).collect(Collectors.joining("\n"));
 
         StringBuilder sb = new StringBuilder("""
-                ### %s
+                ### %s(%s)
                 %s
-                """.formatted(escapeMarkdown(method.getName()), escapeMarkdown(method.getDescription())));
+                """.formatted(escapeMarkdown(method.getName()), escapeMarkdown(method.getParameters().stream().map(LuaParameter::getName).collect(Collectors.joining(", "))), escapeMarkdown(method.getDescription())));
         if (!method.getParameters().isEmpty()) {
             sb.append("""
                     
