@@ -222,6 +222,7 @@ dependencies {
     docsGeneratorTestImplementation 'org.junit.jupiter:junit-jupiter'
     docsGeneratorTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     docsGeneratorImplementation "com.github.javaparser:javaparser-symbol-solver-core:3.24.10"
+    docsGeneratorTestImplementation "com.github.javaparser:javaparser-symbol-solver-core:3.24.10"
     docsGeneratorTestImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
     docsGeneratorImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
 
