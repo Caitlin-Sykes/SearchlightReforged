@@ -93,7 +93,7 @@ onUnmounted(() => {
   width: 48px;
   border-radius: 8px;
   border: 1px solid var(--vp-c-divider);
-  background: var(--vp-c-bg-soft);
+  background: radial-gradient(var(--vp-c-gray-3), var(--vp-c-bg-soft));;
 }
 
 .block-id {
