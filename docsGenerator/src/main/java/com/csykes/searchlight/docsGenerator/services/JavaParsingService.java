@@ -274,7 +274,7 @@ public class JavaParsingService {
     // Dynamic Reflection Utilities
     // ==========================================
 
-    private static List<String> getDynamicDyeColors() {
+    public static List<String> getDynamicDyeColors() {
         List<String> colors = new ArrayList<>();
         try {
             Class<?> colorClass = Class.forName("cy.jdkdigital.dyenamics.core.util.DyenamicDyeColor");

@@ -14,7 +14,7 @@ the [Light Blocks index](./index).
 
 ## Recipe
 
-![A crafting recipe for a corner light](/images/recipes/corner_light_recipe.png "Corner Light Recipe")
+<RecipeGrid recipe="corner_light" />
 
 ## Model Source File
 

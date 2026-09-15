@@ -15,25 +15,6 @@ All light blocks share the following properties:
 - **Redstone Reactive**: By default, lights use inverse logic (they turn off when receiving a redstone signal).
 - **Shift + Right-click** (with empty hand): Set a custom address for ComputerCraft.
 
-## ComputerCraft Integration
-
-If [CC: Tweaked](../integrations/index) is installed, these blocks act as peripherals, allowing for programmatic
-control:
-
-### Methods
-
-- `setBrightness(level)`: Sets the light level (0-4).
-- `getBrightness()`: Returns the current brightness level.
-- `setColor(color)`: Sets the color using the color name (e.g., "red", "light_blue").
-- `getColor()`: Returns the current color name.
-- `isLit()`: Returns `true` if the light is currently on.
-- `setLit(state)`: Controls the light source state.
-    - `"on"`: Forces the light on.
-    - `"off"`: Forces the light off.
-    - `"release"`: Returns control to default redstone behavior.
-
-When a computer provides instructions, they take priority over the default redstone behavior until `release` is called.
-
 ## Available Blocks
 
 - [Wall Light](./wall-light)

@@ -21,7 +21,7 @@ Can be used to trigger global states (if implemented via ComputerCraft).
 
 ## Recipe
 
-![A crafting recipe for a corner light](/images/recipes/lighting_director_recipe.png "Lighting Director Recipe")
+<RecipeGrid recipe="lighting_director" />
 
 ## ComputerCraft Support
 
@@ -29,7 +29,8 @@ Acts as a peripheral to allow programmatic control over all linked lights.
 
 ### Methods
 
-- `getLinkedLights()`: Returns a table of all linked lights indexed by their address (or default label). Each entry includes:
+- `getLinkedLights()`: Returns a table of all linked lights indexed by their address (or default label). Each entry
+  includes:
     - `index`: 1-based slot index in the director.
     - `x`, `y`, `z`: Coordinates of the light block.
     - `active`: `true` if the light block exists and is loaded.
@@ -39,11 +40,14 @@ Acts as a peripheral to allow programmatic control over all linked lights.
     - `brightness`: Current brightness level name (e.g., `"medium"`, `"high"`).
     - `color`: Current color name (e.g., `"white"`, `"red"`).
     - `address`: Custom address assigned to the light.
-- `setLight(target, options)`: Updates settings for a linked light by its 1-based slot index (`number`) or address (`string`). Returns `true` if found and updated.
+- `setLight(target, options)`: Updates settings for a linked light by its 1-based slot index (`number`) or address
+  (`string`). Returns `true` if found and updated.
     - `options` table supports:
         - `color`: Sets the light color (e.g., `"red"`, `"light_blue"`).
         - `brightness`: Sets the brightness level (number `0-4` or name e.g. `"low"`, `"medium"`, `"high"`, `"ultra"`).
         - `lit`: Controls the light source state (`true`/`false`, or `"on"`, `"off"`, `"release"`).
-- `setLights(bulkOptions)`: Updates multiple lights simultaneously using a table where keys are slot indices or addresses and values are `options` tables. Returns `true`.
-- `removeLight(target)`: Unlinks and removes a light by its 1-based slot index (`number`) or address (`string`). Returns `true` if removed.
+- `setLights(bulkOptions)`: Updates multiple lights simultaneously using a table where keys are slot indices or
+  addresses and values are `options` tables. Returns `true`.
+- `removeLight(target)`: Unlinks and removes a light by its 1-based slot index (`number`) or address (`string`). Returns
+  `true` if removed.
 - `clearLights()`: Removes all linked lights from the director.

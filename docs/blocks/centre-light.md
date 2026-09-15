@@ -1,4 +1,4 @@
-# Centre Light
+# @[centre_light_purple, centre_light_red] Centre Light
 
 ![Centre Light - a rod-like light that is placed in the middle of a block](/images/blocks/centre_light.png "Centre Light")
 
@@ -11,7 +11,7 @@ the [Light Blocks index](./index).
 
 ## Recipe
 
-![A crafting recipe for a centre light](/images/recipes/centre_light_recipe.png "Centre Light Recipe")
+<RecipeGrid recipe="centre_light" />
 
 ## Model Source File
 

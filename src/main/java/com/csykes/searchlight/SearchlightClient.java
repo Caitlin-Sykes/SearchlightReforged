@@ -357,6 +357,11 @@ public class SearchlightClient {
 
         private static boolean renderedIcons = false;
 
+        private static final java.util.Set<String> EXTRA_RENDER_ITEMS = java.util.Set.of(
+                "torch", "redstone", "iron_ingot", "iron_nugget", "copper_ingot", "glass", "stone",
+                "prismarine_shard", "prismarine_crystals", "glowstone_dust", "stick"
+        );
+
         @SubscribeEvent
         public static void onScreenOpening(Opening event) {
             if (!"true".equals(System.getProperty("searchlight.renderIcons")) || renderedIcons) {
@@ -399,7 +404,17 @@ public class SearchlightClient {
                     for (var entry : BuiltInRegistries.ITEM.entrySet()) {
                         ResourceLocation itemId = entry.getKey().location();
                         var item = entry.getValue();
-                        if (!itemId.getNamespace().equals(Searchlight.MODID) || item == AIR) {
+                        if (item == AIR) {
+                            continue;
+                        }
+
+                        boolean shouldRender = itemId.getNamespace().equals(Searchlight.MODID)
+                                || itemId.getNamespace().equals("dyenamics")
+                                || item instanceof net.minecraft.world.item.DyeItem
+                                || itemId.getPath().endsWith("_dye")
+                                || (itemId.getNamespace().equals("minecraft") && EXTRA_RENDER_ITEMS.contains(itemId.getPath()));
+
+                        if (!shouldRender) {
                             continue;
                         }
 

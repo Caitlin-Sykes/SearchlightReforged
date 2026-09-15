@@ -1,24 +1,19 @@
 package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
-import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
-import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
-import com.csykes.searchlight.utils.lighting.AddressableLight;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
-import com.csykes.searchlight.utils.lighting.LightRequest;
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
 import com.csykes.searchlight.features.edge_light.EdgeLightChainHelper;
 import com.csykes.searchlight.features.edge_light.EdgeLightChainHelper.PixelTarget;
 import com.csykes.searchlight.features.edge_light.EdgeLightData;
-import com.csykes.searchlight.features.corner_light.CornerLightBlock;
-import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.lighting_director.LightingDirectorBlockEntity;
 import com.csykes.searchlight.features.rod_light.RodLightChainHelper;
 import com.csykes.searchlight.features.rod_light.RodLightChainHelper.RodPixelTarget;
 import com.csykes.searchlight.features.rod_light.RodLightData;
+import com.csykes.searchlight.features.searchlight.SearchlightBlockEntity;
 import com.csykes.searchlight.features.wall_light.WallLightBlockEntity;
-import com.csykes.searchlight.utils.lighting.LightMode;
+import com.csykes.searchlight.utils.lighting.*;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import net.minecraft.core.BlockPos;
@@ -31,13 +26,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
 
@@ -527,12 +516,12 @@ public class LightingDirectorPeripheral implements IPeripheral {
      * Each entry is keyed by its address (or auto-generated index name) and provides detailed
      * status information including coordinates, active state, block type, lit state, light request,
      * brightness, color, mode, connected block count, pixel count, and 1-based link index.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * local lights = director.getLinkedLights()
      * for address, info in pairs(lights) do
-     *     print(string.format("%s: color=%s, brightness=%s, lit=%s", address, info.color, info.brightness, tostring(info.lit)))
+     * print(string.format("%s: color=%s, brightness=%s, lit=%s", address, info.color, info.brightness, tostring(info.lit)))
      * end
      * ```
      *
@@ -588,7 +577,7 @@ public class LightingDirectorPeripheral implements IPeripheral {
                     address = "light_" + (i + 1);
                 }
                 lightInfo.put("address", address);
-                
+
                 String key = address;
                 int suffix = 2;
                 while (result.containsKey(key)) {
@@ -608,7 +597,7 @@ public class LightingDirectorPeripheral implements IPeripheral {
     /**
      * Gets the total number of addressable sub-pixels for a targeted linked light fixture.
      * Applicable when the light is configured in PIXEL or SEPARATE mode.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * local count = director.getPixelCount("stage_left")
@@ -641,18 +630,18 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     /**
      * Retrieves pixel detail for each sub-pixel in a linked light fixture configured in PIXEL mode.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * local pixels = director.getPixels("stage_left")
      * for _, px in ipairs(pixels) do
-     *     print(string.format("Pixel %d: color=%s, lit=%s", px.index, px.color, tostring(px.lit)))
+     * print(string.format("Pixel %d: color=%s, lit=%s", px.index, px.color, tostring(px.lit)))
      * end
      * ```
      *
      * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture.
      * @return A list of tables containing pixel details: {@code index}, {@code x}, {@code y}, {@code z},
-     *         optional {@code edge}, {@code sub_pixel}, {@code color}, and {@code lit}. Empty list if light not found or not in PIXEL mode.
+     * optional {@code edge}, {@code sub_pixel}, {@code color}, and {@code lit}. Empty list if light not found or not in PIXEL mode.
      */
     @LuaFunction(mainThread = true)
     public final List<Map<String, Object>> getPixels(Object key) {
@@ -713,16 +702,16 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     /**
      * Sets the color and lit state of a single sub-pixel on a targeted PIXEL-mode linked fixture.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * director.setPixel("stage_left", 3, "red", true)
      * ```
      *
-     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture.
+     * @param key        The 1-based link index (integer) or assigned address (string) of the target light fixture.
      * @param pixelIndex The 1-based index of the sub-pixel in the fixture chain.
-     * @param color The color name to apply to the pixel (e.g. "white", "blue", "red").
-     * @param litOpt Optional boolean indicating whether the pixel is lit (defaults to true if omitted).
+     * @param color      The color name to apply to the pixel (e.g. "white", "blue", "red").
+     * @param litOpt     Optional boolean indicating whether the pixel is lit (defaults to true if omitted).
      * @return {@code true} if any target pixel was updated, {@code false} otherwise.
      */
     @LuaFunction(mainThread = true)
@@ -742,17 +731,17 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     /**
      * Sets multiple sub-pixels in bulk on a targeted PIXEL-mode linked fixture.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * director.setPixels("stage_left", {
-     *     [1] = "red",
-     *     [2] = { color = "blue", lit = true },
-     *     [3] = false
+     * [1] = "red",
+     * [2] = { color = "blue", lit = true },
+     * [3] = false
      * })
      * ```
      *
-     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture.
+     * @param key         The 1-based link index (integer) or assigned address (string) of the target light fixture.
      * @param pixelsTable A table mapping 1-based pixel indices to colors (string), booleans, or tables with {@code color} and {@code lit}.
      * @return {@code true} if any target pixel was updated, {@code false} otherwise.
      */
@@ -770,13 +759,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
     }
 
     /**
-     * Updates sub-pixels across multiple PIXEL-mode fixtures simultaneously in a single call.
-     *
+     * Updates sub-pixels across multiple pixel-mode fixtures simultaneously in a single call.
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * director.setPixelBatch({
-     *     stage_left = { [1] = "red", [2] = "blue" },
-     *     stage_right = { [1] = "yellow", [2] = "green" }
+     * stage_left = { [1] = "red", [2] = "blue" },
+     * stage_right = { [1] = "yellow", [2] = "green" }
      * })
      * ```
      *
@@ -803,21 +792,21 @@ public class LightingDirectorPeripheral implements IPeripheral {
     /**
      * Updates settings for a single linked light fixture or group matching the provided key.
      * Supported options in the options table:
-     *  - {@code "color"}: Color name string (e.g. "red", "cyan", "copper").
-     *  - {@code "brightness"}: Brightness number (0 to 4) or stage name ("off", "very_low", "low", "medium", "high").
-     *  - {@code "lit"}: Light request override: boolean (true/false) or string ("on", "off", "release").
-     *  - {@code "pixels"}: Sub-pixel table mapping pixel indices for PIXEL mode fixtures.
-     *
+     * - {@code "color"}: Color name string (e.g. "red", "cyan", "copper").
+     * - {@code "brightness"}: Brightness number (0 to 4) or stage name ("off", "very_low", "low", "medium", "high").
+     * - {@code "lit"}: Light request override: boolean (true/false) or string ("on", "off", "release").
+     * - {@code "pixels"}: Sub-pixel table mapping pixel indices for PIXEL mode fixtures.
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * director.setLight("stage_left", {
-     *     color = "cyan",
-     *     brightness = 4,
-     *     lit = true
+     * color = "cyan",
+     * brightness = 4,
+     * lit = true
      * })
      * ```
      *
-     * @param key The 1-based link index (integer) or assigned address (string) of the target light fixture(s).
+     * @param key     The 1-based link index (integer) or assigned address (string) of the target light fixture(s).
      * @param options A table of options to apply to the light fixture.
      * @return {@code true} if matching lights were found and updated, {@code false} otherwise.
      */
@@ -828,7 +817,7 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
         List<BlockPos> targetPositions = resolvePositions(key);
         if (targetPositions.isEmpty()) return false;
-        
+
         for (BlockPos targetPos : targetPositions) {
             processLightUpdate(world, targetPos, options);
         }
@@ -837,13 +826,13 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     /**
      * Updates settings for multiple linked light fixtures in a single bulk operation.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * director.setLights({
-     *     stage_left = { color = "red", brightness = 4, lit = true },
-     *     stage_right = { color = "blue", brightness = 3, lit = true },
-     *     hallway = { lit = false }
+     * stage_left = { color = "red", brightness = 4, lit = true },
+     * stage_right = { color = "blue", brightness = 3, lit = true },
+     * hallway = { lit = false }
      * })
      * ```
      *
@@ -872,12 +861,12 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     /**
      * Unlinks a light from this Lighting Director by its 1-based index or address.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * local removed = director.removeLight("stage_left")
      * if removed then
-     *     print("Light removed successfully")
+     * print("Light removed successfully")
      * end
      * ```
      *
@@ -912,7 +901,7 @@ public class LightingDirectorPeripheral implements IPeripheral {
 
     /**
      * Unlinks all currently connected lights from this Lighting Director.
-     *
+     * <p>
      * ```lua
      * local director = peripheral.find("lighting_director")
      * director.clearLights()
