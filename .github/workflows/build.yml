@@ -70,8 +70,6 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
           GALLIUM_DRIVER: "llvmpipe"
           MESA_LOADER_DRIVER_OVERRIDE: "llvmpipe"
-          ALSA_CARD: "Dummy"
-          AUDIODRIVER: "dummy"
 
       - name: Upload Docs Artifact
         uses: actions/upload-pages-artifact@v3.0.1
