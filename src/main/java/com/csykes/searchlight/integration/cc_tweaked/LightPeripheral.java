@@ -64,6 +64,11 @@ public class LightPeripheral implements IPeripheral {
      * If this block is part of a connected light fixture structure, all connected lights in the fixture
      * are updated accordingly.
      *
+     * ```lua
+     * local light = peripheral.find("light")
+     * light.setBrightness(4) -- set to maximum brightness
+     * ```
+     *
      * @param level The brightness level to set, clamped between 0 (very dim) and 4 (maximum brightness).
      */
     @LuaFunction(mainThread = true)
@@ -103,6 +108,12 @@ public class LightPeripheral implements IPeripheral {
     /**
      * Gets the current brightness level of the light.
      *
+     * ```lua
+     * local light = peripheral.find("light")
+     * local brightness = light.getBrightness()
+     * print("Current brightness: " .. brightness)
+     * ```
+     *
      * @return The brightness level identifier (0 to 4), or 0 if unaddressable.
      */
     @LuaFunction(mainThread = true)
@@ -116,6 +127,13 @@ public class LightPeripheral implements IPeripheral {
     /**
      * Sets the lit override state for this light fixture.
      * Updates the requested state on this light and all connected blocks in the fixture.
+     *
+     * ```lua
+     * local light = peripheral.find("light")
+     * light.setLit("ON")      -- force the light to turn on
+     * light.setLit("OFF")     -- force the light to turn off
+     * light.setLit("RELEASE") -- revert to redstone/default control
+     * ```
      *
      * @param lit The light state request: {@code ON} (force lit), {@code OFF} (force unlit), or {@code RELEASE} (revert to redstone/default control).
      */
@@ -145,6 +163,15 @@ public class LightPeripheral implements IPeripheral {
     /**
      * Checks whether the light block is currently emitting light.
      *
+     * ```lua
+     * local light = peripheral.find("light")
+     * if light.isLit() then
+     *     print("The light is currently ON")
+     * else
+     *     print("The light is currently OFF")
+     * end
+     * ```
+     *
      * @return {@code true} if the block's lit blockstate property is true, {@code false} otherwise.
      */
     @LuaFunction(mainThread = true)
@@ -160,6 +187,14 @@ public class LightPeripheral implements IPeripheral {
      * Changes the color of the light fixture to the specified color.
      * Depending on the fixture mode (FIXTURE vs SEPARATE), this will recolor either the entire
      * connected fixture or only this individual block while preserving addresses and settings.
+     *
+     * ```lua
+     * local light = peripheral.find("light")
+     * local success = light.setColor("cyan")
+     * if not success then
+     *     print("Failed to change color")
+     * end
+     * ```
      *
      * @param colorName The name of the color to change to (e.g. "white", "red", "cyan", or Dyenamics color names like "aquamarine").
      * @return {@code true} if the color change was successful, {@code false} otherwise.
@@ -222,6 +257,12 @@ public class LightPeripheral implements IPeripheral {
 
     /**
      * Gets the current color name of this light block.
+     *
+     * ```lua
+     * local light = peripheral.find("light")
+     * local color = light.getColor()
+     * print("Light color: " .. color)
+     * ```
      *
      * @return The color name (e.g. "white", "red", "aquamarine", or wall material like "iron"), or "unknown" if undetermined.
      */
@@ -514,6 +555,12 @@ public class LightPeripheral implements IPeripheral {
      * Gets the total number of addressable sub-pixels available in this fixture when in PIXEL mode.
      * For edge lights each block segment has multiple sub-pixels along each edge; rod fixtures have sub-pixels along the rod.
      *
+     * ```lua
+     * local light = peripheral.find("light")
+     * local count = light.getPixelCount()
+     * print("Total sub-pixels: " .. count)
+     * ```
+     *
      * @return The number of controllable sub-pixels in the fixture chain, or 1 if not in PIXEL mode.
      */
     @LuaFunction(mainThread = true)
@@ -532,6 +579,14 @@ public class LightPeripheral implements IPeripheral {
 
     /**
      * Retrieves information for all sub-pixels in this fixture chain when in PIXEL mode.
+     *
+     * ```lua
+     * local light = peripheral.find("light")
+     * local pixels = light.getPixels()
+     * for _, px in ipairs(pixels) do
+     *     print(string.format("Pixel %d: color=%s, lit=%s", px.index, px.color, tostring(px.lit)))
+     * end
+     * ```
      *
      * @return A list of tables describing each pixel with properties:
      *         {@code index} (1-based), {@code x}, {@code y}, {@code z}, optional {@code edge},
@@ -592,6 +647,11 @@ public class LightPeripheral implements IPeripheral {
     /**
      * Sets the color and lit state of a single sub-pixel by index in a PIXEL-mode fixture.
      *
+     * ```lua
+     * local light = peripheral.find("light")
+     * light.setPixel(1, "red", true)
+     * ```
+     *
      * @param pixelIndex The 1-based index of the pixel in the fixture chain.
      * @param color The color name to apply to the pixel (e.g. "white", "blue", "red").
      * @param litOpt Optional boolean indicating whether the pixel is lit (defaults to true if omitted).
@@ -608,6 +668,15 @@ public class LightPeripheral implements IPeripheral {
     /**
      * Updates multiple sub-pixels in bulk for a PIXEL-mode fixture.
      *
+     * ```lua
+     * local light = peripheral.find("light")
+     * light.setPixels({
+     *     [1] = "red",
+     *     [2] = { color = "blue", lit = true },
+     *     [3] = false -- unlit
+     * })
+     * ```
+     *
      * @param pixelsTable A table mapping 1-based pixel indices to color strings, booleans, or tables with {@code color} and {@code lit}.
      * @return {@code true} if pixels were successfully updated, {@code false} otherwise.
      */
@@ -619,6 +688,11 @@ public class LightPeripheral implements IPeripheral {
 
     /**
      * Sets the color and lit state of an entire edge on an edge light block.
+     *
+     * ```lua
+     * local light = peripheral.find("light")
+     * light.setEdge("north", "yellow", true)
+     * ```
      *
      * @param edgeName The horizontal direction of the edge ("north", "south", "east", or "west").
      * @param color The color name to apply to the edge.
@@ -644,6 +718,12 @@ public class LightPeripheral implements IPeripheral {
 
     /**
      * Retrieves the color and lit state of a specific edge on an edge light block.
+     *
+     * ```lua
+     * local light = peripheral.find("light")
+     * local edge = light.getEdge("north")
+     * print(string.format("Edge north: color=%s, lit=%s", edge.color, tostring(edge.lit)))
+     * ```
      *
      * @param edgeName The horizontal direction of the edge ("north", "south", "east", or "west").
      * @return A table with {@code color} and {@code lit} properties, or an empty table if invalid direction or not an edge light block.

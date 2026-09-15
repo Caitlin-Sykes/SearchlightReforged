@@ -63,7 +63,44 @@ public class MarkdownService {
         return sb.toString();
     }
 
+    private static final java.util.regex.Pattern CODE_BLOCK_PATTERN =
+            java.util.regex.Pattern.compile("```[a-zA-Z0-9_-]*\\R[\\s\\S]*?\\R```");
+
     private static String escapeMarkdown(String value) {
-        return value.replace("|", "\\|").replaceAll("\\R\\s+", "\n").trim().replaceAll("\\{@code\\s+([^}]+)\\}", "`$1`").replace("<", "&lt;").replace(">", "&gt;").replace("(", "&#40;").replace(")", "&#41;").replace("[", "&#91;").replace("]", "&#93;").replace("{", "&#123;").replace("}", "&#125;").replace(":", "&#58;").replace("?", "&#63;");
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+
+        java.util.List<String> codeBlocks = new java.util.ArrayList<>();
+        java.util.regex.Matcher matcher = CODE_BLOCK_PATTERN.matcher(value);
+        StringBuilder placeholderBuffer = new StringBuilder();
+
+        while (matcher.find()) {
+            codeBlocks.add(matcher.group());
+            matcher.appendReplacement(placeholderBuffer, "%%CODEBLOCK_" + (codeBlocks.size() - 1) + "%%");
+        }
+        matcher.appendTail(placeholderBuffer);
+
+        String escaped = placeholderBuffer.toString()
+                .replace("|", "\\|")
+                .replaceAll("\\R\\s+", "\n")
+                .trim()
+                .replaceAll("\\{@code\\s+([^}]+)\\}", "`$1`")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("(", "&#40;")
+                .replace(")", "&#41;")
+                .replace("[", "&#91;")
+                .replace("]", "&#93;")
+                .replace("{", "&#123;")
+                .replace("}", "&#125;")
+                .replace(":", "&#58;")
+                .replace("?", "&#63;");
+
+        for (int i = 0; i < codeBlocks.size(); i++) {
+            escaped = escaped.replace("%%CODEBLOCK_" + i + "%%", codeBlocks.get(i));
+        }
+
+        return escaped;
     }
 }
