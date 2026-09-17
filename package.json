@@ -1,0 +1,14 @@
+{
+  "name": "searchlight-reforged-docs",
+  "version": "1.0.0A",
+  "license": "GNU LGPL3",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vite-plugin-image-optimizer": "^2.0.3",
+    "vitepress": "2.0.0-alpha.20"
+  }
+}

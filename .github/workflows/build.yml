@@ -1,30 +1,103 @@
-name: Build
+name: Build and Release
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
         with:
           fetch-depth: 0
-          fetch-tags: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '25'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Setup JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.6.0
         with:
           java-version: '21'
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6.2.0
 
-      # This is needed to be able to run ./gradlew below
-      # You can run `git update-index --chmod +x gradlew` then remove this step.
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      - name: Update version properties
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION_CLEAN=$(echo "${{ github.ref_name }}" | sed 's/^[vV]//')
+          sed -i -E "s/(mod_version=).*/\1${VERSION_CLEAN}/g" gradle.properties
+          sed -i -E "s/(\"version\": \").*/\1${VERSION_CLEAN}\",/g" package.json
+          
+          # Extract NeoForge version from gradle.properties
+          NEO_VERSION=$(grep 'neo_version=' gradle.properties | cut -d'=' -f2 | tr -d '\r')
+          
+          # Update version and NeoForge badges in README.md
+          sed -i -E "s|(https://img.shields.io/badge/version-)[vV]?[0-9]+[^-]*|\1${{ github.ref_name }}|g" README.md
+          sed -i -E "s|(https://img.shields.io/badge/NeoForge-)[0-9]+\.[0-9]+\.[0-9]+[^-]*|\1${NEO_VERSION}|g" README.md
+
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Install Headless Display & Software OpenGL (Xvfb & Mesa)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libosmesa6 mesa-utils alsa-utils libasound2-dev
+
+      - name: Build Docs
+        run: xvfb-run --auto-servernum --server-args="-screen 0 320x240x24" ./gradlew generateDocs
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          GALLIUM_DRIVER: "llvmpipe"
+          MESA_LOADER_DRIVER_OVERRIDE: "llvmpipe"
+
+      - name: Upload Docs Artifact
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: docs/.vitepress/dist
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
+
+      - name: Commit and push version bump
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add gradle.properties README.md package.json
+          git commit -m "chore: bump version to ${{ github.ref_name }} [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/libs/*.jar
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

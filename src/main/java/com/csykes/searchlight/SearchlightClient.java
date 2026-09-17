@@ -1,65 +1,444 @@
 package com.csykes.searchlight;
 
+import com.csykes.searchlight.features.centre_light.CentreLightBlock;
+import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
+import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
+import com.csykes.searchlight.features.corner_light.CornerLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlock;
+import com.csykes.searchlight.features.edge_light.EdgeLightBlockRenderer;
+import com.csykes.searchlight.features.lighting_director.LightAddressScreen;
+import com.csykes.searchlight.features.lighting_director.LightingDirectorScreen;
+import com.csykes.searchlight.features.lighting_director.LightingLinkerCardItem;
+import com.csykes.searchlight.features.searchlight.SearchlightBlock;
 import com.csykes.searchlight.features.searchlight.SearchlightBlockRenderer;
+import com.csykes.searchlight.integration.dyenamics.DyenamicHelper;
+import com.csykes.searchlight.utils.SearchlightUtil;
+import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.BrightnessStage;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.fml.common.Mod;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent.Opening;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredItem;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static net.minecraft.world.item.DyeColor.byName;
+import static net.minecraft.world.item.Items.AIR;
+
+import com.csykes.searchlight.utils.BlockItemRendererUtil;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+
+import java.io.File;
 
 @Mod(value = Searchlight.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class SearchlightClient {
+
     public SearchlightClient(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
     }
 
-    @SubscribeEvent
-    static void onClientSetup(FMLClientSetupEvent event) {
-        Searchlight.LOGGER.info("HELLO FROM CLIENT SETUP");
-        Searchlight.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
-    }
+
 
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Searchlight.SEARCHLIGHT_BE.get(), SearchlightBlockRenderer::new);
+        event.registerBlockEntityRenderer(Searchlight.EDGE_LIGHT_BE.get(), EdgeLightBlockRenderer::new);
+        event.registerBlockEntityRenderer(Searchlight.CORNER_LIGHT_BE.get(), com.csykes.searchlight.features.rod_light.RodLightBlockRenderer::new);
+        event.registerBlockEntityRenderer(Searchlight.CENTRE_LIGHT_BE.get(), com.csykes.searchlight.features.rod_light.RodLightBlockRenderer::new);
     }
 
-//    @SubscribeEvent
-//    static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
-//        event.register((state, world, pos, tintIndex) -> {
-//            if (tintIndex == 0 && world != null && pos != null) {
-//                BlockPos targetPos = pos;
-//                AttachFace face = state.getValue(BlockStateProperties.ATTACH_FACE);
-//
-//                if (face == AttachFace.CEILING) {
-//                    targetPos = pos.above();
-//                } else if (face == AttachFace.FLOOR) {
-//                    targetPos = pos.below();
-//                } else {
-//                    Direction wallFacing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-//                    targetPos = pos.relative(wallFacing.getOpposite());
-//                }
-//
-//                BlockState targetState = world.getBlockState(targetPos);
-//                int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
-//                if (color == -1) {
-//                    return targetState.getMapColor(world, targetPos).col;
-//                }
-//                return color;
-//            }
-//            return -1;
-//        }, Searchlight.CORNER_LIGHT.get());
-//    }
+    @SubscribeEvent
+    static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+        for (DeferredBlock<Block> blockHolder : Searchlight.WALL_LIGHTS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    String name = Searchlight.WALL_LIGHTS.entrySet().stream()
+                            .filter(e -> e.getValue().get() == state.getBlock())
+                            .map(Entry::getKey)
+                            .findFirst()
+                            .orElse("white");
+
+                    DyeColor standard = byName(name, null);
+                    if (standard != null) return standard.getTextureDiffuseColor();
+
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(name);
+                    }
+                }
+                return -1;
+            }, blockHolder.get());
+        }
+
+        for (DeferredBlock<Block> blockHolder : Searchlight.CORNER_LIGHTS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+
+                if (tintIndex == 0) {
+                    if (world != null && pos != null && world.getBlockEntity(pos) instanceof com.csykes.searchlight.features.wall_light.WallLightBlockEntity wbe && wbe.hasRodLightData()) {
+                        String avgColor = wbe.getRodLightData().getAverageColor(state);
+                        if (avgColor != null) {
+                            return com.csykes.searchlight.utils.lighting.ColorAveragingHelper.getRgbForColor(avgColor);
+                        }
+                    }
+                    // Read directly from the block instance cast
+                    if (state.getBlock() instanceof CornerLightBlock cornerBlock) {
+                        if (cornerBlock.getBlockColor() != null) {
+                            return cornerBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && cornerBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(cornerBlock.getDyenamicColor());
+                        }
+                    }
+                    return -1;
+                }
+
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
+                }
+
+                return -1;
+            }, blockHolder.get());
+        }
+        for (DeferredBlock<Block> centreBlockHolder : Searchlight.CENTRE_LIGHTS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+
+                if (tintIndex == 0) {
+                    if (world != null && pos != null && world.getBlockEntity(pos) instanceof com.csykes.searchlight.features.wall_light.WallLightBlockEntity wbe && wbe.hasRodLightData()) {
+                        String avgColor = wbe.getRodLightData().getAverageColor(state);
+                        if (avgColor != null) {
+                            return com.csykes.searchlight.utils.lighting.ColorAveragingHelper.getRgbForColor(avgColor);
+                        }
+                    }
+                    // Read directly from the block instance cast
+                    if (state.getBlock() instanceof CentreLightBlock centreLightBlock) {
+                        if (centreLightBlock.getBlockColor() != null) {
+                            return centreLightBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && centreLightBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(centreLightBlock.getDyenamicColor());
+                        }
+                    }
+                    return -1;
+                }
+
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
+                }
+
+                return -1;
+            }, centreBlockHolder.get());
+        }
+
+        for (DeferredBlock<Block> colourLampHolder : Searchlight.COLOUR_LAMPS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    if (state.getBlock() instanceof ColourLampBlock colourLampBlock) {
+                        if (colourLampBlock.getBlockColor() != null) {
+                            return colourLampBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && colourLampBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(colourLampBlock.getDyenamicColor());
+                        }
+                    }
+                }
+                return -1;
+            }, colourLampHolder.get());
+        }
+
+        for (DeferredBlock<Block> colourLampSlabHolder : Searchlight.COLOUR_SLAB_LAMPS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    if (state.getBlock() instanceof ColourLampSlabBlock colourLampSlabBlock) {
+                        if (colourLampSlabBlock.getBlockColor() != null) {
+                            return colourLampSlabBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && colourLampSlabBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(colourLampSlabBlock.getDyenamicColor());
+                        }
+                    }
+                }
+                return -1;
+            }, colourLampSlabHolder.get());
+        }
+        for (DeferredBlock<Block> edgeBlockHolder : Searchlight.EDGE_LIGHTS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+
+                if (tintIndex == 0) {
+                    if (world != null && pos != null && world.getBlockEntity(pos) instanceof com.csykes.searchlight.features.wall_light.WallLightBlockEntity wbe && wbe.hasEdgeLightData()) {
+                        String avgColor = wbe.getEdgeLightData().getAverageColor(state);
+                        if (avgColor != null) {
+                            return com.csykes.searchlight.utils.lighting.ColorAveragingHelper.getRgbForColor(avgColor);
+                        }
+                    }
+                    // Read directly from the block instance cast
+                    if (state.getBlock() instanceof EdgeLightBlock edgeLightBlock) {
+                        if (edgeLightBlock.getBlockColor() != null) {
+                            return edgeLightBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && edgeLightBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(edgeLightBlock.getDyenamicColor());
+                        }
+                    }
+                    return -1;
+                }
+
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
+                }
+
+                return -1;
+            }, edgeBlockHolder.get());
+        }
+
+        for (DeferredBlock<Block> blockHolder : Searchlight.SEARCHLIGHTS.values()) {
+            event.register((state, world, pos, tintIndex) -> {
+
+                if (tintIndex == 0) {
+                    if (state.getBlock() instanceof SearchlightBlock searchlightBlock) {
+                        if (searchlightBlock.getBlockColor() != null) {
+                            return searchlightBlock.getBlockColor().getTextureDiffuseColor();
+                        }
+                        if (ModList.get().isLoaded("dyenamics") && searchlightBlock.getDyenamicColor() != null) {
+                            return DyenamicHelper.getDyenamicColor(searchlightBlock.getDyenamicColor());
+                        }
+                    }
+                    return -1;
+                }
+
+                if (tintIndex == 1) {
+                    return getBackingFrameColor(state, world, pos, event);
+                }
+
+                return -1;
+            }, blockHolder.get());
+        }
+    }
+
+    private static int getBackingFrameColor(BlockState state, BlockAndTintGetter world, BlockPos pos, RegisterColorHandlersEvent.Block event) {
+        if (world != null && pos != null) {
+            Direction facing = state.getValue(BlockStateProperties.FACING);
+            BlockPos targetPos = pos.relative(facing.getOpposite());
+            BlockState targetState = world.getBlockState(targetPos);
+
+            int color = event.getBlockColors().getColor(targetState, world, targetPos, 0);
+            if (color == -1) {
+                return targetState.getMapColor(world, targetPos).col;
+            }
+            return color;
+        }
+        return -1;
+    }
+
+
+    @SubscribeEvent
+    static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        registerColoredItemMap(event, Searchlight.WALL_LIGHT_ITEMS);
+        registerColoredItemMap(event, Searchlight.CORNER_LIGHTS_ITEMS);
+        registerColoredItemMap(event, Searchlight.COLOUR_LAMP_ITEMS);
+        registerColoredItemMap(event, Searchlight.CENTRE_LIGHTS_ITEMS);
+        registerColoredItemMap(event, Searchlight.EDGE_LIGHTS_ITEMS);
+        registerColoredItemMap(event, Searchlight.SEARCHLIGHT_ITEMS);
+        registerColoredItemMap(event, Searchlight.COLOUR_SLAB_ITEMS);
+    }
+
+    private static void registerColoredItemMap(RegisterColorHandlersEvent.Item event, Map<String, ? extends DeferredItem<? extends Item>> itemMap) {
+        for (Entry<String, ? extends DeferredItem<? extends Item>> entry : itemMap.entrySet()) {
+            String colorName = entry.getKey();
+            event.register((stack, tintIndex) -> {
+                if (tintIndex == 0) {
+                    DyeColor color = byName(colorName, null);
+                    if (color != null) return color.getTextureDiffuseColor();
+                    if (ModList.get().isLoaded("dyenamics")) {
+                        return DyenamicHelper.getDyenamicColor(colorName);
+                    }
+                }
+                return -1;
+            }, entry.getValue().get());
+        }
+    }
+
+    public static void openLightAddressScreen(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new LightAddressScreen(pos));
+    }
+
+    public static void openLightingDirectorScreen(BlockPos pos) {
+        Minecraft.getInstance().setScreen(new LightingDirectorScreen(pos));
+    }
+
+    public static boolean displayBeams() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return false;
+        return player.isHolding(stack -> stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof SearchlightBlock);
+    }
+
+    @EventBusSubscriber(modid = Searchlight.MODID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+    public static class GameClientEvents {
+        @SubscribeEvent
+        public static void onItemTooltip(ItemTooltipEvent event) {
+            ItemStack stack = event.getItemStack();
+            if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractLightBlock) {
+                BrightnessStage brightness = SearchlightUtil.getBrightness(stack);
+                event.getToolTip().add(Component.translatable("searchlight.tooltip.brightness",
+                        Component.translatable("searchlight.brightness." + brightness.getSerializedName()),
+                        brightness.getLightLevel()).withStyle(ChatFormatting.GRAY));
+            }
+        }
+
+        @SubscribeEvent
+        public static void onRenderLevelStage(RenderLevelStageEvent event) {
+            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+                Minecraft mc = Minecraft.getInstance();
+                Player player = mc.player;
+                if (player == null) return;
+
+                ItemStack stack = player.getMainHandItem();
+                if (!(stack.getItem() instanceof LightingLinkerCardItem)) {
+                    stack = player.getOffhandItem();
+                }
+                if (!(stack.getItem() instanceof LightingLinkerCardItem)) {
+                    return;
+                }
+
+                CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+                if (customData != null) {
+                    CompoundTag tag = customData.copyTag();
+                    if (tag.contains("director_x") && tag.contains("director_y") && tag.contains("director_z")) {
+                        int dx = tag.getInt("director_x");
+                        int dy = tag.getInt("director_y");
+                        int dz = tag.getInt("director_z");
+                        BlockPos directorPos = new BlockPos(dx, dy, dz);
+
+                        String currentDim = player.level().dimension().location().toString();
+                        String storedDim = tag.getString("director_dim");
+                        if (currentDim.equals(storedDim)) {
+                            renderDirectorHighlight(event, directorPos);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static boolean renderedIcons = false;
+
+        @SubscribeEvent
+        public static void onScreenOpening(Opening event) {
+            if (!"true".equals(System.getProperty("searchlight.renderIcons")) || renderedIcons) {
+                return;
+            }
+
+            if (event.getScreen() instanceof TitleScreen) {
+                triggerItemIconRendering();
+            }
+        }
+
+        @SubscribeEvent
+        public static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+            if (!"true".equals(System.getProperty("searchlight.renderIcons")) || renderedIcons) {
+                return;
+            }
+
+            Minecraft mc = Minecraft.getInstance();
+            // If the loading overlay is gone or a screen is active, initial reload is finished
+            if (mc.getOverlay() == null && (mc.screen != null || mc.level != null)) {
+                triggerItemIconRendering();
+            }
+        }
+
+        private static synchronized void triggerItemIconRendering() {
+            if (renderedIcons) {
+                return;
+            }
+            renderedIcons = true;
+            Minecraft mc = Minecraft.getInstance();
+            mc.tell(() -> {
+                try {
+                    String outDirPath = System.getProperty("searchlight.renderOutputDir", "build/rendered_icons");
+                    File outDir = new File(outDirPath);
+                    outDir.mkdirs();
+
+                    Searchlight.LOGGER.info("Starting automated item icon rendering to {}", outDir.getAbsolutePath());
+
+                    int renderedCount = 0;
+                    for (var entry : BuiltInRegistries.ITEM.entrySet()) {
+                        ResourceLocation itemId = entry.getKey().location();
+                        var item = entry.getValue();
+                        if (!itemId.getNamespace().equals(Searchlight.MODID) || item == AIR) {
+                            continue;
+                        }
+
+                        try {
+                            File outFile = new File(outDir, itemId.getPath() + ".png");
+                            BlockItemRendererUtil.renderItemToPng(itemId, outFile, 64, 64);
+                            renderedCount++;
+                            Searchlight.LOGGER.info("Rendered icon ({}/{}): {}", renderedCount, itemId, outFile.getName());
+                        } catch (Exception itemEx) {
+                            Searchlight.LOGGER.error("Failed to render icon for item {}", itemId, itemEx);
+                        }
+                    }
+
+                    Searchlight.LOGGER.info("Finished rendering {} item icons to {}", renderedCount, outDir.getAbsolutePath());
+                } catch (Exception e) {
+                    Searchlight.LOGGER.error("Failed to render item icons", e);
+                } finally {
+                    mc.stop();
+                }
+            });
+        }
+
+        private static void renderDirectorHighlight(RenderLevelStageEvent event, BlockPos pos) {
+            Minecraft mc = Minecraft.getInstance();
+            Vec3 camPos = event.getCamera().getPosition();
+            double x = pos.getX() - camPos.x;
+            double y = pos.getY() - camPos.y;
+            double z = pos.getZ() - camPos.z;
+
+            PoseStack poseStack = event.getPoseStack();
+            poseStack.pushPose();
+            poseStack.translate(x, y, z);
+
+            VertexConsumer buffer = mc.renderBuffers().bufferSource().getBuffer(RenderType.lines());
+
+            LevelRenderer.renderLineBox(poseStack, buffer, 0, 0, 0, 1, 1, 1, 1.0F, 1.0F, 0.0F, 1.0F);
+
+            poseStack.popPose();
+            mc.renderBuffers().bufferSource().endBatch(RenderType.lines());
+        }
+    }
 }

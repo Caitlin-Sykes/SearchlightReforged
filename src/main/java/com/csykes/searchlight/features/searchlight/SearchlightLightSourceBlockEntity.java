@@ -6,6 +6,7 @@ import com.csykes.searchlight.utils.SearchlightUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SearchlightLightSourceBlockEntity extends BlockEntity {
     public @Nullable BlockPos searchlightBlockPos;
+    public boolean suppressMovement = false;
 
     public SearchlightLightSourceBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(Searchlight.LIGHT_SOURCE_BE.get(), blockPos, blockState);
@@ -30,6 +32,24 @@ public class SearchlightLightSourceBlockEntity extends BlockEntity {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider provider) {
         return saveCustomOnly(provider);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider lookupProvider) {
+        super.onDataPacket(net, pkt, lookupProvider);
+        if (level != null && level.isClientSide) {
+            level.getLightEngine().checkBlock(worldPosition);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
+        super.handleUpdateTag(tag, lookupProvider);
+        if (level != null && level.isClientSide) {
+            level.getLightEngine().checkBlock(worldPosition);
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 
     @Override
@@ -52,6 +72,8 @@ public class SearchlightLightSourceBlockEntity extends BlockEntity {
     }
 
     public void moveLightSource() {
+        if (suppressMovement)
+            return;
         if (level == null || level.isClientSide || searchlightBlockPos == null)
             return;
         SearchlightUtil.castBlockEntity(level.getBlockEntity(searchlightBlockPos), searchlightBlockPos, (SearchlightBlockEntity searchlightBlockEntity) -> {
@@ -61,12 +83,16 @@ public class SearchlightLightSourceBlockEntity extends BlockEntity {
     }
 
     public @Nullable BlockPos calculateLightSourcePosition(@NotNull Vec3 direction) {
+        if (direction.equals(Vec3.ZERO) || direction.lengthSqr() < 1E-6) {
+            return null;
+        }
         direction = direction.normalize();
         MutableVector3d currentBlockPosD = new MutableVector3d(getBlockPos().getX() + 0.5, getBlockPos().getY() + 0.5, getBlockPos().getZ() + 0.5);
         BlockPos.MutableBlockPos currentBlockPos = new BlockPos.MutableBlockPos(currentBlockPosD.x, currentBlockPosD.y, currentBlockPosD.z);
         BlockPos.MutableBlockPos prevBlockPos = new BlockPos.MutableBlockPos(0, 0, 0);
 
-        while (true) {
+        int safetyCount = 0;
+        while (safetyCount++ < 512) {
             prevBlockPos.set(currentBlockPos);
             currentBlockPosD.add(direction);
             currentBlockPos.set(currentBlockPosD.x, currentBlockPosD.y, currentBlockPosD.z);
@@ -86,5 +112,6 @@ public class SearchlightLightSourceBlockEntity extends BlockEntity {
             if (level.getBlockState(currentBlockPos).isAir())
                 return SearchlightUtil.moveAwayFromSurfaces(level, currentBlockPos);
         }
+        return null;
     }
 }

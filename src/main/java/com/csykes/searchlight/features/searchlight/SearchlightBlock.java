@@ -1,8 +1,11 @@
 package com.csykes.searchlight.features.searchlight;
 
 import com.csykes.searchlight.Searchlight;
+import com.csykes.searchlight.SearchlightClient;
 import com.csykes.searchlight.utils.SearchlightUtil;
-import com.csykes.searchlight.utils.lighting.AbstractLightBlock;
+import com.csykes.searchlight.utils.lighting.AbstractColoredLightBlock;
+import com.mojang.serialization.MapCodec;
+import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -12,31 +15,69 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.csykes.searchlight.utils.lighting.BrightnessStage;
 
-public class SearchlightBlock extends AbstractLightBlock implements EntityBlock {
-    public SearchlightBlock(@NotNull Properties properties) {
-        super(properties);
+@Getter
+public class SearchlightBlock extends AbstractColoredLightBlock implements EntityBlock {
+
+    public SearchlightBlock(@NotNull Properties properties, DyeColor color) {
+        this(properties, color, null);
+    }
+
+    public SearchlightBlock(@NotNull Properties properties, String dyenamicColor) {
+        this(properties, null, dyenamicColor);
+    }
+
+    private SearchlightBlock(Properties properties, DyeColor blockColor, String dyenamicColor) {
+        super(properties, blockColor, dyenamicColor);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
                 .setValue(FACE, AttachFace.WALL)
                 .setValue(LIT, true)
-                .setValue(BRIGHTNESS, BrightnessStage.MEDIUM));
+                .setValue(COLOR, blockColor != null ? blockColor : DyeColor.WHITE));
+    }
+
+    public SearchlightBlock(@NotNull Properties properties) {
+        this(properties, DyeColor.WHITE, null);
+    }
+
+    @Override
+    public BlockEntityType<?> getBlockEntityType() {
+        return Searchlight.SEARCHLIGHT_BE.get();
+    }
+
+    @Override
+    public @Nullable Block getBlockForColor(String colorKey) {
+        DeferredBlock<Block> holder = Searchlight.SEARCHLIGHTS.get(colorKey);
+        return holder != null ? holder.get() : null;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(FACE);
+        builder.add(FACING);
+        builder.add(COLOR);
     }
 
     @Override
@@ -53,12 +94,12 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
     public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
         if (!state.is(newState.getBlock())) {
             if (!world.isClientSide) {
-                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity be) -> be.deleteLightSource());
+                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity be) -> be.deleteLightSource());
             }
             super.onRemove(state, world, pos, newState, isMoving);
         } else if (state.getValue(LIT) != newState.getValue(LIT)) {
             if (!world.isClientSide) {
-                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity be) -> {
+                SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity be) -> {
                     if (newState.getValue(LIT)) {
                         be.turnOnLightSource();
                     } else {
@@ -73,7 +114,7 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         super.setPlacedBy(world, pos, state, placer, itemStack);
         if (!world.isClientSide) {
-            SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity be) -> {
+            SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity be) -> {
                 if (be.getLightSourcePos() == null) {
                     updateSearchLight(world, pos, state, placer);
                 }
@@ -83,6 +124,10 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (player.isShiftKeyDown()) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         ItemInteractionResult result = super.useItemOn(stack, state, world, pos, player, hand, hit);
         if (result.consumesAction()) return result;
 
@@ -95,6 +140,14 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (ModList.get().isLoaded("computercraft") && player.isShiftKeyDown()) {
+            if (world.isClientSide) {
+                SearchlightClient.openLightAddressScreen(pos);
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.SUCCESS;
+        }
+
         if (!world.isClientSide) {
             updateSearchLight(world, pos, state, player);
             world.playSound(null, pos, SoundEvents.NETHERITE_BLOCK_PLACE, SoundSource.BLOCKS, 1, 0.4f);
@@ -103,7 +156,7 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
     }
 
     protected void updateSearchLight(@NotNull Level world, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable LivingEntity placer) {
-        SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, (SearchlightBlockEntity blockEntity) -> {
+        SearchlightUtil.castBlockEntity(world.getBlockEntity(pos), pos, SearchlightBlockEntity.class, (SearchlightBlockEntity blockEntity) -> {
             Vec3 direction;
             if (placer != null) {
                 direction = placer.getLookAngle().scale(-1);
@@ -114,10 +167,10 @@ public class SearchlightBlock extends AbstractLightBlock implements EntityBlock 
         });
     }
 
-    public static final com.mojang.serialization.MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
+    public static final MapCodec<SearchlightBlock> CODEC = simpleCodec(SearchlightBlock::new);
 
     @Override
-    protected com.mojang.serialization.MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
+    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 }

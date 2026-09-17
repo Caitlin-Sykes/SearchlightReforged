@@ -1,0 +1,198 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "face": "floor",
+        "north": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_bottom",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "south": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_bottom",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "east": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_bottom",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "west": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_bottom",
+        "x": 0,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "north": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_bottom",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "south": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_bottom",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "east": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_bottom",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "west": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_bottom",
+        "x": 0,
+        "y": 270
+      }
+    },
+
+
+    {
+      "when": {
+        "face": "ceiling",
+        "north": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_top",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "south": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_top",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "east": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_top",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "west": "true",
+        "lit": "false"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_top",
+        "x": 0,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "north": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_top",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "south": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_top",
+        "x": 0,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "east": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_top",
+        "x": 0,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "west": "true",
+        "lit": "true"
+      },
+      "apply": {
+        "model": "searchlight:block/edge_light_on_top",
+        "x": 0,
+        "y": 270
+      }
+    }
+  ]
+}

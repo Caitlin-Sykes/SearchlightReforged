@@ -38,3 +38,13 @@ run/
 **/src/generated/**/.cache/
 repo/
 !**/src/**/repo/
+
+### Documentation ###
+/node_modules/
+.vitepress/dist
+**/.vitepress/.temp
+**/.vitepress/cache
+/docs/.vitepress/dist/
+/.gradle_home/
+/logs/
+/docs/generated/

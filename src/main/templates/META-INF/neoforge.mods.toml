@@ -36,7 +36,7 @@ displayName="${mod_name}" #mandatory
 credits="LizardOfOz" 
 
 # The authors of the mod, displayed in the mod UI (optional)
-authors="Cait Sykes (Porter), LizardOfOz (Original)"
+authors="Cait Sykes (Porter), LizardOfOz (Original), Adam Mathieson (Breaker)"
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
@@ -52,13 +52,6 @@ Adds Searchlight and Wall Lights
     side="BOTH"
 
 [[dependencies.${mod_id}]]
-    modId="architectury"
-    type="required"
-    versionRange="[${architectury_version},)"
-    ordering="AFTER"
-    side="BOTH"
-
-[[dependencies.${mod_id}]]
     modId="minecraft"
     type="required"
     versionRange="${minecraft_version_range}"
@@ -69,6 +62,13 @@ Adds Searchlight and Wall Lights
     modId="computercraft"
     type="optional"
     versionRange="[1.120.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="dyenamics"
+    type="optional"
+    versionRange="[1.21.1,)"
     ordering="AFTER"
     side="BOTH"
 

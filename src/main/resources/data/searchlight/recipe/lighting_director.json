@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "lighting_director",
+  "category": "redstone",
+  "pattern": [
+    "XRX",
+    "XZX",
+    "ABC"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:red_dye"
+    },
+    "C": {
+      "item": "minecraft:purple_dye"
+    },
+    "B": {
+      "item": "minecraft:blue_dye"
+    },
+    "X": {
+      "tag": "c:ingots/copper"
+    },
+    "R": {
+      "tag": "c:glass_blocks"
+    },
+    "Z": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "searchlight:lighting_director",
+    "count": 1
+  }
+}

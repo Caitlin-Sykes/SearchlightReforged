@@ -1,0 +1,110 @@
+{
+  "variants": {
+    "face=ceiling,facing=east,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180,
+      "y": 270
+    },
+    "face=ceiling,facing=east,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180,
+      "y": 270
+    },
+    "face=ceiling,facing=north,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180,
+      "y": 180
+    },
+    "face=ceiling,facing=north,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180,
+      "y": 180
+    },
+    "face=ceiling,facing=south,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180
+    },
+    "face=ceiling,facing=south,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180
+    },
+    "face=ceiling,facing=west,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180,
+      "y": 90
+    },
+    "face=ceiling,facing=west,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "x": 180,
+      "y": 90
+    },
+    "face=floor,facing=east,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "y": 90
+    },
+    "face=floor,facing=east,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "y": 90
+    },
+    "face=floor,facing=north,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@"
+    },
+    "face=floor,facing=north,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@"
+    },
+    "face=floor,facing=south,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "y": 180
+    },
+    "face=floor,facing=south,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "y": 180
+    },
+    "face=floor,facing=west,lit=false": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "y": 270
+    },
+    "face=floor,facing=west,lit=true": {
+      "model": "searchlight:block/wall_light_floor_@wall_variant@",
+      "y": 270
+    },
+    "face=wall,facing=east,lit=false": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90,
+      "y": 90
+    },
+    "face=wall,facing=east,lit=true": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90,
+      "y": 90
+    },
+    "face=wall,facing=north,lit=false": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90
+    },
+    "face=wall,facing=north,lit=true": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90
+    },
+    "face=wall,facing=south,lit=false": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90,
+      "y": 180
+    },
+    "face=wall,facing=south,lit=true": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90,
+      "y": 180
+    },
+    "face=wall,facing=west,lit=false": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90,
+      "y": 270
+    },
+    "face=wall,facing=west,lit=true": {
+      "model": "searchlight:block/wall_light_@wall_variant@",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

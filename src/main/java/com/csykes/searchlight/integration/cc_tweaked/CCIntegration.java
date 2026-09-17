@@ -1,12 +1,11 @@
 package com.csykes.searchlight.integration.cc_tweaked;
 
 import com.csykes.searchlight.Searchlight;
-import com.csykes.searchlight.utils.lighting.LightPeripheral;
 import dan200.computercraft.api.peripheral.IPeripheral;
-import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 
 public class CCIntegration {
     private static final BlockCapability<IPeripheral, Direction> CAPABILITY = BlockCapability.createSided(ResourceLocation.fromNamespaceAndPath("computercraft", "peripheral"), IPeripheral.class);
@@ -15,12 +14,42 @@ public class CCIntegration {
         event.registerBlockEntity(
                 CAPABILITY,
                 Searchlight.SEARCHLIGHT_BE.get(),
-                (be, side) -> new LightPeripheral(be)
+                (be, side) -> new LightPeripheral(be, "search_light")
         );
         event.registerBlockEntity(
                 CAPABILITY,
                 Searchlight.WALL_LIGHT_BE.get(),
-                (be, side) -> new LightPeripheral(be)
+                (be, side) -> new LightPeripheral(be, "wall_light")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.CORNER_LIGHT_BE.get(),
+                (be, side) -> new LightPeripheral(be, "corner_light")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.CENTRE_LIGHT_BE.get(),
+                (be, side) -> new LightPeripheral(be, "centre_light")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.EDGE_LIGHT_BE.get(),
+                (be, side) -> new LightPeripheral(be, "edge_light")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.COLOUR_LAMPS_BE.get(),
+                (be, side) -> new LightPeripheral(be, "colour_lamp")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.COLOUR_LAMPS_SLAB_BE.get(),
+                (be, side) -> new LightPeripheral(be, "colour_lamp_slab")
+        );
+        event.registerBlockEntity(
+                CAPABILITY,
+                Searchlight.LIGHTING_DIRECTOR_BE.get(),
+                (be, side) -> new LightingDirectorPeripheral(be)
         );
     }
 }

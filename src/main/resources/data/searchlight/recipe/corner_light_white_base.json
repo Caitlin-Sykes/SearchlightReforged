@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "corner_light",
+  "category": "building",
+  "pattern": [
+    "GRG",
+    "CAC",
+    "GRG"
+  ],
+  "key": {
+    "G": {
+      "tag": "c:stones"
+    },
+    "C": {
+      "tag": "c:glass_blocks"
+    },
+    "A": {
+      "item": "minecraft:white_dye"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "searchlight:corner_light_white",
+    "count": 6
+  }
+}

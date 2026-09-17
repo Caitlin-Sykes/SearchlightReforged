@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "colour_lamp",
+  "category": "building",
+  "pattern": [
+    "DCG",
+    "CAC",
+    "GCD"
+  ],
+  "key": {
+    "G": {
+      "tag": "c:stones"
+    },
+    "C": {
+      "tag": "c:glass_blocks"
+    },
+    "A": {
+      "item": "minecraft:white_dye"
+    },
+    "D": {
+      "item": "minecraft:purple_dye"
+    }
+  },
+  "result": {
+    "id": "searchlight:colour_lamp_white",
+    "count": 6
+  }
+}
