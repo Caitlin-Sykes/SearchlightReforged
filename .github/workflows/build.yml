@@ -8,9 +8,16 @@ on:
       - 'v*'
   pull_request:
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       contents: write
       pages: write
@@ -70,6 +77,9 @@ jobs:
           LIBGL_ALWAYS_SOFTWARE: "1"
           GALLIUM_DRIVER: "llvmpipe"
           MESA_LOADER_DRIVER_OVERRIDE: "llvmpipe"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
 
       - name: Upload Docs Artifact
         uses: actions/upload-pages-artifact@v5.0.0
