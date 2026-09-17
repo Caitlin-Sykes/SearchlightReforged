@@ -1,6 +1,6 @@
 # Searchlight (& Wall Lights) (Unofficial NeoForge Port)
 
-![Version](https://img.shields.io/badge/version-v1.0.0A-blue) ![NeoForge](https://img.shields.io/badge/NeoForge-21.1.115-orange)
+![Version](https://img.shields.io/badge/version-v1.1.0B-blue) ![NeoForge](https://img.shields.io/badge/NeoForge-21.1.115-orange)
 
 ## DISCLAIMER
 
