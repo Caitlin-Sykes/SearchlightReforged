@@ -1,9 +1,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import {fileURLToPath} from 'node:url'
 import {defineConfig} from 'vitepress'
 import blockIds from './plugins/blockIds.mjs'
-import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import {ViteImageOptimizer} from 'vite-plugin-image-optimizer';
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -27,7 +27,8 @@ function getCCTweakedGeneratedItems() {
                 if (match) {
                     title = match[1].replace(/\s*-\s*CC:Tweaked API.*$/, '').trim()
                 }
-            } catch {}
+            } catch {
+            }
 
             return {
                 text: title,
@@ -37,6 +38,7 @@ function getCCTweakedGeneratedItems() {
 }
 
 export default defineConfig({
+    base: '/SearchlightReforged/',
     title: "Searchlight Reforged",
     description: "Lighting for Minecraft",
     lastUpdated: true,
@@ -59,7 +61,7 @@ export default defineConfig({
         search: {
             provider: 'local'
         },
-        
+
         nav: [
             {text: 'Home', link: '/'},
             {text: 'Blocks', link: '/blocks/index.md'},
