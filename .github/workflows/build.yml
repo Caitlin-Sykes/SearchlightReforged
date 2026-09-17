@@ -23,9 +23,17 @@ jobs:
       pages: write
       id-token: write
     steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v7.0.0
         with:
+          token: ${{ steps.app-token.outputs.token }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -60,8 +68,8 @@ jobs:
           NEO_VERSION=$(grep 'neo_version=' gradle.properties | cut -d'=' -f2 | tr -d '\r')
           
           # Update version and NeoForge badges in README.md
-          sed -i -E "s|(https://img.shields.io/badge/version-)[vV]?[0-9]+[^-]*|\1${{ github.ref_name }}|g" README.md
-          sed -i -E "s|(https://img.shields.io/badge/NeoForge-)[0-9]+\.[0-9]+\.[0-9]+[^-]*|\1${NEO_VERSION}|g" README.md
+          sed -i -E "s|(https://img.shields.io/badge/version-)[vV]?[0-9]+[^-]*|\1${{ github.ref_name }}|g" README.md docs/index.md
+          sed -i -E "s|(https://img.shields.io/badge/NeoForge-)[0-9]+\.[0-9]+\.[0-9]+[^-]*|\1${NEO_VERSION}|g" README.md docs/index.md
 
       - name: Build with Gradle
         run: ./gradlew build
@@ -94,8 +102,8 @@ jobs:
       - name: Commit and push version bump
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          git config --local user.name "searchlight-release-bot[bot]"
+          git config --local user.email "${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
           git add gradle.properties README.md package.json
           git commit -m "chore: bump version to ${{ github.ref_name }} [skip ci]" || echo "No changes to commit"
           git push origin HEAD:${{ github.event.repository.default_branch }}
@@ -110,4 +118,4 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
