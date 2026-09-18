@@ -1,6 +1,6 @@
 {
   "name": "searchlight-reforged-docs",
-  "version": "1.1.1B",
+  "version": "1.1.3B",
   "license": "GNU LGPL3",
   "scripts": {
     "dev": "vitepress dev docs",
