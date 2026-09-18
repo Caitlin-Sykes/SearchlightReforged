@@ -227,7 +227,6 @@ dependencies {
     docsGeneratorImplementation "curse.maven:dyenamics-509276:${dyenamics_version}"
 
 
-
     // Example mod dependency using a mod jar from ./libs with a flat dir repository
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
@@ -307,22 +306,19 @@ var generateColorResources = tasks.register("generateColorResources") {
             if (variant in dyenamicColors) return "dyenamics:block/${variant}_terracotta"
         }
 
-        // Entries are emitted as optional ({"id": ..., "required": false}) because many of these
-        // blocks only exist when an optional mod is present (dyenamics colours, the ComputerCraft
-        // lighting director). A missing required entry makes the whole tag fail to load, which for
-        // minecraft:mineable/pickaxe means stone becomes unmineable.
         var getAllBlockList = {
-            var blockIds = []
-            blockIds.add("searchlight:lighting_director")
+            var blockValues = []
+            blockValues.add("\"searchlight:searchlight\"")
+            blockValues.add("\"searchlight:lighting_director\"")
             for (variant in wallVariants) {
-                blockIds.add("searchlight:wall_light_${variant}")
+                blockValues.add("\"searchlight:wall_light_${variant}\"")
             }
             for (fam in nonWallFamilies) {
                 for (col in allColors) {
-                    blockIds.add("searchlight:${fam}_${col}")
+                    blockValues.add("\"searchlight:${fam}_${col}\"")
                 }
             }
-            return blockIds.collect { "{\"id\": \"${it}\", \"required\": false}" }.join(",\n    ")
+            return blockValues.join(",\n    ")
         }
 
         if (templatesDir.exists()) {

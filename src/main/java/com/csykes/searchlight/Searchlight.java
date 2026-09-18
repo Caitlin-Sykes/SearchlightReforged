@@ -1,5 +1,6 @@
 package com.csykes.searchlight;
 
+import com.csykes.searchlight.datagen.SearchlightBlockTagsProvider;
 import com.csykes.searchlight.features.centre_light.CentreLightBlock;
 import com.csykes.searchlight.features.colour_lamp.ColourLampBlock;
 import com.csykes.searchlight.features.colour_lamp_slab.ColourLampSlabBlock;
@@ -25,9 +26,10 @@ import com.csykes.searchlight.utils.lighting.AddressableLight;
 import com.csykes.searchlight.utils.lighting.BrightnessStage;
 import com.csykes.searchlight.utils.lighting.LightMode;
 import com.mojang.logging.LogUtils;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +37,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -49,6 +50,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -58,13 +60,12 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import static com.csykes.searchlight.utils.lighting.AbstractLightBlock.LIT;
-import static net.minecraft.world.level.block.SoundType.GLASS;
-import static net.minecraft.world.level.block.SoundType.METAL;
-import static net.minecraft.world.level.block.SoundType.STONE;
+import static net.minecraft.world.level.block.SoundType.*;
 import static net.minecraft.world.level.material.PushReaction.DESTROY;
 
 @Mod(Searchlight.MODID)
@@ -286,6 +287,7 @@ public class Searchlight {
 
     public Searchlight(IEventBus modEventBus) {
         modEventBus.addListener(this::registerCapabilities);
+        modEventBus.addListener(this::gatherData);
         if (ModList.get().isLoaded("computercraft")) {
             modEventBus.addListener(this::registerPayloads);
         }
@@ -295,6 +297,16 @@ public class Searchlight {
         CREATIVE_MODE_TABS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
         RECIPE_SERIALIZERS.register(modEventBus);
+    }
+
+    private void gatherData(GatherDataEvent event) {
+        DataGenerator generator = event.getGenerator();
+        PackOutput packOutput = generator.getPackOutput();
+
+        generator.addProvider(
+                event.includeServer(),
+                new SearchlightBlockTagsProvider(packOutput, event.getLookupProvider(), event.getExistingFileHelper())
+        );
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
@@ -317,7 +329,8 @@ public class Searchlight {
                                     int base = 0;
                                     try {
                                         base = Integer.parseInt(payload.address());
-                                    } catch (NumberFormatException ignored) {}
+                                    } catch (NumberFormatException ignored) {
+                                    }
                                     for (int i = 0; i < connected.size(); i++) {
                                         BlockPos p = connected.get(i);
                                         BlockEntity targetBe = level.getBlockEntity(p);
