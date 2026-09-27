@@ -128,7 +128,6 @@ public class Searchlight {
         return BlockBehaviour.Properties.of()
                 .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .strength(2.0f, 4.0f)
-                .requiresCorrectToolForDrops()
                 .sound(STONE)
                 .noOcclusion();
     }
@@ -139,7 +138,6 @@ public class Searchlight {
                 .pushReaction(DESTROY)
                 .sound(METAL)
                 .strength(2.0f, 4.0f)
-                .requiresCorrectToolForDrops()
                 .noOcclusion();
     }
 
@@ -148,7 +146,6 @@ public class Searchlight {
                 .lightLevel((state) -> state.hasProperty(LIT) && !state.getValue(LIT) ? 0 : 15)
                 .sound(GLASS)
                 .strength(2.0f, 4.0f)
-                .requiresCorrectToolForDrops()
                 .noOcclusion();
     }
 
