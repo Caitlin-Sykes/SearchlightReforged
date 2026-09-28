@@ -901,7 +901,7 @@ var generateShaderConfig = tasks.register("generateShaderConfig") {
                         "searchlight:colour_lamp_${c}".toString(),
                         "searchlight:colour_lamp_slab_${c}".toString()
                 ]
-                resultLines.addfff(items.join(' '))
+                resultLines.add(items.join(' '))
             }
             for (m in groupData.materials) {
                 resultLines.add("searchlight:wall_light_${m}".toString())
