@@ -927,30 +927,33 @@ var generateShaderConfig = tasks.register("generateShaderConfig") {
                 }
             }
 
-            // 2. Find the last occurrence index of each target property ID
+            // 2. Find the target property ID indices (use first occurrence to target primary mod section)
             var targetIds = targetLinesMap.keySet() as List<String>
-            var lastIndices = [:]
+            var targetIndices = [:]
             for (int i = 0; i < cleanedLines.size(); i++) {
                 var trimmed = cleanedLines[i].trim()
                 for (tid in targetIds) {
-                    if (trimmed.startsWith(tid + ' ') || trimmed.startsWith(tid + '=')) {
-                        lastIndices[tid] = i
+                    if (!targetIndices.containsKey(tid) && (trimmed.startsWith(tid + ' ') || trimmed.startsWith(tid + '='))) {
+                        targetIndices[tid] = i
                     }
                 }
             }
 
             // 3. Insert the Searchlight entries in reverse order of index
-            var sortedTids = targetIds.findAll { lastIndices.containsKey(it) }
-                    .sort { a, b -> (lastIndices[b] as int) <=> (lastIndices[a] as int) }
+            var sortedTids = targetIds.findAll { targetIndices.containsKey(it) }
+                    .sort { a, b -> (targetIndices[b] as int) <=> (targetIndices[a] as int) }
 
             for (tid in sortedTids) {
-                int idx = lastIndices[tid] as int
+                int idx = targetIndices[tid] as int
                 int curr = idx
                 while (curr < cleanedLines.size() && cleanedLines[curr].trim().endsWith('\\')) {
+                    if (curr + 1 < cleanedLines.size() && cleanedLines[curr + 1].trim().startsWith('#')) {
+                        break
+                    }
                     curr++
                 }
                 // Ensure the line before our searchlight additions ends with ' \'
-                if (!cleanedLines[curr].trim().endsWith('\\')) {
+                if (!cleanedLines[curr].trim().endsWith('\\') && !cleanedLines[curr].trim().startsWith('#')) {
                     cleanedLines[curr] = cleanedLines[curr].stripTrailing() + ' \\'
                 }
 
